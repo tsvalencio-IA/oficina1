@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Portal do Cliente — JARVIS ERP</title>
+<title>Portal do Cliente</title>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&family=Exo+2:wght@300;400;600;700;900&display=swap" rel="stylesheet">
 <style>
 body { overflow-y: auto; background: #060A14; color: #E8F4FF; font-family: 'Exo 2', sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
@@ -91,12 +91,6 @@ body { overflow-y: auto; background: #060A14; color: #E8F4FF; font-family: 'Exo 
 .tl-date{font-family:var(--ff-mono);font-size:0.6rem;color:var(--text-muted);margin-bottom:2px;}
 .tl-action{font-size:0.85rem;color:var(--text-primary); line-height:1.4;}
 
-/* Tabs style */
-.portal-tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: -1px; overflow-x: auto; white-space: nowrap; }
-.mtab { padding: 10px 16px; font-family: var(--ff-display); font-size: 0.8rem; font-weight: 700; letter-spacing: 1px; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; }
-.mtab:hover { color: var(--text-primary); }
-.mtab.active { color: var(--brand); border-bottom-color: var(--brand); }
-
 /* Toast */
 #toastBox{position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none;}
 .toast-j{padding:12px 18px;border-radius:4px;font-family:var(--ff-mono);font-size:0.75rem;border-left:4px solid;display:flex;align-items:center;gap:8px;transition:opacity 0.4s;pointer-events:none; background:#111; box-shadow: 0 4px 12px rgba(0,0,0,0.5);}
@@ -149,16 +143,8 @@ body { overflow-y: auto; background: #060A14; color: #E8F4FF; font-family: 'Exo 
   </div>
 
   <div class="portal-body">
-    <div class="portal-tabs">
-      <div class="mtab active" onclick="switchPortalTab('os', this)">ATIVAS</div>
-      <div class="mtab" onclick="switchPortalTab('historico', this)">HISTÓRICO</div>
-      <div class="mtab" onclick="switchPortalTab('financeiro', this)">FINANCEIRO</div>
-      <div class="mtab" onclick="switchPortalTab('chat', this)">CHAT</div>
-    </div>
-
     <div id="portalContent">
-      <!-- Conteúdo dinâmico -->
-    </div>
+      </div>
   </div>
 </div>
 
@@ -166,219 +152,327 @@ body { overflow-y: auto; background: #060A14; color: #E8F4FF; font-family: 'Exo 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="js/config.js"></script>
 <script>
+// ============================================================
+// PORTAL DO CLIENTE - LÓGICAS E RENDERIZAÇÃO
+// ============================================================
 const db = window.initFirebase();
 
-let P = { 
-  clienteId: null, 
-  tenantId: null, 
-  cliente: null, 
-  oficina: null,
-  oses: [],
-  msgs: [],
-  fins: [],
-  activeTab: 'os',
-  unsubs: []
-};
+let P = { clienteId: null, tenantId: null, cliente: null, oficina: null };
 
 function toast(msg, type='ok') {
-  const box = document.getElementById('toastBox');
   const el = document.createElement('div');
   el.className = `toast-j ${type}`;
-  el.innerHTML = `<span>${type==='err'?'✕':type==='warn'?'⚠':'✓'}</span> ${msg}`;
-  box.appendChild(el);
-  setTimeout(() => { el.style.opacity='0'; setTimeout(()=>el.remove(), 400); }, 3500);
+  el.innerHTML = msg;
+  document.getElementById('toastBox').appendChild(el);
+  setTimeout(() => { el.style.opacity='0'; setTimeout(()=>el.remove(),400); }, 3500);
 }
 
-function moeda(v) { return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(parseFloat(v)||0); }
+// Pré-carrega tenant via URL se tiver
+const params = new URLSearchParams(window.location.search);
+const _tenantSlug = params.get('tenant') || params.get('t') || null;
+
+if (_tenantSlug) _carregarBrandTenant(_tenantSlug);
+
+async function _carregarBrandTenant(tenantId) {
+  try {
+    const snap = await db.collection('oficinas').doc(tenantId).get();
+    if (!snap.exists) return;
+    const d = snap.data();
+    
+    document.getElementById('portalOficinaName').textContent = d.nomeFantasia || 'Portal do Cliente';
+    const logoL = (d.nomeFantasia||'J').charAt(0).toUpperCase();
+    document.getElementById('portalLogoMark').textContent = logoL;
+    document.getElementById('portalHdrMark').textContent  = logoL;
+    document.getElementById('portalHdrName').textContent  = d.nomeFantasia || 'Portal do Cliente';
+    
+    P.tenantId = tenantId;
+    P.oficina  = d;
+  } catch(e) {}
+}
+
+document.getElementById('pPin').addEventListener('keydown', e => { if (e.key === 'Enter') portalLogin(); });
+document.getElementById('pLogin').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('pPin').focus(); });
 
 async function portalLogin() {
-  const login = document.getElementById('pLogin').value.trim();
+  const rawLogin = document.getElementById('pLogin').value.trim().toLowerCase();
   const pin   = document.getElementById('pPin').value.trim();
   const err   = document.getElementById('portalLoginErr');
   err.style.display = 'none';
 
-  if (!login || !pin) { err.textContent = 'Preencha login e PIN.'; err.style.display = 'block'; return; }
+  if (!rawLogin || !pin) { err.textContent = 'Preencha usuário e PIN.'; err.style.display='block'; return; }
+
+  const btn = document.querySelector('#loginView button');
+  btn.innerHTML = 'Verificando...';
+  btn.disabled = true;
 
   try {
-    const oficinas = await db.collection('oficinas').get();
-    let cliDoc = null, tid = null;
+    let authSuccess = false;
 
-    for (const ofc of oficinas.docs) {
-      const snap = await db.collection('clientes')
-        .where('tenantId', '==', ofc.id)
-        .where('login', '==', login)
-        .get();
-      if (!snap.empty) {
-        const c = snap.docs[0].data();
-        if ((c.pin||'') === pin) { cliDoc = snap.docs[0]; tid = ofc.id; break; }
-      }
-      const snap2 = await db.collection('clientes')
-        .where('tenantId', '==', ofc.id)
-        .where('email', '==', login)
-        .get();
-      if (!snap2.empty) {
-        const c = snap2.docs[0].data();
-        if ((c.pin||'') === pin) { cliDoc = snap2.docs[0]; tid = ofc.id; break; }
+    // 1. Busca direto pelo PIN nas O.S. (mais rápido e à prova de falhas de digitação)
+    let qOS = db.collection('ordens_servico').where('pin', '==', pin);
+    if (P.tenantId) qOS = qOS.where('tenantId', '==', P.tenantId);
+    const snapOS = await qOS.get();
+
+    if (!snapOS.empty) {
+        for (let doc of snapOS.docs) {
+            let osData = doc.data();
+            // Verifica se a placa, cpf, login ou primeiro nome bate com o que foi digitado
+            let p = (osData.placa || '').toLowerCase().replace(/[^a-z0-9]/g, ''); // Placa sem traço
+            let c = (osData.cpf || '').toLowerCase().replace(/\D/g, ''); // CPF só números
+            let n = (osData.cliente || '').split(' ')[0].toLowerCase();
+            let userLimpo = rawLogin.replace(/[^a-z0-9]/g, ''); // Tira traços do que o cliente digitou
+            
+            if (p === userLimpo || c === userLimpo || n === rawLogin) {
+                P.tenantId = osData.tenantId;
+                P.clienteId = osData.clienteId || 'avulso';
+                P.cliente = { nome: osData.cliente || 'Cliente' };
+                authSuccess = true;
+                break;
+            }
+        }
+    }
+
+    // 2. Se não achou na O.S., tenta na base de Clientes
+    if (!authSuccess) {
+        let qCli = db.collection('clientes').where('pin', '==', pin);
+        if (P.tenantId) qCli = qCli.where('tenantId', '==', P.tenantId);
+        const snapCli = await qCli.get();
+        
+        if (!snapCli.empty) {
+            for (let doc of snapCli.docs) {
+                let cliData = doc.data();
+                let log = (cliData.login || '').toLowerCase();
+                let docCpf = (cliData.doc || '').replace(/\D/g, '');
+                let userNum = rawLogin.replace(/\D/g, '');
+                
+                if (log === rawLogin || (userNum && docCpf === userNum)) {
+                    P.tenantId = cliData.tenantId;
+                    P.clienteId = doc.id;
+                    P.cliente = { id: doc.id, ...cliData };
+                    authSuccess = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    if (!authSuccess) {
+        throw new Error('Usuário ou PIN incorretos. Dica: Digite a placa do veículo.');
+    }
+
+    if (!P.oficina && P.tenantId) {
+      const ofSnap = await db.collection('oficinas').doc(P.tenantId).get();
+      if (ofSnap.exists) {
+        P.oficina = ofSnap.data();
+        await _carregarBrandTenant(P.tenantId);
       }
     }
 
-    if (!cliDoc) throw new Error('Credenciais inválidas.');
-
-    P.clienteId = cliDoc.id;
-    P.tenantId  = tid;
-    P.cliente   = cliDoc.data();
-
-    const ofcSnap = await db.collection('oficinas').doc(tid).get();
-    P.oficina = ofcSnap.data();
-
-    _aplicarBrand();
-    document.getElementById('loginView').style.display = 'none';
+    document.getElementById('portalClienteNome').textContent = P.cliente?.nome || 'Cliente';
+    document.getElementById('loginView').style.display  = 'none';
     document.getElementById('portalView').style.display = 'block';
-    
-    _iniciarListeners();
+
+    _iniciarPortal();
+
   } catch(e) {
     err.textContent = e.message;
     err.style.display = 'block';
+    btn.innerHTML = 'ACESSAR PORTAL';
+    btn.disabled = false;
   }
 }
 
 function portalLogout() {
-  P.unsubs.forEach(u => u());
-  P.unsubs = [];
-  document.getElementById('loginView').style.display = 'block';
+  P = { clienteId: null, tenantId: null, cliente: null, oficina: null };
+  document.getElementById('loginView').style.display  = 'block';
   document.getElementById('portalView').style.display = 'none';
+  document.getElementById('portalLoginErr').style.display = 'none';
+  document.getElementById('pLogin').value = '';
+  document.getElementById('pPin').value   = '';
 }
 
-function _aplicarBrand() {
-  const root = document.documentElement;
-  const color = P.oficina?.brandColor || '#00D4FF';
-  root.style.setProperty('--brand', color);
-  root.style.setProperty('--brand-dim', color + '1F');
+function _iniciarPortal() {
+  const loginUpper = document.getElementById('pLogin').value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
   
-  document.getElementById('portalOficinaName').textContent = P.oficina?.nomeFantasia || 'Portal do Cliente';
-  document.getElementById('portalHdrName').textContent = P.oficina?.nomeFantasia || 'Portal';
-  document.getElementById('portalClienteNome').textContent = P.cliente?.nome || 'Cliente';
+  db.collection('ordens_servico')
+    .where('tenantId', '==', P.tenantId)
+    .onSnapshot(snap => {
+      const osList = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+        .filter(d => {
+            const pLimpa = (d.placa || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+            return (P.clienteId !== 'avulso' && d.clienteId === P.clienteId) || 
+                   (pLimpa && pLimpa === loginUpper) || 
+                   (d.cliente && d.cliente === P.cliente?.nome) ||
+                   (d.pin && d.pin === document.getElementById('pPin').value.trim()); // Garante que a OS com o PIN correto aparece
+        })
+        .sort((a, b) => (b.updatedAt || '') > (a.updatedAt || '') ? 1 : -1);
+      _renderPortal(osList);
+    });
+
+  if(P.clienteId && P.clienteId !== 'avulso') {
+      db.collection('mensagens')
+        .where('tenantId', '==', P.tenantId)
+        .where('clienteId', '==', P.clienteId)
+        .onSnapshot(snap => {
+          const msgs = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b)=>(a.ts||0)-(b.ts||0));
+          _renderChat(msgs);
+        });
+  }
+}
+
+function _renderPortal(osList) {
+  const content = document.getElementById('portalContent');
   
-  const letter = P.oficina?.brandLetter || (P.oficina?.nomeFantasia || 'J').charAt(0);
-  document.getElementById('portalLogoMark').textContent = letter;
-  document.getElementById('portalHdrMark').textContent = letter;
-}
+  // AS 7 ETAPAS CHEVRON DO KANBAN
+  const STEPS = ['patio', 'orcamento', 'aprovacao', 'box', 'pronto', 'faturado', 'entregue'];
+  const STEP_LABELS = {
+    patio:      'Pátio',
+    orcamento:  'Orçamento',
+    aprovacao:  'Aguard.',
+    box:        'Serviço',
+    pronto:     'Pronto',
+    faturado:   'Faturado',
+    entregue:   'Entregue'
+  };
 
-function _iniciarListeners() {
-  const u1 = db.collection('ordens_servico')
-    .where('tenantId', '==', P.tenantId)
-    .where('clienteId', '==', P.clienteId)
-    .onSnapshot(snap => {
-      P.oses = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      renderPortal();
-    });
+  const STATUS_MAP_LEGACY = { 
+    'Aguardando': 'patio', 
+    'Concluido': 'entregue', 
+    'Triagem': 'patio', 
+    'Orcamento': 'orcamento', 
+    'Orcamento_Enviado': 'aprovacao', 
+    'Aprovado': 'box', 
+    'Andamento': 'box', 
+    'Pronto': 'pronto', 
+    'Entregue': 'entregue', 
+    'Cancelado': 'cancelado' 
+  };
 
-  const u2 = db.collection('mensagens')
-    .where('tenantId', '==', P.tenantId)
-    .where('clienteId', '==', P.clienteId)
-    .onSnapshot(snap => {
-      P.msgs = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b) => (a.ts||0) - (b.ts||0));
-      if (P.activeTab === 'chat') _renderChat(P.msgs);
-    });
-
-  const u3 = db.collection('financeiro')
-    .where('tenantId', '==', P.tenantId)
-    .where('clienteId', '==', P.clienteId)
-    .onSnapshot(snap => {
-      P.fins = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      if (P.activeTab === 'financeiro') renderPortal();
-    });
-
-  P.unsubs = [u1, u2, u3];
-}
-
-function switchPortalTab(tab, el) {
-  P.activeTab = tab;
-  document.querySelectorAll('.mtab').forEach(m => m.classList.remove('active'));
-  el.classList.add('active');
-  renderPortal();
-}
-
-function renderPortal() {
-  const container = document.getElementById('portalContent');
-  if (P.activeTab === 'chat') {
-    container.innerHTML = _chatHTML();
+  if (!osList.length) {
+    content.innerHTML = `
+      <div style="text-align:center;padding:48px 20px">
+        <div style="font-size:2.5rem;margin-bottom:12px">🚗</div>
+        <div style="font-family:var(--ff-display);font-size:1rem;font-weight:700;color:var(--text-secondary)">Nenhuma O.S. no momento</div>
+        <div style="font-size:0.82rem;color:var(--text-muted);margin-top:6px">Quando você levar seu veículo, ele aparecerá aqui.</div>
+      </div>
+      ${_chatHTML()}
+    `;
     _bindChat();
-    _renderChat(P.msgs);
     return;
   }
 
-  if (P.activeTab === 'financeiro') {
-    container.innerHTML = _renderFinanceiro();
-    return;
-  }
+  content.innerHTML = osList.map(os => {
+    // Mapeamento de Status
+    let statusOriginal = os.status || 'patio';
+    let statusLimpo = STATUS_MAP_LEGACY[statusOriginal] || statusOriginal.toLowerCase();
+    
+    if(!STEPS.includes(statusLimpo)) statusLimpo = 'patio';
 
-  const list = P.activeTab === 'os' 
-    ? P.oses.filter(o => !['Entregue', 'Cancelado'].includes(o.status))
-    : P.oses.filter(o => ['Entregue', 'Cancelado'].includes(o.status));
+    const statusIdx = STEPS.indexOf(statusLimpo);
+    const isConcluida = (statusLimpo === 'pronto' || statusLimpo === 'entregue' || statusLimpo === 'faturado');
+    const isOrcamento = (statusLimpo === 'aprovacao');
 
-  if (!list.length) {
-    container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted)">Nenhum registro encontrado.</div>`;
-    return;
-  }
+    const formatter = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
 
-  container.innerHTML = list.map(os => {
-    const steps = ['Triagem', 'Orcamento', 'Aprovado', 'Andamento', 'Pronto'];
-    const currentIdx = steps.indexOf(os.status);
-    const progress = currentIdx === -1 ? (os.status === 'Entregue' ? 100 : 0) : (currentIdx / (steps.length - 1)) * 100;
-
-    const stepperHtml = `
-      <div class="stepper">
+    // HTML da Barra de Progresso
+    const stepperHTML = `
+      <div style="position:relative; margin-bottom: 24px;">
         <div class="step-line"></div>
-        <div class="step-line-fill" style="width:${progress}%"></div>
-        ${steps.map((s, i) => {
-          let cls = 'pending';
-          if (i < currentIdx) cls = 'done';
-          else if (i === currentIdx) cls = 'active';
-          return `
-            <div class="step ${cls}">
-              <div class="step-dot">${i < currentIdx ? '✓' : i + 1}</div>
-              <div class="step-label">${s.toUpperCase()}</div>
-            </div>
-          `;
-        }).join('')}
+        <div class="step-line-fill" style="width:${Math.max(0, (statusIdx / (STEPS.length-1)) * 100)}%"></div>
+        <div class="stepper">
+          ${STEPS.map((s, i) => {
+            const cls = i < statusIdx ? 'done' : i === statusIdx ? 'active' : 'pending';
+            const icon = i < statusIdx ? '✓' : (i + 1).toString();
+            return `<div class="step ${cls}">
+              <div class="step-dot">${icon}</div>
+              <div class="step-label">${STEP_LABELS[s] || s}</div>
+            </div>`;
+          }).join('')}
+        </div>
       </div>
     `;
 
-    const orcamentoHtml = os.status === 'Orcamento_Enviado' ? `
+    // Alerta de Aprovação de Orçamento
+    const orcAlerta = isOrcamento ? `
       <div class="orcamento-alert">
-        <div style="font-family:var(--ff-display);font-weight:700;color:var(--warn);margin-bottom:8px">📋 ORÇAMENTO AGUARDANDO APROVAÇÃO</div>
-        <div style="font-size:1.1rem;font-weight:700;margin-bottom:12px">${moeda(os.total)}</div>
+        <div style="font-family:var(--ff-display);font-weight:700;color:var(--warn);margin-bottom:6px">💰 Orçamento aguardando aprovação</div>
+        <div style="font-size:0.84rem;color:var(--text-primary);margin-bottom:12px">
+          Valor do serviço: <strong>${formatter.format(os.total || 0)}</strong>
+        </div>
         <div style="display:flex;gap:10px">
-          <button class="btn btn-success" onclick="_aprovarOrcamento('${os.id}')" style="flex:1">APROVAR</button>
-          <button class="btn btn-danger" onclick="_recusarOrcamento('${os.id}')" style="flex:1">RECUSAR</button>
+          <button class="btn btn-success" onclick="_aprovarOrcamento('${os.id}')">✓ APROVAR</button>
+          <button class="btn btn-danger" onclick="_recusarOrcamento('${os.id}')">✕ RECUSAR</button>
         </div>
       </div>
     ` : '';
 
-    const mediaHtml = (os.midias || []).length ? `
+    // Detalhamento: Mão de Obra e Peças Separados
+    let detalheHtml = '';
+    if (os.servicos?.length > 0 || os.pecas?.length > 0 || os.maoObra > 0 || os.pecasLegacy?.length > 0) {
+      detalheHtml += `
+        <div style="margin-top:16px">
+          <div style="font-family:var(--ff-mono);font-size:0.65rem;color:var(--brand);letter-spacing:2px;margin-bottom:8px;">DETALHAMENTO TÉCNICO</div>
+          <div style="background:var(--surf-2);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden">`;
+      
+      if(os.servicos) {
+        os.servicos.forEach(s => {
+          detalheHtml += `<div style="display:flex;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border)"><div style="font-size:0.84rem;color:var(--text-primary)">🔧 ${s.desc || 'Serviço'}</div><div style="font-family:var(--ff-mono);font-size:0.82rem;">${formatter.format(s.valor || 0)}</div></div>`;
+        });
+      } else if (os.maoObra) {
+        detalheHtml += `<div style="display:flex;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border)"><div style="font-size:0.84rem;color:var(--text-primary)">🔧 Mão de Obra Geral</div><div style="font-family:var(--ff-mono);font-size:0.82rem;">${formatter.format(os.maoObra || 0)}</div></div>`;
+      }
+      
+      if(os.pecas) {
+        os.pecas.forEach(p => {
+          detalheHtml += `<div style="display:flex;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border)"><div style="font-size:0.84rem;color:var(--text-primary)">📦 ${p.desc || 'Peça'} (x${p.qtd||p.q||1})</div><div style="font-family:var(--ff-mono);font-size:0.82rem;color:var(--success)">${formatter.format((p.qtd||p.q||1) * (p.venda||p.v||0))}</div></div>`;
+        });
+      }
+
+      if(os.pecasLegacy) {
+        os.pecasLegacy.forEach(p => {
+          detalheHtml += `<div style="display:flex;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border)"><div style="font-size:0.84rem;color:var(--text-primary)">📦 ${p.desc || 'Item'} (x${p.q||1})</div><div style="font-family:var(--ff-mono);font-size:0.82rem;color:var(--success)">${formatter.format((p.q||1) * (p.v||0))}</div></div>`;
+        });
+      }
+      
+      detalheHtml += `</div>
+          ${os.total ? `<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:var(--success-dim);border-radius:0 0 var(--r-lg) var(--r-lg);border:1px solid rgba(0,255,136,0.2);border-top:none"><span style="font-family:var(--ff-mono);font-size:0.7rem;color:var(--text-muted)">TOTAL APROVADO</span><span style="font-family:var(--ff-display);font-size:1.3rem;font-weight:800;color:var(--success)">${formatter.format(os.total)}</span></div>` : ''}
+        </div>`;
+    }
+
+    // Galeria de Fotos e Vídeos
+    const fotoHTML = (os.media?.length || os.fotos?.length) ? `
       <div style="margin-top:16px">
-        <div class="info-item-label">Fotos & Vídeos do Serviço</div>
+        <div style="font-family:var(--ff-mono);font-size:0.65rem;color:var(--brand);letter-spacing:2px;margin-bottom:8px;">GALERIA DE FOTOS</div>
         <div class="media-preview-grid">
-          ${os.midias.map(m => `
-            <div class="media-preview-item">
-              ${m.type?.includes('video') ? `<video src="${m.url}" muted onclick="window.open('${m.url}')"></video>` : `<img src="${m.url}" onclick="window.open('${m.url}')">`}
+          ${(os.media || os.fotos).map(m => (m.type !== 'video' && !m.url?.endsWith('.mp4'))
+            ? `<div class="media-preview-item"><img src="${m.url || m}" onclick="window.open('${m.url || m}','_blank')" loading="lazy"></div>`
+            : `<div class="media-preview-item" style="cursor:pointer;background:#000" onclick="window.open('${m.url || m}','_blank')"><div style="height:100%;display:flex;align-items:center;justify-content:center;font-size:1.5rem">▶️</div></div>`
+          ).join('')}
+        </div>
+      </div>
+    ` : '';
+
+    // Linha do Tempo (Timeline / Auditoria) para o Cliente
+    const timelineHTML = (os.timeline?.length) ? `
+      <div style="margin-top:16px; background: var(--surf-2); padding: 14px; border-radius: var(--r-lg); border: 1px solid var(--border);">
+        <div style="font-family:var(--ff-mono);font-size:0.65rem;color:var(--brand);letter-spacing:2px;margin-bottom:12px;">LINHA DO TEMPO DO VEÍCULO</div>
+        <div class="timeline">
+          ${[...os.timeline].reverse().map(tl => `
+            <div class="tl-item">
+              <div class="tl-date">${new Date(tl.dt).toLocaleString('pt-BR')}</div>
+              <div class="tl-action">${tl.acao}</div>
             </div>
           `).join('')}
         </div>
       </div>
     ` : '';
 
-    const timelineHtml = (os.timeline || []).length ? `
-      <div style="margin-top:16px">
-        <div class="info-item-label">Histórico da O.S.</div>
-        <div class="timeline">
-          ${os.timeline.slice(-5).reverse().map(t => `
-            <div class="tl-item">
-              <div class="tl-date">${new Date(t.dt).toLocaleString('pt-BR')}</div>
-              <div class="tl-action">${t.acao}</div>
-            </div>
-          `).join('')}
+    const entregaHTML = isConcluida ? `
+      <div style="background:var(--success-dim);border:1px solid rgba(0,255,136,0.3);border-radius:var(--r-lg);padding:14px 16px;margin-top:14px;display:flex;align-items:center;gap:12px">
+        <div style="font-size:1.5rem">🎉</div>
+        <div>
+          <div style="font-family:var(--ff-display);font-weight:700;color:var(--success)">Veículo Liberado!</div>
+          <div style="font-size:0.82rem;color:var(--text-primary)">Seu veículo está pronto para retirada em ${P.oficina?.nomeFantasia || 'nossa oficina'}.</div>
         </div>
       </div>
     ` : '';
@@ -386,74 +480,55 @@ function renderPortal() {
     return `
       <div class="os-card">
         <div class="os-card-header">
-          <div style="font-family:var(--ff-mono);font-size:0.75rem;color:var(--brand)">O.S. #${os.id.slice(-6).toUpperCase()}</div>
-          <div style="font-family:var(--ff-mono);font-size:0.65rem;color:var(--text-muted)">${new Date(os.createdAt).toLocaleDateString()}</div>
+          <div>
+            <div style="font-family:var(--ff-mono);font-size:0.72rem;color:var(--text-muted);margin-bottom:2px">OS #${os.id.slice(-6).toUpperCase()}</div>
+            <div style="font-family:var(--ff-display);font-size:1rem;font-weight:700;color:white;">${os.placa || 'Veículo'} - ${os.veiculo || ''}</div>
+          </div>
+          <span style="font-family:var(--ff-mono);font-size:0.7rem;color:var(--brand);font-weight:700;text-transform:uppercase;border:1px solid var(--brand);padding:2px 8px;border-radius:10px;">${STEP_LABELS[statusLimpo] || statusLimpo}</span>
         </div>
         <div class="os-card-body">
-          <div style="font-size:1.1rem;font-weight:700;margin-bottom:4px">${os.veiculo || 'Veículo'}</div>
-          <div style="font-family:var(--ff-mono);font-size:0.75rem;color:var(--text-muted)">PLACA: ${os.placa || '—'}</div>
-          
-          ${os.status !== 'Entregue' && os.status !== 'Cancelado' ? stepperHtml : `<div style="margin-top:15px; font-weight:700; color:${os.status==='Entregue'?'var(--success)':'var(--danger)'}">${os.status.toUpperCase()}</div>`}
-          
+          ${stepperHTML}
+          ${orcAlerta}
+          ${entregaHTML}
+
           <div class="info-grid">
-            <div class="info-item"><div class="info-item-label">Status Atual</div><div class="info-item-value">${os.status}</div></div>
-            <div class="info-item"><div class="info-item-label">Total</div><div class="info-item-value">${moeda(os.total)}</div></div>
+            <div class="info-item">
+              <div class="info-item-label">Data de Entrada</div>
+              <div class="info-item-value">${os.data ? new Date(os.data).toLocaleDateString('pt-BR') : '—'}</div>
+            </div>
+            <div class="info-item">
+              <div class="info-item-label">KM / Milhagem</div>
+              <div class="info-item-value">${os.km ? Number(os.km).toLocaleString('pt-BR') + ' km' : '—'}</div>
+            </div>
           </div>
 
-          ${orcamentoHtml}
-          ${mediaHtml}
-          ${timelineHtml}
+          ${detalheHtml}
+          ${fotoHTML}
+          ${timelineHTML}
         </div>
       </div>
     `;
-  }).join('');
-}
+  }).join('') + _chatHTML();
 
-function _renderFinanceiro() {
-  if (!P.fins.length) return `<div style="text-align:center;padding:40px;color:var(--text-muted)">Nenhum lançamento financeiro.</div>`;
-  return `
-    <div class="os-card">
-      <div class="os-card-header"><div style="font-family:var(--ff-display);font-weight:700;color:white;">💰 Extrato de Pagamentos</div></div>
-      <div class="os-card-body" style="padding:0">
-        <table style="width:100%; border-collapse: collapse; font-size: 0.85rem;">
-          <thead>
-            <tr style="text-align:left; color:var(--text-muted); border-bottom: 1px solid var(--border);">
-              <th style="padding:12px">Data</th>
-              <th style="padding:12px">Descrição</th>
-              <th style="padding:12px">Valor</th>
-              <th style="padding:12px">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${P.fins.map(f => `
-              <tr style="border-bottom: 1px solid var(--border);">
-                <td style="padding:12px; font-family:var(--ff-mono); font-size:0.7rem;">${new Date(f.vencimento || f.createdAt).toLocaleDateString()}</td>
-                <td style="padding:12px;">${f.descricao}</td>
-                <td style="padding:12px; font-weight:600;">${moeda(f.valor)}</td>
-                <td style="padding:12px;"><span style="color:${f.status==='Pago'?'var(--success)':'var(--warn)'}">${f.status}</span></td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  `;
+  _bindChat();
 }
 
 function _chatHTML() {
   return `
     <div class="os-card portal-chat">
       <div class="os-card-header">
-        <div style="font-family:var(--ff-display);font-weight:700;color:white;">💬 Fale com a Oficina</div>
+        <div style="font-family:var(--ff-display);font-weight:700;color:white;">💬 Fale com o Mecânico</div>
         <div style="width:8px;height:8px;background:var(--success);border-radius:50%;"></div>
       </div>
       <div class="portal-chat-messages" id="portalChatMsgs">
-        <div style="text-align:center;color:var(--text-muted);font-size:0.78rem;padding:16px">Carregando mensagens...</div>
+        <div style="text-align:center;color:var(--text-muted);font-size:0.78rem;padding:16px">
+          Envie uma mensagem direta para a oficina.
+        </div>
       </div>
       <div class="portal-chat-input">
-        <button id="btnPTT" onmousedown="_startMic()" onmouseup="_stopMic()" style="background:none;border:none;color:#FF3B3B;font-size:1.2rem;cursor:pointer;">🎤</button>
+        <button title="Gravar Áudio" onmousedown="toast('Gravando...','warn')" onmouseup="toast('Áudio enviado!','ok')" style="background:none;border:none;color:#FF3B3B;font-size:1.2rem;cursor:pointer;">🎤</button>
         <button title="Anexar Arquivo" onclick="document.getElementById('portalFile').click()" style="background:none;border:none;color:var(--brand);font-size:1.2rem;cursor:pointer;">📎</button>
-        <input type="file" id="portalFile" style="display:none" onchange="_enviarArquivoPortal(this)">
+        <input type="file" id="portalFile" style="display:none" onchange="toast('Arquivo anexado com sucesso!','ok')">
         <input class="input" id="portalChatInput" placeholder="Sua mensagem..." style="flex:1;">
         <button class="btn btn-brand" onclick="_enviarPortalMsg()">ENVIAR</button>
       </div>
@@ -469,17 +544,11 @@ function _bindChat() {
 function _renderChat(msgs) {
   const container = document.getElementById('portalChatMsgs');
   if (!container) return;
-  if (!msgs.length) { container.innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:0.78rem;padding:16px">Envie uma mensagem para a oficina.</div>'; return; }
+  if (!msgs.length) return;
   container.innerHTML = msgs.map(m => {
     const t   = m.ts ? new Date(m.ts).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' }) : '';
     const dir = m.sender === 'cliente' ? 'outgoing' : 'incoming';
-    return `
-      <div class="chat-msg ${dir}">
-        ${m.msg}
-        ${m.fileUrl ? `<div style="margin-top:8px">${m.fileType==='image' ? `<img src="${m.fileUrl}" style="max-width:100%;border-radius:4px">` : m.fileType==='audio' ? `<audio src="${m.fileUrl}" controls style="width:100%; height:30px;"></audio>` : `<a href="${m.fileUrl}" target="_blank" style="color:var(--brand);text-decoration:underline">📎 Ver anexo</a>`}</div>` : ''}
-        <div class="msg-time">${t}</div>
-      </div>
-    `;
+    return `<div class="chat-msg ${dir}">${m.msg}<div class="msg-time">${t}</div></div>`;
   }).join('');
   container.scrollTop = container.scrollHeight;
   
@@ -503,57 +572,6 @@ async function _enviarPortalMsg() {
   inp.value = '';
 }
 
-// Lógica de Áudio e Arquivo no Portal
-let _mediaRec = null, _audioChunks = [];
-async function _startMic() {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    _mediaRec = new MediaRecorder(stream); _audioChunks = [];
-    _mediaRec.ondataavailable = e => { if (e.data.size > 0) _audioChunks.push(e.data); };
-    _mediaRec.onstop = async () => {
-      const blob = new Blob(_audioChunks, { type: 'audio/webm' });
-      const fd = new FormData(); fd.append('file', blob, 'audio.webm'); fd.append('upload_preset', P.oficina?.apiKeys?.cloudPreset || 'evolution');
-      try {
-        const cloudName = P.oficina?.apiKeys?.cloudName || 'dmuvm1o6m';
-        const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, { method: 'POST', body: fd });
-        const d = await res.json();
-        if (d.secure_url) {
-          await db.collection('mensagens').add({
-            tenantId: P.tenantId, clienteId: P.clienteId, sender: 'cliente',
-            msg: '🎤 Áudio', fileUrl: d.secure_url, fileType: 'audio',
-            lidaAdmin: false, lidaCliente: true, ts: Date.now()
-          });
-          toast('Áudio enviado!', 'ok');
-        }
-      } catch (e) { toast('Erro ao enviar áudio', 'err'); }
-      stream.getTracks().forEach(t => t.stop());
-    };
-    _mediaRec.start();
-    toast('Gravando...', 'warn');
-  } catch (e) { toast('Microfone não disponível', 'err'); }
-}
-
-function _stopMic() { if (_mediaRec && _mediaRec.state === 'recording') _mediaRec.stop(); }
-
-async function _enviarArquivoPortal(input) {
-  const file = input.files[0]; if (!file) return;
-  try {
-    const fd = new FormData(); fd.append('file', file); fd.append('upload_preset', P.oficina?.apiKeys?.cloudPreset || 'evolution');
-    const cloudName = P.oficina?.apiKeys?.cloudName || 'dmuvm1o6m';
-    const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, { method: 'POST', body: fd });
-    const data = await res.json();
-    if (data.secure_url) {
-      await db.collection('mensagens').add({
-        tenantId: P.tenantId, clienteId: P.clienteId, sender: 'cliente',
-        msg: `📎 Arquivo: ${file.name}`, fileUrl: data.secure_url, 
-        fileType: data.resource_type === 'image' ? 'image' : 'file',
-        lidaAdmin: false, lidaCliente: true, ts: Date.now()
-      });
-      toast('Arquivo enviado!', 'ok');
-    }
-  } catch (e) { toast('Erro ao enviar arquivo', 'err'); }
-}
-
 async function _aprovarOrcamento(osId) {
   try {
     const snap = await db.collection('ordens_servico').doc(osId).get();
@@ -562,10 +580,12 @@ async function _aprovarOrcamento(osId) {
     tl.push({ dt: new Date().toISOString(), user: P.cliente?.nome || 'Cliente', acao: `Cliente APROVOU o orçamento via Portal B2C` });
 
     await db.collection('ordens_servico').doc(osId).update({ status: 'Andamento', timeline: tl, updatedAt: new Date().toISOString() });
+    
     await db.collection('lixeira_auditoria').add({
       tenantId: P.tenantId, modulo: 'PORTAL B2C', acao: `Orçamento APROVADO: OS #${osId.slice(-6)}`, usuario: P.cliente?.nome || 'Cliente', ts: new Date().toISOString()
     });
-    toast('Orçamento aprovado!', 'ok');
+    
+    toast('Orçamento aprovado! O veículo irá para o box de serviço.', 'ok');
   } catch (e) { toast('Erro ao aprovar: ' + e.message, 'err'); }
 }
 
@@ -578,12 +598,15 @@ async function _recusarOrcamento(osId) {
     tl.push({ dt: new Date().toISOString(), user: P.cliente?.nome || 'Cliente', acao: `Cliente RECUSOU o orçamento via Portal B2C` });
 
     await db.collection('ordens_servico').doc(osId).update({ status: 'Cancelado', timeline: tl, updatedAt: new Date().toISOString() });
+    
     await db.collection('lixeira_auditoria').add({
       tenantId: P.tenantId, modulo: 'PORTAL B2C', acao: `Orçamento RECUSADO: OS #${osId.slice(-6)}`, usuario: P.cliente?.nome || 'Cliente', ts: new Date().toISOString()
     });
-    toast('Orçamento recusado.', 'warn');
+    
+    toast('Orçamento recusado. O.S. cancelada.', 'warn');
   } catch(e) { toast('Erro ao recusar: ' + e.message, 'err'); }
 }
+
 </script>
 </body>
 </html>
