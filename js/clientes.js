@@ -84,6 +84,7 @@ window.deletarCliente = async function(id) {
 // ── VEÍCULOS ───────────────────────────────────────────────
 window.renderVeiculos = function() {
   const tb = document.getElementById('tbVeiculos'); if (!tb) return;
+  console.log('Renderizando veículos:', J.veiculos.length);
   if (!J.veiculos.length) { tb.innerHTML = tableEmpty(6,'🚗','Nenhum veículo cadastrado'); return; }
   const tipos = {carro:'🚗',moto:'🏍️',bicicleta:'🚲'};
   tb.innerHTML = J.veiculos.map(v => {

@@ -76,9 +76,9 @@
         <div class="chat-head">💬 Chat com Admin / Gerente</div>
         <div class="chat-msgs" id="chatMsgs"></div>
 <div class="chat-foot" style="display:flex; gap: 8px; align-items: center;">
-          <button class="btn btn-ghost" id="btnPTT" onclick="window.togglePTT && window.togglePTT()" title="Gravar Áudio" style="padding:8px;border-radius:50%">🎤</button>
+          <button class="btn btn-ghost" id="btnPTT_Equipe" onmousedown="window.startMic('Equipe')" onmouseup="window.stopMic('Equipe')" title="Gravar Áudio" style="padding:8px;border-radius:50%">🎤</button>
           <button class="btn btn-ghost" onclick="document.getElementById('chatFile').click()" title="Anexar" style="padding:8px;border-radius:50%">📎</button>
-          <input type="file" id="chatFile" style="display:none" accept="image/*,video/*,audio/*" onchange="window.enviarArquivoChat && window.enviarArquivoChat(this)">
+          <input type="file" id="chatFile" style="display:none" accept="image/*,video/*,audio/*" onchange="window.enviarArquivoChat && window.enviarArquivoChat(this, 'Equipe')">
           <input class="j-input" id="chatInputEquipe" placeholder="Mensagem para o admin..." style="flex:1">
           <button class="btn btn-brand" onclick="enviarMsgEquipe()">ENVIAR</button>
         </div>      </div>

@@ -17,9 +17,9 @@ window.iaPerguntar = async function() {
   _adicionarMsgIA('bot', '<span style="color:var(--text-muted)">⏳ Analisando dados da oficina...</span>', true);
 
   const key = J.gemini;
-  if (!key) {
+  if (!key || key === 'undefined' || key === 'null') {
     _iaMsgsRemoveLast();
-    _adicionarMsgIA('bot', '⚠️ Configure a chave API do Gemini no Superadmin.');
+    _adicionarMsgIA('bot', '⚠️ <strong>Chave API do Gemini não configurada.</strong><br>Por favor, configure sua chave no painel Superadmin para ativar a inteligência artificial thIAguinho.');
     return;
   }
 
@@ -297,5 +297,154 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
 // Render chat da equipe no painel admin (chat com mecânicos)
 window.renderChatEquipeAdmin = function() {
-  // Para o admin responder aos mecânicos
+  const container = document.getElementById('chatListaEquipe'); if(!container) return;
+  if(!J.equipe.length){container.innerHTML='<div class="empty-state" style="padding:20px"><div class="empty-state-icon">👥</div><div class="empty-state-sub">Nenhum funcionário</div></div>'; return;}
+  
+  container.innerHTML = J.equipe.map(f => {
+    const msgs = J.chatEquipe.filter(m => m.de === f.id || m.para === f.id);
+    const ultima = msgs[msgs.length - 1];
+    const naoLidas = msgs.filter(m => m.sender === 'equipe' && !m.lidaAdmin).length;
+    
+    return `<div class="chat-contact ${J.chatAtivoEquipe === f.id ? 'active' : ''}" onclick="abrirChatEquipeAdmin('${f.id}', '${f.nome}')">
+      <div class="chat-contact-name">${f.nome} ${naoLidas > 0 ? `<span class="chat-unread">${naoLidas}</span>` : ''}</div>
+      <div class="chat-contact-last">${ultima ? (ultima.sender==='admin'?'Você: ':'') + ultima.msg : 'Sem mensagens'}</div>
+    </div>`;
+  }).join('');
+};
+
+window.abrirChatEquipeAdmin = function(fid, nome) {
+  J.chatAtivoEquipe = fid;
+  const head = document.getElementById('chatHeadEquipe'); if(head) head.textContent = 'CHAT EQUIPE: ' + (nome || '').toUpperCase();
+  const foot = document.getElementById('chatFootEquipe'); if(foot) foot.style.display = 'flex';
+  renderChatMsgsEquipeAdmin(fid);
+  
+  // Marcar como lidas
+  J.chatEquipe.filter(m => m.de === fid && m.sender === 'equipe' && !m.lidaAdmin)
+    .forEach(m => J.db.collection('chat_equipe').doc(m.id).update({ lidaAdmin: true }).catch(()=>{}));
+};
+
+window.renderChatMsgsEquipeAdmin = function(fid) {
+  const container = document.getElementById('chatMsgsEquipe'); if(!container) return;
+  const msgs = J.chatEquipe.filter(m => m.de === fid || m.para === fid);
+  
+  if(!msgs.length){container.innerHTML='<div class="empty-state"><div class="empty-state-icon">💬</div><div class="empty-state-sub">Sem mensagens ainda</div></div>';return;}
+  
+  container.innerHTML = msgs.map(m => {
+    const t = m.ts ? new Date(m.ts).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
+    const dir = m.sender === 'admin' ? 'outgoing' : 'incoming';
+    const nome = m.sender === 'admin' ? 'Você' : (J.equipe.find(f => f.id === m.de)?.nome || 'Equipe');
+    
+    return `<div class="chat-msg ${dir}">
+      <strong style="font-size:0.62rem;color:${dir==='outgoing'?'var(--brand)':'var(--text-secondary)'};display:block;margin-bottom:3px">${nome}</strong>
+      ${m.msg || ''}
+      ${m.fileUrl ? `<div style="margin-top:8px">${m.fileType==='image' ? `<img src="${m.fileUrl}" style="max-width:100%;border-radius:4px">` : `<a href="${m.fileUrl}" target="_blank" style="color:var(--cyan);text-decoration:underline">📎 Ver anexo</a>`}</div>` : ''}
+      <div class="msg-time">${t}</div>
+    </div>`;
+  }).join('');
+  container.scrollTop = container.scrollHeight;
+};
+
+window.enviarMsgEquipeAdmin = async function() {
+  const msg = _v('chatInputEquipeAdmin'); if(!msg || !J.chatAtivoEquipe) return;
+  await J.db.collection('chat_equipe').add({
+    tenantId: J.tid,
+    de: 'admin',
+    para: J.chatAtivoEquipe,
+    sender: 'admin',
+    msg,
+    lidaAdmin: true,
+    lidaEquipe: false,
+    ts: Date.now()
+  });
+  _sv('chatInputEquipeAdmin', '');
+};
+
+// PTT e Arquivos Genéricos para ambos os chats
+window.startMic = async function(tipo) {
+    window._chatTipoContext = tipo;
+    await window.togglePTT();
+};
+
+window.stopMic = async function(tipo) {
+    await window.togglePTT();
+};
+
+// Substituir o togglePTT original para suportar múltiplos contextos
+window.togglePTT = async function() {
+  const context = window._chatTipoContext || 'CRM';
+  const btnId = context === 'CRM' ? 'btnPTT_CRM' : 'btnPTT_Equipe';
+  const btn = document.getElementById(btnId);
+  const targetId = context === 'CRM' ? J.chatAtivo : J.chatAtivoEquipe;
+  const collection = context === 'CRM' ? 'mensagens' : 'chat_equipe';
+
+  if (!_pttActive) {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      _mediaRec = new MediaRecorder(stream); _audioChunks = [];
+      _mediaRec.ondataavailable = e => { if (e.data.size > 0) _audioChunks.push(e.data); };
+      _mediaRec.onstop = async () => {
+        const blob = new Blob(_audioChunks, { type: 'audio/webm' });
+        const fd = new FormData(); fd.append('file', blob, 'audio.webm'); fd.append('upload_preset', J.cloudPreset);
+        try {
+          const res = await fetch(`https://api.cloudinary.com/v1_1/${J.cloudName}/auto/upload`, { method: 'POST', body: fd });
+          const d = await res.json();
+          if (d.secure_url && targetId) {
+            const doc = {
+              tenantId: J.tid,
+              msg: '🎤 Áudio',
+              fileUrl: d.secure_url,
+              fileType: 'audio',
+              ts: Date.now()
+            };
+            if (context === 'CRM') {
+                Object.assign(doc, { clienteId: targetId, sender: 'admin', lidaCliente: false, lidaAdmin: true });
+            } else {
+                Object.assign(doc, { de: 'admin', para: targetId, sender: 'admin', lidaEquipe: false, lidaAdmin: true });
+            }
+            await J.db.collection(collection).add(doc);
+            toastOk('✓ Áudio enviado');
+          }
+        } catch (e) { toastErr('Erro ao enviar áudio'); }
+        stream.getTracks().forEach(t => t.stop());
+      };
+      _mediaRec.start(); _pttActive = true;
+      if (btn) { btn.style.background = 'rgba(255,59,59,0.2)'; btn.style.borderColor = 'var(--danger)'; }
+      toastInfo('🎤 Gravando...');
+    } catch (e) { toastErr('Microfone não disponível'); }
+  } else {
+    if (_mediaRec && _mediaRec.state === 'recording') _mediaRec.stop();
+    _pttActive = false;
+    if (btn) { btn.style.background = ''; btn.style.borderColor = ''; }
+  }
+};
+
+// Enviar arquivo genérico
+window.enviarArquivoChat = async function(input, context = 'CRM') {
+  const file = input.files[0]; 
+  const targetId = context === 'CRM' ? J.chatAtivo : J.chatAtivoEquipe;
+  const collection = context === 'CRM' ? 'mensagens' : 'chat_equipe';
+  
+  if (!file || !targetId) return;
+  
+  try {
+    const fd = new FormData(); fd.append('file', file); fd.append('upload_preset', J.cloudPreset);
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${J.cloudName}/auto/upload`, { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data.secure_url) {
+      const doc = {
+        tenantId: J.tid,
+        msg: `📎 Arquivo: ${file.name}`,
+        fileUrl: data.secure_url,
+        fileType: data.resource_type === 'image' ? 'image' : 'file',
+        ts: Date.now()
+      };
+      if (context === 'CRM') {
+          Object.assign(doc, { clienteId: targetId, sender: 'admin', lidaCliente: false, lidaAdmin: true });
+      } else {
+          Object.assign(doc, { de: 'admin', para: targetId, sender: 'admin', lidaEquipe: false, lidaAdmin: true });
+      }
+      await J.db.collection(collection).add(doc);
+      toastOk('✓ Arquivo enviado');
+    }
+  } catch (e) { toastErr('Erro ao enviar arquivo'); }
 };

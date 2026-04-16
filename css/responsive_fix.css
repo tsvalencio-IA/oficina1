@@ -1,0 +1,110 @@
+/* JARVIS ERP — responsive_fix.css */
+
+:root {
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Ajustes de Escala e Responsividade */
+@media (max-width: 1024px) {
+    :root { --sidebar: 70px; }
+    .sb-logo-text, .nav-item span, .user-name, .user-role { display: none; }
+    .nav-item { justify-content: center; padding: 12px; }
+    .sb-user { padding: 10px 5px; }
+    .sb-logo { justify-content: center; padding: 15px 5px; }
+}
+
+@media (max-width: 768px) {
+    .layout { flex-direction: column; }
+    .sidebar { 
+        width: 100%; 
+        height: auto; 
+        flex-direction: row; 
+        border-right: none; 
+        border-bottom: 1px solid var(--border);
+        position: fixed;
+        bottom: 0;
+        z-index: 100;
+        padding-bottom: var(--safe-bottom);
+    }
+    .sb-logo, .sb-user, .nav-section-label { display: none; }
+    .sb-nav { 
+        display: flex; 
+        flex-direction: row; 
+        justify-content: space-around; 
+        padding: 5px;
+        overflow: visible;
+    }
+    .nav-item { 
+        flex-direction: column; 
+        gap: 4px; 
+        font-size: 0.6rem; 
+        padding: 8px 5px;
+        border-left: none;
+        border-bottom: 2px solid transparent;
+    }
+    .nav-item.active { border-bottom-color: var(--cyan); }
+    .nav-item span { display: block; font-size: 0.55rem; }
+    
+    .main { height: calc(100vh - 60px - var(--safe-bottom)); margin-bottom: 60px; }
+    .topbar { padding: 10px 15px; }
+    .page-title { font-size: 1.1rem; }
+    .content { padding: 12px; }
+    
+    .kpi-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .kpi-card { padding: 12px; }
+    .kpi-value { font-size: 1.4rem; }
+    
+    .kanban-wrap { padding-bottom: 20px; }
+    .k-col { min-width: 85vw; width: 85vw; }
+    
+    /* Tabelas responsivas */
+    .j-card-body { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .j-table { min-width: 600px; }
+    
+    /* Chat responsivo */
+    .chat-layout { flex-direction: column; height: auto; }
+    .chat-list { width: 100%; height: 200px; border-right: none; border-bottom: 1px solid var(--border); }
+    .chat-main { height: 400px; }
+}
+
+/* Melhorias de UI/UX */
+.j-card {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    transition: transform 0.2s ease;
+}
+
+.btn-primary, .btn-success, .btn-warn, .btn-danger {
+    cursor: pointer;
+    active: transform: scale(0.96);
+    transition: all 0.2s;
+}
+
+.nav-item:active { transform: scale(0.95); }
+
+/* Fix para Modais em Celular */
+@media (max-width: 600px) {
+    .modal {
+        width: 95% !important;
+        max-height: 90vh;
+        margin: 10px auto;
+    }
+    .modal-tabs { overflow-x: auto; white-space: nowrap; }
+    .mtab { padding: 10px 15px; font-size: 0.7rem; }
+}
+
+/* Estilo para thIAguinho */
+.ia-msg.bot {
+    background: var(--cyan-dim);
+    border-left: 3px solid var(--cyan);
+    padding: 12px;
+    border-radius: 0 8px 8px 0;
+}
+
+.ia-msg.user {
+    background: var(--surf3);
+    padding: 12px;
+    border-radius: 8px 0 0 8px;
+    text-align: right;
+    margin-left: 20%;
+}

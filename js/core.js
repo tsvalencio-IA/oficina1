@@ -41,6 +41,7 @@ window.J = {
   auditoria:    [],
 
   chatAtivo:    null,
+  chatAtivoEquipe: null,
   notifLastSeen: Date.now(),
 
   db: null
@@ -86,6 +87,7 @@ window.initCore = function() {
   _escutarEquipe();
   _escutarFornecedores();
   _escutarMensagens();
+  _escutarChatEquipe();
   _escutarAgendamentos();
   _escutarAuditoria();
   _escutarNotificacoes();
@@ -243,9 +245,20 @@ function _escutarNotificacoes() {
 function _escutarChatEquipe() {
   J.db.collection('chat_equipe').where('tenantId', '==', J.tid).onSnapshot(snap => {
     J.chatEquipe = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b)=>(a.ts||0)-(b.ts||0));
+    
+    // Render para Equipe (equipe.html)
     window.renderChatEquipe && renderChatEquipe();
-    const n = J.chatEquipe.filter(m => m.sender==='admin' && !m.lidaEquipe && m.para===J.fid).length;
-    setBadge('chatTabBadge', n);
+    
+    // Render para Admin (jarvis.html)
+    window.renderChatEquipeAdmin && renderChatEquipeAdmin();
+    if (J.chatAtivoEquipe && window.renderChatMsgsEquipeAdmin) renderChatMsgsEquipeAdmin(J.chatAtivoEquipe);
+
+    // Badges
+    const nEquipe = J.chatEquipe.filter(m => m.sender==='admin' && !m.lidaEquipe && m.para===J.fid).length;
+    setBadge('chatTabBadge', nEquipe);
+    
+    const nAdmin = J.chatEquipe.filter(m => m.sender==='equipe' && !m.lidaAdmin).length;
+    setBadge('chatEquipeBadge', nAdmin);
   });
 }
 
