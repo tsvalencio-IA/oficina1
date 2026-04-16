@@ -2,403 +2,587 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Portal do Cliente — JARVIS ERP</title>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="js/config.js"></script>
-<script src="js/core.js"></script>
-<link rel="stylesheet" href="css/design.css"><style>
-body { background: var(--bg); }
-.cli-header { background: var(--surf); border-bottom: 1px solid var(--border); padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; }
-.cli-content { max-width: 700px; margin: 0 auto; padding: 20px; }
-.status-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
-.status-step { flex: 1; min-width: 80px; text-align: center; padding: 8px 6px; font-family: var(--fm); font-size: 0.55rem; letter-spacing: 1px; text-transform: uppercase; border: 1px solid var(--border); color: var(--text-muted); transition: all 0.2s; }
-.status-step.done  { border-color: var(--success); color: var(--success); background: var(--success-dim); }
-.status-step.active { border-color: var(--brand); color: var(--brand); background: var(--brand-dim); font-weight: 700; }
-.os-card { background: var(--surf); border: 1px solid var(--border); padding: 20px; margin-bottom: 16px; border-left: 4px solid var(--brand); }
-.os-card.concluida { border-left-color: var(--success); }
-.os-val { font-family: var(--fd); font-size: 2.2rem; font-weight: 700; color: var(--success); }
-.media-thumb { width: 80px; height: 80px; object-fit: cover; border: 1px solid var(--border); cursor: pointer; }
-.chat-cli { background: var(--surf); border: 1px solid var(--border); display: flex; flex-direction: column; height: 55vh; }
-.chat-msg-list { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
-.msg-c { max-width: 80%; padding: 10px 14px; font-size: 0.85rem; line-height: 1.5; }
-.msg-c.saida  { background: var(--brand-dim); border: 1px solid var(--border2); align-self: flex-end; }
-.msg-c.entrada{ background: var(--surf3); border: 1px solid var(--border); align-self: flex-start; }
-.msg-time { font-family: var(--fm); font-size: 0.58rem; color: var(--text-muted); margin-top: 4px; text-align: right; }
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&family=Exo+2:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<style>
+body { overflow-y: auto; background: #060A14; color: #E8F4FF; font-family: 'Exo 2', sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --brand: #00D4FF;
+  --brand-dim: rgba(0, 212, 255, 0.12);
+  --success: #00FF88;
+  --success-dim: rgba(0, 255, 136, 0.1);
+  --warn: #FFB800;
+  --warn-dim: rgba(255, 184, 0, 0.1);
+  --danger: #FF3B3B;
+  --surf-0: #060A14;
+  --surf-1: #0C1426;
+  --surf-2: #111D35;
+  --surf-3: #162040;
+  --border: rgba(0, 212, 255, 0.1);
+  --border-med: rgba(0, 212, 255, 0.2);
+  --text-primary: #E8F4FF;
+  --text-secondary: #7A9AB8;
+  --text-muted: #4A6B8A;
+  --ff-display: 'Rajdhani', sans-serif;
+  --ff-mono: 'JetBrains Mono', monospace;
+  --r-md: 4px;
+  --r-lg: 6px;
+  --r-xl: 8px;
+  --r-2xl: 12px;
+}
+
+.portal-bg { min-height: 100vh; position: relative; z-index: 1; }
+
+.portal-login { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.portal-login-card { width: 100%; max-width: 380px; background: var(--surf-1); border: 1px solid var(--border-med); border-radius: var(--r-2xl); padding: 32px 28px; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+.portal-login-card::before { content: ''; position: absolute; top: 0; left: 15%; right: 15%; height: 2px; background: linear-gradient(90deg, transparent, var(--brand), transparent); }
+
+.portal-header { background: var(--surf-1); border-bottom: 1px solid var(--border); padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+.portal-body { max-width: 640px; margin: 0 auto; padding: 20px 16px; }
+
+.os-card { background: var(--surf-1); border: 1px solid var(--border); border-radius: var(--r-xl); overflow: hidden; margin-bottom: 16px; }
+.os-card-header { padding: 16px 20px; background: var(--surf-2); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.os-card-body { padding: 20px; }
+
+.stepper { display: flex; align-items: center; gap: 0; position: relative; margin: 20px 0; justify-content: space-between; }
+.step { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; position: relative; z-index: 1; }
+.step-dot { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; border: 2px solid; background: var(--surf-1); font-weight: 700; z-index: 2; }
+.step.done .step-dot { background: var(--success); border-color: var(--success); color: #000; }
+.step.active .step-dot { background: var(--brand-dim); border-color: var(--brand); color: var(--brand); box-shadow: 0 0 10px var(--brand); }
+.step.pending .step-dot { border-color: var(--border-med); color: var(--text-muted); }
+.step-label { font-family: var(--ff-mono); font-size: 0.5rem; text-align: center; color: var(--text-muted); max-width: 50px; line-height: 1.1; }
+.step.done .step-label { color: var(--success); }
+.step.active .step-label { color: var(--brand); font-weight: 700; }
+
+.step-line { position: absolute; top: 11px; left: 15px; right: 15px; height: 2px; background: var(--border); z-index: 0; }
+.step-line-fill { position: absolute; top: 11px; left: 15px; height: 2px; background: var(--success); z-index: 0; transition: width 0.4s ease; }
+
+.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+.info-item { background: var(--surf-2); border-radius: var(--r-lg); padding: 12px 14px; border: 1px solid var(--border); }
+.info-item-label { font-family: var(--ff-mono); font-size: 0.58rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; }
+.info-item-value { font-size: 0.9rem; font-weight: 600; color: var(--text-primary); }
+
+.media-preview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px; margin-top: 12px; }
+.media-preview-item { aspect-ratio: 1; border-radius: var(--r-md); overflow: hidden; border: 1px solid var(--border); background: var(--surf-2); }
+.media-preview-item img, .media-preview-item video { width: 100%; height: 100%; object-fit: cover; cursor: zoom-in; }
+
+.portal-chat { margin-top: 16px; }
+.portal-chat-messages { background: var(--surf-2); border: 1px solid var(--border); border-radius: var(--r-xl) var(--r-xl) 0 0; min-height: 200px; max-height: 300px; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+.chat-msg { padding: 10px 14px; border-radius: var(--r-md); max-width: 85%; font-size: 0.85rem; line-height: 1.4; }
+.chat-msg.outgoing { background: var(--brand-dim); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--text-primary); align-self: flex-end; border-bottom-right-radius: 0; }
+.chat-msg.incoming { background: var(--surf-3); border: 1px solid var(--border); color: var(--text-primary); align-self: flex-start; border-bottom-left-radius: 0; }
+.msg-time { font-family: var(--ff-mono); font-size: 0.6rem; color: var(--text-muted); margin-top: 4px; text-align: right; }
+.portal-chat-input { background: var(--surf-2); border: 1px solid var(--border); border-top: none; border-radius: 0 0 var(--r-xl) var(--r-xl); padding: 10px; display: flex; gap: 8px; align-items: center; }
+
+.orcamento-alert { background: var(--warn-dim); border: 1px solid rgba(255,184,0,0.3); border-radius: var(--r-lg); padding: 16px; margin-top: 14px; }
+.btn { padding: 10px 16px; border: none; border-radius: 4px; font-family: var(--ff-display); font-weight: 700; cursor: pointer; transition: 0.2s; }
+.btn-brand { background: var(--brand); color: #000; }
+.btn-success { background: var(--success); color: #000; }
+.btn-danger { background: transparent; border: 1px solid var(--danger); color: var(--danger); }
+.input { width: 100%; padding: 10px 14px; background: var(--surf-2); border: 1px solid var(--border); border-radius: 4px; color: #fff; font-family: var(--ff-mono); }
+.input:focus { border-color: var(--brand); outline: none; }
+
+.timeline{padding-left:14px;border-left:2px solid var(--border); margin-top:14px;}
+.tl-item{padding:0 0 16px 16px;position:relative;}
+.tl-item::before{content:'';position:absolute;left:-21px;top:2px;width:10px;height:10px;background:var(--brand);border:2px solid var(--surf-1);border-radius:50%;}
+.tl-date{font-family:var(--ff-mono);font-size:0.6rem;color:var(--text-muted);margin-bottom:2px;}
+.tl-action{font-size:0.85rem;color:var(--text-primary); line-height:1.4;}
+
+/* Tabs style */
+.portal-tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: -1px; overflow-x: auto; white-space: nowrap; }
+.mtab { padding: 10px 16px; font-family: var(--ff-display); font-size: 0.8rem; font-weight: 700; letter-spacing: 1px; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; }
+.mtab:hover { color: var(--text-primary); }
+.mtab.active { color: var(--brand); border-bottom-color: var(--brand); }
+
+/* Toast */
+#toastBox{position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none;}
+.toast-j{padding:12px 18px;border-radius:4px;font-family:var(--ff-mono);font-size:0.75rem;border-left:4px solid;display:flex;align-items:center;gap:8px;transition:opacity 0.4s;pointer-events:none; background:#111; box-shadow: 0 4px 12px rgba(0,0,0,0.5);}
+.toast-j.ok{border-color:var(--success);color:var(--success);}
+.toast-j.err{border-color:var(--danger);color:var(--danger);}
+.toast-j.warn{border-color:var(--warn);color:var(--warn);}
 </style>
 </head>
 <body>
-<div id="toast-container"></div>
+<div id="toastBox"></div>
 
-<!-- LOGIN -->
-<div id="loginArea" style="display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px">
-  <div class="login-card" style="max-width:380px">
-    <div class="login-logo-wrap">
-      <div class="login-logo-mark sb-brand-mark" style="margin:0 auto 14px">J</div>
-      <div class="login-title brand-name">Portal do Cliente</div>
-      <div class="login-sub brand-tagline">Acompanhe sua O.S. em tempo real</div>
+<div id="loginView" class="portal-bg">
+  <div class="portal-login">
+    <div class="portal-login-card">
+      <div style="text-align:center;margin-bottom:24px">
+        <div style="width:52px;height:52px;border-radius:var(--r-xl);background:var(--brand-dim);border:1px solid rgba(0,212,255,0.3);display:flex;align-items:center;justify-content:center;font-family:var(--ff-display);font-size:1.4rem;font-weight:800;color:var(--brand);margin:0 auto 12px" id="portalLogoMark">J</div>
+        <div style="font-family:var(--ff-display);font-size:1.2rem;font-weight:700" id="portalOficinaName">Portal do Cliente</div>
+        <div style="font-family:var(--ff-mono);font-size:0.62rem;color:var(--text-muted);margin-top:4px;letter-spacing:0.08em">ACOMPANHE SEU VEÍCULO</div>
+      </div>
+
+      <div id="portalLoginErr" style="display:none; background: rgba(255,59,59,0.1); color: var(--danger); padding: 10px; border-radius: 4px; font-size: 0.8rem; margin-bottom: 15px; text-align: center; border: 1px solid rgba(255,59,59,0.2);">Credenciais inválidas.</div>
+
+      <div style="margin-bottom:16px;">
+        <label style="display:block;font-family:var(--ff-mono);font-size:0.6rem;color:var(--text-muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;">Placa ou Usuário</label>
+        <input class="input" id="pLogin" placeholder="Ex: ABC-1234" autocomplete="off">
+      </div>
+      <div style="margin-bottom:16px;">
+        <label style="display:block;font-family:var(--ff-mono);font-size:0.6rem;color:var(--text-muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;">PIN de acesso</label>
+        <input class="input" id="pPin" type="password" placeholder="••••••">
+      </div>
+      <button class="btn btn-brand" onclick="portalLogin()" style="width:100%;">ACESSAR PORTAL</button>
+
+      <div style="text-align:center;margin-top:16px;font-size:0.75rem;color:var(--text-muted)">
+        Seu usuário e PIN foram fornecidos via WhatsApp.
+      </div>
     </div>
-    <div id="cliLoginErr" class="login-err">Login ou PIN incorretos.</div>
-    <div class="form-group">
-      <label class="j-label">Login / E-mail</label>
-      <input class="j-input input-mono" id="cliLoginInput" placeholder="Seu login">
-    </div>
-    <div class="form-group">
-      <label class="j-label">PIN de Acesso</label>
-      <input class="j-input input-mono" id="cliPinInput" placeholder="PIN de 4 a 8 dígitos" type="password" maxlength="8">
-    </div>
-    <button class="btn btn-brand btn-xl btn-full" id="btnCliLogin" onclick="clienteLogin()" style="margin-top:8px">ACESSAR MINHA GARAGEM</button>
   </div>
 </div>
 
-<!-- PORTAL -->
-<div id="portalArea" style="display:none">
-  <div class="cli-header">
+<div id="portalView" style="display:none" class="portal-bg">
+  <div class="portal-header">
     <div style="display:flex;align-items:center;gap:10px">
-      <div class="sb-brand-mark" style="width:28px;height:28px;font-size:.9rem">J</div>
+      <div style="width:28px;height:28px;border-radius:var(--r-md);background:var(--brand-dim);border:1px solid rgba(0,212,255,0.2);display:flex;align-items:center;justify-content:center;font-family:var(--ff-display);font-size:0.85rem;font-weight:800;color:var(--brand)" id="portalHdrMark">J</div>
       <div>
-        <div style="font-family:var(--fd);font-size:.95rem;font-weight:700" id="cliNomeDisplay">Minha Garagem</div>
-        <div style="font-family:var(--fm);font-size:.58rem;color:var(--text-muted)" id="cliTenantDisplay"></div>
+        <div style="font-family:var(--ff-display);font-size:0.85rem;font-weight:700" id="portalHdrName">Portal do Cliente</div>
+        <div style="font-family:var(--ff-mono);font-size:0.55rem;color:var(--brand)" id="portalClienteNome">Carregando...</div>
       </div>
     </div>
-    <div style="display:flex;align-items:center;gap:8px">
-      <div class="live-dot" style="width:6px;height:6px"></div>
-      <span style="font-family:var(--fm);font-size:.6rem;color:var(--text-muted)">AO VIVO</span>
-      <button class="btn-sair" onclick="clienteSair()" style="width:auto;padding:6px 12px;margin-left:8px">Sair</button>
-    </div>
+    <button class="btn" onclick="portalLogout()" style="background:transparent;border:1px solid var(--border);color:var(--text-muted);padding:4px 10px;font-size:0.7rem;">Sair</button>
   </div>
 
-  <div class="cli-content">
-    <!-- Tabs -->
-<div style="display:flex;gap:4px;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:-1px;overflow-x:auto;white-space:nowrap">
-      <div class="mtab active" onclick="cliTab('os',this)" id="tabBtnOS">MINHAS O.S.</div>
-      <div class="mtab" onclick="cliTab('historico',this)">HISTÓRICO</div>
-      <div class="mtab" onclick="cliTab('financeiro',this)">FINANCEIRO</div>
-      <div class="mtab" onclick="cliTab('chat',this)" id="tabBtnChat">CHAT CRM <span id="cliChatBadge" style="display:none;background:var(--danger);color:#fff;font-family:var(--fm);font-size:.55rem;padding:2px 5px;border-radius:10px;margin-left:4px">0</span></div>
+  <div class="portal-body">
+    <div class="portal-tabs">
+      <div class="mtab active" onclick="switchPortalTab('os', this)">ATIVAS</div>
+      <div class="mtab" onclick="switchPortalTab('historico', this)">HISTÓRICO</div>
+      <div class="mtab" onclick="switchPortalTab('financeiro', this)">FINANCEIRO</div>
+      <div class="mtab" onclick="switchPortalTab('chat', this)">CHAT</div>
     </div>
 
-    <div id="cliTabOS">
-      <div id="cliOSLista">
-        <div class="empty-state"><div class="empty-state-icon">🔧</div><div class="empty-state-sub">Carregando...</div></div>
-      </div>
-    </div>
-
-    <div id="cliTabHistorico" style="display:none">
-      <div id="cliHistoricoLista">
-        <div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-sub">Carregando histórico...</div></div>
-      </div>
-    </div>
-
-    <div id="cliTabFinanceiro" style="display:none">
-      <div id="cliFinanceiroLista">
-        <div class="empty-state"><div class="empty-state-icon">💸</div><div class="empty-state-sub">Carregando financeiro...</div></div>
-      </div>
-    </div>
-
-    <div id="cliTabChat" style="display:none">
-      <div class="chat-cli">
-        <div class="chat-msg-list" id="cliChatMsgs"></div>
-        <div style="padding:12px;border-top:1px solid var(--border);display:flex;gap:8px;background:var(--surf2);align-items:center;">
-          <button class="btn btn-ghost" id="btnPTT" onclick="window.togglePTT && window.togglePTT()" title="Gravar Áudio" style="padding:8px;border-radius:50%">🎤</button>
-          <button class="btn btn-ghost" onclick="document.getElementById('chatFile').click()" title="Anexar" style="padding:8px;border-radius:50%">📎</button>
-          <input type="file" id="chatFile" style="display:none" accept="image/*,video/*,audio/*" onchange="window.enviarArquivoChat && window.enviarArquivoChat(this)">
-          <input class="j-input" id="cliChatInput" placeholder="Sua mensagem..." style="flex:1">
-          <button class="btn btn-brand" onclick="cliEnviarMsg()">ENVIAR</button>
-        </div>
-      </div>
+    <div id="portalContent">
+      <!-- Conteúdo dinâmico -->
     </div>
   </div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="js/config.js"></script>
 <script>
 const db = window.initFirebase();
-let _cliData = null;    // dados do cliente logado
-let _cliTid  = null;    // tenantId
-let _cliOSes = [];      // OS do cliente
-let _cliMsgs = [];      // mensagens do cliente
-let _cliFins = [];      // financeiro do cliente
-let _unsub   = [];      // unsubscribers
 
-const STATUS_ORDEM = ['Triagem','Orcamento','Orcamento_Enviado','Aprovado','Andamento','Pronto','Entregue'];
-const STATUS_LABELS = {
-  'Triagem':'Triagem','Orcamento':'Orçamento','Orcamento_Enviado':'Orç. Enviado',
-  'Aprovado':'Aprovado','Andamento':'Em Serviço','Pronto':'Aguardando Pagamento/Retirada','Entregue':'Finalizado'
+let P = { 
+  clienteId: null, 
+  tenantId: null, 
+  cliente: null, 
+  oficina: null,
+  oses: [],
+  msgs: [],
+  fins: [],
+  activeTab: 'os',
+  unsubs: []
 };
-function moeda(v) { return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(parseFloat(v)||0); }
-function dtBr(iso) { if(!iso) return '—'; try{return new Date(iso).toLocaleDateString('pt-BR');}catch{return iso;} }
-function dtHrBr(iso) { if(!iso) return '—'; try{return new Date(iso).toLocaleString('pt-BR');}catch{return iso;} }
-function toast(msg,type='success'){
-  let c=document.getElementById('toast-container');
-  if(!c){c=document.createElement('div');c.id='toast-container';document.body.appendChild(c);}
-  const el=document.createElement('div');el.className=`toast ${type}`;
-  el.innerHTML=`<div class="toast-icon">${type==='error'?'✕':type==='warn'?'⚠':'✓'}</div><div class="toast-content"><div class="toast-msg">${msg}</div></div>`;
-  c.appendChild(el);
-  setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity .3s';setTimeout(()=>el.remove(),350);},(type==='error'?5000:3500));
+
+function toast(msg, type='ok') {
+  const box = document.getElementById('toastBox');
+  const el = document.createElement('div');
+  el.className = `toast-j ${type}`;
+  el.innerHTML = `<span>${type==='err'?'✕':type==='warn'?'⚠':'✓'}</span> ${msg}`;
+  box.appendChild(el);
+  setTimeout(() => { el.style.opacity='0'; setTimeout(()=>el.remove(), 400); }, 3500);
 }
 
-// ── LOGIN ──────────────────────────────────────────────────
-document.getElementById('cliPinInput').addEventListener('keydown',e=>{if(e.key==='Enter')clienteLogin();});
-document.getElementById('cliLoginInput').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('cliPinInput').focus();});
+function moeda(v) { return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(parseFloat(v)||0); }
 
-async function clienteLogin() {
-  const login = document.getElementById('cliLoginInput').value.trim();
-  const pin   = document.getElementById('cliPinInput').value.trim();
-  const errEl = document.getElementById('cliLoginErr');
-  errEl.style.display='none';
-  if(!login||!pin){errEl.textContent='Preencha login e PIN.';errEl.style.display='block';return;}
+async function portalLogin() {
+  const login = document.getElementById('pLogin').value.trim();
+  const pin   = document.getElementById('pPin').value.trim();
+  const err   = document.getElementById('portalLoginErr');
+  err.style.display = 'none';
 
-  const btn=document.getElementById('btnCliLogin');
-  btn.innerHTML='<span class="spinner"></span> Verificando...'; btn.disabled=true;
+  if (!login || !pin) { err.textContent = 'Preencha login e PIN.'; err.style.display = 'block'; return; }
 
   try {
-    // Busca em todas as oficinas
     const oficinas = await db.collection('oficinas').get();
-    let cliDoc=null, tid=null;
+    let cliDoc = null, tid = null;
 
-    for(const ofc of oficinas.docs) {
-      const snap=await db.collection('clientes')
-        .where('tenantId','==',ofc.id)
-        .where('login','==',login)
+    for (const ofc of oficinas.docs) {
+      const snap = await db.collection('clientes')
+        .where('tenantId', '==', ofc.id)
+        .where('login', '==', login)
         .get();
-      if(!snap.empty){
-        const c=snap.docs[0].data();
-        if((c.pin||'')===pin){cliDoc=snap.docs[0];tid=ofc.id;break;}
+      if (!snap.empty) {
+        const c = snap.docs[0].data();
+        if ((c.pin||'') === pin) { cliDoc = snap.docs[0]; tid = ofc.id; break; }
       }
-      // Fallback: buscar por email
-      const snap2=await db.collection('clientes')
-        .where('tenantId','==',ofc.id)
-        .where('email','==',login)
+      const snap2 = await db.collection('clientes')
+        .where('tenantId', '==', ofc.id)
+        .where('email', '==', login)
         .get();
-      if(!snap2.empty){
-        const c=snap2.docs[0].data();
-        if((c.pin||'')===pin){cliDoc=snap2.docs[0];tid=ofc.id;break;}
+      if (!snap2.empty) {
+        const c = snap2.docs[0].data();
+        if ((c.pin||'') === pin) { cliDoc = snap2.docs[0]; tid = ofc.id; break; }
       }
     }
 
-    if(!cliDoc){throw new Error('Login ou PIN incorretos.');}
+    if (!cliDoc) throw new Error('Credenciais inválidas.');
 
-    _cliData = {id:cliDoc.id,...cliDoc.data()};
-    _cliTid  = tid;
+    P.clienteId = cliDoc.id;
+    P.tenantId  = tid;
+    P.cliente   = cliDoc.data();
 
-    // Busca brand da oficina
-    const ofc = await db.collection('oficinas').doc(tid).get();
-    const od  = ofc.data()||{};
+    const ofcSnap = await db.collection('oficinas').doc(tid).get();
+    P.oficina = ofcSnap.data();
 
-    // Aplicar brand
-    const root=document.documentElement;
-    root.style.setProperty('--brand', od.brandColor||'#3B82F6');
-    root.style.setProperty('--brand-dim', `rgba(59,130,246,.12)`);
-
-    document.querySelectorAll('.brand-name').forEach(el=>el.textContent=od.brandName||od.nomeFantasia||'JARVIS ERP');
-
-    document.getElementById('cliNomeDisplay').textContent = 'Olá, '+_cliData.nome.split(' ')[0]+'!';
-    document.getElementById('cliTenantDisplay').textContent = od.nomeFantasia||'Oficina';
-
-    document.getElementById('loginArea').style.display='none';
-    document.getElementById('portalArea').style.display='block';
-
-    // Iniciar listeners
+    _aplicarBrand();
+    document.getElementById('loginView').style.display = 'none';
+    document.getElementById('portalView').style.display = 'block';
+    
     _iniciarListeners();
   } catch(e) {
-    errEl.textContent=e.message; errEl.style.display='block';
-    btn.innerHTML='ACESSAR MINHA GARAGEM'; btn.disabled=false;
+    err.textContent = e.message;
+    err.style.display = 'block';
   }
 }
 
-function clienteSair() {
-  _unsub.forEach(fn=>{ try{fn();}catch(e){} });
-  _unsub=[];
-  document.getElementById('loginArea').style.display='flex';
-  document.getElementById('portalArea').style.display='none';
-  document.getElementById('cliLoginInput').value='';
-  document.getElementById('cliPinInput').value='';
+function portalLogout() {
+  P.unsubs.forEach(u => u());
+  P.unsubs = [];
+  document.getElementById('loginView').style.display = 'block';
+  document.getElementById('portalView').style.display = 'none';
 }
 
-// ── LISTENERS ──────────────────────────────────────────────
+function _aplicarBrand() {
+  const root = document.documentElement;
+  const color = P.oficina?.brandColor || '#00D4FF';
+  root.style.setProperty('--brand', color);
+  root.style.setProperty('--brand-dim', color + '1F');
+  
+  document.getElementById('portalOficinaName').textContent = P.oficina?.nomeFantasia || 'Portal do Cliente';
+  document.getElementById('portalHdrName').textContent = P.oficina?.nomeFantasia || 'Portal';
+  document.getElementById('portalClienteNome').textContent = P.cliente?.nome || 'Cliente';
+  
+  const letter = P.oficina?.brandLetter || (P.oficina?.nomeFantasia || 'J').charAt(0);
+  document.getElementById('portalLogoMark').textContent = letter;
+  document.getElementById('portalHdrMark').textContent = letter;
+}
+
 function _iniciarListeners() {
-  // OS do cliente
-  const unOS = db.collection('ordens_servico')
-    .where('tenantId','==',_cliTid)
-    .where('clienteId','==',_cliData.id)
-    .onSnapshot(snap=>{
-      _cliOSes = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.createdAt>a.createdAt?1:-1);
-      _renderOS();
-      _renderHistorico();
+  const u1 = db.collection('ordens_servico')
+    .where('tenantId', '==', P.tenantId)
+    .where('clienteId', '==', P.clienteId)
+    .onSnapshot(snap => {
+      P.oses = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderPortal();
     });
-  _unsub.push(unOS);
 
-  // Mensagens
-  const unMsg = db.collection('mensagens')
-    .where('tenantId','==',_cliTid)
-    .where('clienteId','==',_cliData.id)
-    .onSnapshot(snap=>{
-      _cliMsgs = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.ts||0)-(b.ts||0));
-      _renderChat();
-      const naoLidas=_cliMsgs.filter(m=>m.sender==='admin'&&!m.lidaCliente).length;
-      const badge=document.getElementById('cliChatBadge');
-      if(badge){badge.style.display=naoLidas>0?'inline':'none';badge.textContent=naoLidas;}
+  const u2 = db.collection('mensagens')
+    .where('tenantId', '==', P.tenantId)
+    .where('clienteId', '==', P.clienteId)
+    .onSnapshot(snap => {
+      P.msgs = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b) => (a.ts||0) - (b.ts||0));
+      if (P.activeTab === 'chat') _renderChat(P.msgs);
     });
-_unsub.push(unMsg);
 
-  // Financeiro
-  const unFin = db.collection('financeiro')
-    .where('tenantId','==',_cliTid)
-    .where('clienteId','==',_cliData.id)
-    .onSnapshot(snap=>{
-      _cliFins = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt||'')>(a.createdAt||'')?1:-1);
-      _renderFinanceiro();
+  const u3 = db.collection('financeiro')
+    .where('tenantId', '==', P.tenantId)
+    .where('clienteId', '==', P.clienteId)
+    .onSnapshot(snap => {
+      P.fins = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      if (P.activeTab === 'financeiro') renderPortal();
     });
-  _unsub.push(unFin);
+
+  P.unsubs = [u1, u2, u3];
 }
-// ── RENDER OS ATIVAS ───────────────────────────────────────
-function _renderOS() {
-  const ativas = _cliOSes.filter(o=>o.status!=='Entregue'&&o.status!=='Cancelado');
-  const div = document.getElementById('cliOSLista');
 
-  if(!ativas.length){
-    div.innerHTML='<div class="empty-state"><div class="empty-state-icon">🚗</div><div class="empty-state-title">Nenhuma O.S. ativa</div><div class="empty-state-sub">Seu veículo não está na oficina no momento.</div></div>';
+function switchPortalTab(tab, el) {
+  P.activeTab = tab;
+  document.querySelectorAll('.mtab').forEach(m => m.classList.remove('active'));
+  el.classList.add('active');
+  renderPortal();
+}
+
+function renderPortal() {
+  const container = document.getElementById('portalContent');
+  if (P.activeTab === 'chat') {
+    container.innerHTML = _chatHTML();
+    _bindChat();
+    _renderChat(P.msgs);
     return;
   }
 
-  div.innerHTML=ativas.map(os=>{
-    const stIdx = STATUS_ORDEM.indexOf(os.status);
-    const stBar = STATUS_ORDEM.map((s,i)=>`
-      <div class="status-step ${i<stIdx?'done':i===stIdx?'active':''}">${STATUS_LABELS[s]||s}</div>`).join('');
-    const mediaHtml = (os.media||[]).slice(0,4).map(m=>
-      `<img src="${m.url}" class="media-thumb" onclick="window.open('${m.url}')" alt="Foto" loading="lazy">`).join('');
-    const tlHtml = os.timeline?.length ? [...os.timeline].reverse().slice(0,3).map(e=>
-      `<div style="font-family:var(--fm);font-size:.68rem;padding:4px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text-muted)">${dtHrBr(e.dt)}</span> — ${e.acao||''}</div>`).join('') : '';
-    const approveBtn = os.status==='Orcamento_Enviado' ? `
-      <div style="margin-top:14px;padding:14px;background:rgba(34,211,160,.08);border:1px solid rgba(34,211,160,.3)">
-        <p style="font-family:var(--fm);font-size:.78rem;color:var(--success);margin-bottom:10px">✅ Orçamento aguarda sua aprovação. Total: <strong>${moeda(os.total||0)}</strong></p>
-        <button class="btn btn-success" onclick="aprovarOS('${os.id}')">APROVAR E AUTORIZAR SERVIÇO</button>
-        <button class="btn btn-danger" onclick="recusarOS('${os.id}')" style="margin-left:8px">RECUSAR</button>
-      </div>` : '';
+  if (P.activeTab === 'financeiro') {
+    container.innerHTML = _renderFinanceiro();
+    return;
+  }
 
-    return `<div class="os-card">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
-        <div>
-          <div style="font-family:var(--fm);font-size:1.1rem;font-weight:700;color:var(--brand)">${os.placa||'?'}</div>
-          <div style="color:var(--text-secondary);font-size:.82rem">${os.desc||os.relato||'Serviço'}</div>
+  const list = P.activeTab === 'os' 
+    ? P.oses.filter(o => !['Entregue', 'Cancelado'].includes(o.status))
+    : P.oses.filter(o => ['Entregue', 'Cancelado'].includes(o.status));
+
+  if (!list.length) {
+    container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted)">Nenhum registro encontrado.</div>`;
+    return;
+  }
+
+  container.innerHTML = list.map(os => {
+    const steps = ['Triagem', 'Orcamento', 'Aprovado', 'Andamento', 'Pronto'];
+    const currentIdx = steps.indexOf(os.status);
+    const progress = currentIdx === -1 ? (os.status === 'Entregue' ? 100 : 0) : (currentIdx / (steps.length - 1)) * 100;
+
+    const stepperHtml = `
+      <div class="stepper">
+        <div class="step-line"></div>
+        <div class="step-line-fill" style="width:${progress}%"></div>
+        ${steps.map((s, i) => {
+          let cls = 'pending';
+          if (i < currentIdx) cls = 'done';
+          else if (i === currentIdx) cls = 'active';
+          return `
+            <div class="step ${cls}">
+              <div class="step-dot">${i < currentIdx ? '✓' : i + 1}</div>
+              <div class="step-label">${s.toUpperCase()}</div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+
+    const orcamentoHtml = os.status === 'Orcamento_Enviado' ? `
+      <div class="orcamento-alert">
+        <div style="font-family:var(--ff-display);font-weight:700;color:var(--warn);margin-bottom:8px">📋 ORÇAMENTO AGUARDANDO APROVAÇÃO</div>
+        <div style="font-size:1.1rem;font-weight:700;margin-bottom:12px">${moeda(os.total)}</div>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-success" onclick="_aprovarOrcamento('${os.id}')" style="flex:1">APROVAR</button>
+          <button class="btn btn-danger" onclick="_recusarOrcamento('${os.id}')" style="flex:1">RECUSAR</button>
         </div>
-        <div class="os-val">${moeda(os.total||0)}</div>
       </div>
-      <div class="status-bar">${stBar}</div>
-      ${os.diagnostico?`<div style="background:var(--surf3);border:1px solid var(--border);padding:12px;margin:10px 0;font-size:.82rem"><strong style="color:var(--brand);font-size:.72rem;font-family:var(--fm)">DIAGNÓSTICO TÉCNICO:</strong><br>${os.diagnostico}</div>`:''}
-      ${approveBtn}
-      ${mediaHtml?`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">${mediaHtml}</div>`:''}
-      ${tlHtml?`<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)"><div style="font-family:var(--fm);font-size:.6rem;color:var(--text-muted);letter-spacing:2px;margin-bottom:6px">HISTÓRICO</div>${tlHtml}</div>`:''}
-    </div>`;
+    ` : '';
+
+    const mediaHtml = (os.midias || []).length ? `
+      <div style="margin-top:16px">
+        <div class="info-item-label">Fotos & Vídeos do Serviço</div>
+        <div class="media-preview-grid">
+          ${os.midias.map(m => `
+            <div class="media-preview-item">
+              ${m.type?.includes('video') ? `<video src="${m.url}" muted onclick="window.open('${m.url}')"></video>` : `<img src="${m.url}" onclick="window.open('${m.url}')">`}
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    ` : '';
+
+    const timelineHtml = (os.timeline || []).length ? `
+      <div style="margin-top:16px">
+        <div class="info-item-label">Histórico da O.S.</div>
+        <div class="timeline">
+          ${os.timeline.slice(-5).reverse().map(t => `
+            <div class="tl-item">
+              <div class="tl-date">${new Date(t.dt).toLocaleString('pt-BR')}</div>
+              <div class="tl-action">${t.acao}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    ` : '';
+
+    return `
+      <div class="os-card">
+        <div class="os-card-header">
+          <div style="font-family:var(--ff-mono);font-size:0.75rem;color:var(--brand)">O.S. #${os.id.slice(-6).toUpperCase()}</div>
+          <div style="font-family:var(--ff-mono);font-size:0.65rem;color:var(--text-muted)">${new Date(os.createdAt).toLocaleDateString()}</div>
+        </div>
+        <div class="os-card-body">
+          <div style="font-size:1.1rem;font-weight:700;margin-bottom:4px">${os.veiculo || 'Veículo'}</div>
+          <div style="font-family:var(--ff-mono);font-size:0.75rem;color:var(--text-muted)">PLACA: ${os.placa || '—'}</div>
+          
+          ${os.status !== 'Entregue' && os.status !== 'Cancelado' ? stepperHtml : `<div style="margin-top:15px; font-weight:700; color:${os.status==='Entregue'?'var(--success)':'var(--danger)'}">${os.status.toUpperCase()}</div>`}
+          
+          <div class="info-grid">
+            <div class="info-item"><div class="info-item-label">Status Atual</div><div class="info-item-value">${os.status}</div></div>
+            <div class="info-item"><div class="info-item-label">Total</div><div class="info-item-value">${moeda(os.total)}</div></div>
+          </div>
+
+          ${orcamentoHtml}
+          ${mediaHtml}
+          ${timelineHtml}
+        </div>
+      </div>
+    `;
   }).join('');
 }
 
-// ── APROVAR / RECUSAR ORÇAMENTO ────────────────────────────
-async function aprovarOS(osId) {
-  const os = _cliOSes.find(x=>x.id===osId); if(!os) return;
-  const tl = [...(os.timeline||[])];
-  tl.push({dt:new Date().toISOString(),user:_cliData.nome,acao:'Cliente APROVOU o orçamento via portal.',tipo:'aprovacao'});
-  await db.collection('ordens_servico').doc(osId).update({status:'Aprovado',timeline:tl,updatedAt:new Date().toISOString()});
-  // Envia notificação como mensagem
-  await db.collection('mensagens').add({tenantId:_cliTid,clienteId:_cliData.id,sender:'cliente',msg:`✅ Orçamento APROVADO por ${_cliData.nome}. Pode iniciar o serviço!`,lidaAdmin:false,lidaCliente:true,ts:Date.now()});
-  toast('✅ Orçamento aprovado com sucesso!');
-}
-
-async function recusarOS(osId) {
-  if(!confirm('Tem certeza que deseja recusar este orçamento?')) return;
-  const os = _cliOSes.find(x=>x.id===osId); if(!os) return;
-  const tl = [...(os.timeline||[])];
-  tl.push({dt:new Date().toISOString(),user:_cliData.nome,acao:'Cliente RECUSOU o orçamento via portal.',tipo:'recusa'});
-  await db.collection('ordens_servico').doc(osId).update({status:'Cancelado',timeline:tl,updatedAt:new Date().toISOString()});
-  await db.collection('mensagens').add({tenantId:_cliTid,clienteId:_cliData.id,sender:'cliente',msg:`❌ Orçamento RECUSADO por ${_cliData.nome}.`,lidaAdmin:false,lidaCliente:true,ts:Date.now()});
-  toast('Orçamento recusado.','warn');
-}
-
-// ── HISTÓRICO ──────────────────────────────────────────────
-function _renderHistorico() {
-  const hist = _cliOSes.filter(o=>['Entregue','Cancelado'].includes(o.status));
-  const div  = document.getElementById('cliHistoricoLista');
-  if(!hist.length){div.innerHTML='<div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-sub">Nenhum veículo entregue ainda.</div></div>';return;}
-  div.innerHTML=hist.map(os=>`<div class="os-card concluida">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-      <div><div style="font-family:var(--fm);font-size:1rem;font-weight:700;color:var(--success)">${os.placa||'?'}</div><div style="color:var(--text-secondary);font-size:.8rem">${os.desc||''}</div></div>
-      <div style="text-align:right"><div style="font-family:var(--fd);font-size:1.6rem;font-weight:700;color:var(--success)">${moeda(os.total||0)}</div><div style="font-family:var(--fm);font-size:.62rem;color:var(--text-muted)">${dtBr(os.updatedAt)}</div></div>
-    </div>
-    <span class="badge badge-success">${os.status}</span>
-  </div>`).join('');
-}
-
-// ── FINANCEIRO ─────────────────────────────────────────────
 function _renderFinanceiro() {
-  const div = document.getElementById('cliFinanceiroLista');
-  if(!_cliFins.length) {
-    div.innerHTML='<div class="empty-state"><div class="empty-state-icon">💸</div><div class="empty-state-sub">Nenhum histórico financeiro.</div></div>';
-    return;
-  }
-  let totalAberto = 0;
-  const items = _cliFins.map(f => {
-    if (f.status === 'Pendente') totalAberto += (f.valor||0);
-    const cor = f.status === 'Pago' ? 'var(--success)' : 'var(--danger)';
-    return `<div style="background:var(--surf);border:1px solid var(--border);padding:14px;margin-bottom:10px;border-left:4px solid ${cor}">
-      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
-        <div style="font-weight:700;font-family:var(--fm)">${f.desc||'Serviço Automotivo'}</div>
-        <div style="font-family:var(--fd);font-size:1.2rem;font-weight:700;color:${cor}">${moeda(f.valor||0)}</div>
+  if (!P.fins.length) return `<div style="text-align:center;padding:40px;color:var(--text-muted)">Nenhum lançamento financeiro.</div>`;
+  return `
+    <div class="os-card">
+      <div class="os-card-header"><div style="font-family:var(--ff-display);font-weight:700;color:white;">💰 Extrato de Pagamentos</div></div>
+      <div class="os-card-body" style="padding:0">
+        <table style="width:100%; border-collapse: collapse; font-size: 0.85rem;">
+          <thead>
+            <tr style="text-align:left; color:var(--text-muted); border-bottom: 1px solid var(--border);">
+              <th style="padding:12px">Data</th>
+              <th style="padding:12px">Descrição</th>
+              <th style="padding:12px">Valor</th>
+              <th style="padding:12px">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${P.fins.map(f => `
+              <tr style="border-bottom: 1px solid var(--border);">
+                <td style="padding:12px; font-family:var(--ff-mono); font-size:0.7rem;">${new Date(f.vencimento || f.createdAt).toLocaleDateString()}</td>
+                <td style="padding:12px;">${f.descricao}</td>
+                <td style="padding:12px; font-weight:600;">${moeda(f.valor)}</td>
+                <td style="padding:12px;"><span style="color:${f.status==='Pago'?'var(--success)':'var(--warn)'}">${f.status}</span></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
       </div>
-      <div style="display:flex;justify-content:space-between;font-size:.75rem;color:var(--text-muted)">
-        <div>Vencimento: ${dtBr(f.venc)}</div>
-        <div style="text-transform:uppercase;font-weight:700">${f.status}</div>
-      </div>
-    </div>`;
-  }).join('');
-  
-  div.innerHTML = `
-    <div style="background:var(--surf2);padding:16px;border:1px solid var(--border);margin-bottom:16px;text-align:center">
-      <div style="font-family:var(--fm);font-size:.7rem;color:var(--text-muted);letter-spacing:1px">TOTAL EM ABERTO</div>
-      <div style="font-family:var(--fd);font-size:2rem;font-weight:700;color:var(--danger)">${moeda(totalAberto)}</div>
     </div>
-  ` + items;
+  `;
 }
 
-// ── CHAT E MÍDIA ───────────────────────────────────────────
-function _renderChat() {
-  const container=document.getElementById('cliChatMsgs'); if(!container) return;
-  if(!_cliMsgs.length){container.innerHTML='<div class="empty-state"><div class="empty-state-icon">💬</div><div class="empty-state-sub">Sem mensagens ainda</div></div>';return;}
-  container.innerHTML=_cliMsgs.map(m=>{
-    const t=m.ts?new Date(m.ts).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'';
-    const dir=m.sender==='cliente'?'saida':'entrada';
-    
-    // MÁGICA DO ÁUDIO AQUI: Puxa do core.js
-    const msgHtml = window.formatarMidiaChat ? window.formatarMidiaChat(m.msg) : (m.msg||'');
-    
-    return `<div class="msg-c ${dir}">${msgHtml}
-      <div class="msg-time">${t}</div></div>`;
+function _chatHTML() {
+  return `
+    <div class="os-card portal-chat">
+      <div class="os-card-header">
+        <div style="font-family:var(--ff-display);font-weight:700;color:white;">💬 Fale com a Oficina</div>
+        <div style="width:8px;height:8px;background:var(--success);border-radius:50%;"></div>
+      </div>
+      <div class="portal-chat-messages" id="portalChatMsgs">
+        <div style="text-align:center;color:var(--text-muted);font-size:0.78rem;padding:16px">Carregando mensagens...</div>
+      </div>
+      <div class="portal-chat-input">
+        <button id="btnPTT" onmousedown="_startMic()" onmouseup="_stopMic()" style="background:none;border:none;color:#FF3B3B;font-size:1.2rem;cursor:pointer;">🎤</button>
+        <button title="Anexar Arquivo" onclick="document.getElementById('portalFile').click()" style="background:none;border:none;color:var(--brand);font-size:1.2rem;cursor:pointer;">📎</button>
+        <input type="file" id="portalFile" style="display:none" onchange="_enviarArquivoPortal(this)">
+        <input class="input" id="portalChatInput" placeholder="Sua mensagem..." style="flex:1;">
+        <button class="btn btn-brand" onclick="_enviarPortalMsg()">ENVIAR</button>
+      </div>
+    </div>
+  `;
+}
+
+function _bindChat() {
+  const inp = document.getElementById('portalChatInput');
+  if (inp) inp.addEventListener('keydown', e => { if (e.key === 'Enter') _enviarPortalMsg(); });
+}
+
+function _renderChat(msgs) {
+  const container = document.getElementById('portalChatMsgs');
+  if (!container) return;
+  if (!msgs.length) { container.innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:0.78rem;padding:16px">Envie uma mensagem para a oficina.</div>'; return; }
+  container.innerHTML = msgs.map(m => {
+    const t   = m.ts ? new Date(m.ts).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' }) : '';
+    const dir = m.sender === 'cliente' ? 'outgoing' : 'incoming';
+    return `
+      <div class="chat-msg ${dir}">
+        ${m.msg}
+        ${m.fileUrl ? `<div style="margin-top:8px">${m.fileType==='image' ? `<img src="${m.fileUrl}" style="max-width:100%;border-radius:4px">` : m.fileType==='audio' ? `<audio src="${m.fileUrl}" controls style="width:100%; height:30px;"></audio>` : `<a href="${m.fileUrl}" target="_blank" style="color:var(--brand);text-decoration:underline">📎 Ver anexo</a>`}</div>` : ''}
+        <div class="msg-time">${t}</div>
+      </div>
+    `;
   }).join('');
-  container.scrollTop=container.scrollHeight;
+  container.scrollTop = container.scrollHeight;
   
-  // Marcar como lidas
-  _cliMsgs.filter(m=>m.sender==='admin'&&!m.lidaCliente).forEach(m=>{
-    db.collection('mensagens').doc(m.id).update({lidaCliente:true}).catch(()=>{});
-  });
+  msgs.filter(m => m.sender === 'admin' && !m.lidaCliente)
+    .forEach(m => db.collection('mensagens').doc(m.id).update({ lidaCliente: true }).catch(()=>{}));
 }
 
-// Ligação global para o envio de arquivo do core.js
-window.enviarChat = async function() {
-  const inputEl = document.getElementById('cliChatInput');
-  const msg = inputEl.value.trim(); if(!msg) return;
-  await db.collection('mensagens').add({tenantId:_cliTid,clienteId:_cliData.id,sender:'cliente',msg,lidaAdmin:false,lidaCliente:true,ts:Date.now()});
-  inputEl.value='';
-};
+async function _enviarPortalMsg() {
+  const inp = document.getElementById('portalChatInput');
+  const msg = inp?.value?.trim();
+  if (!msg) return;
+  await db.collection('mensagens').add({
+    tenantId:    P.tenantId,
+    clienteId:   P.clienteId,
+    sender:      'cliente',
+    msg,
+    lidaAdmin:   false,
+    lidaCliente: true,
+    ts:          Date.now()
+  });
+  inp.value = '';
+}
 
-async function cliEnviarMsg() { await window.enviarChat(); }
-document.getElementById('cliChatInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();cliEnviarMsg();}});
+// Lógica de Áudio e Arquivo no Portal
+let _mediaRec = null, _audioChunks = [];
+async function _startMic() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    _mediaRec = new MediaRecorder(stream); _audioChunks = [];
+    _mediaRec.ondataavailable = e => { if (e.data.size > 0) _audioChunks.push(e.data); };
+    _mediaRec.onstop = async () => {
+      const blob = new Blob(_audioChunks, { type: 'audio/webm' });
+      const fd = new FormData(); fd.append('file', blob, 'audio.webm'); fd.append('upload_preset', P.oficina?.apiKeys?.cloudPreset || 'evolution');
+      try {
+        const cloudName = P.oficina?.apiKeys?.cloudName || 'dmuvm1o6m';
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, { method: 'POST', body: fd });
+        const d = await res.json();
+        if (d.secure_url) {
+          await db.collection('mensagens').add({
+            tenantId: P.tenantId, clienteId: P.clienteId, sender: 'cliente',
+            msg: '🎤 Áudio', fileUrl: d.secure_url, fileType: 'audio',
+            lidaAdmin: false, lidaCliente: true, ts: Date.now()
+          });
+          toast('Áudio enviado!', 'ok');
+        }
+      } catch (e) { toast('Erro ao enviar áudio', 'err'); }
+      stream.getTracks().forEach(t => t.stop());
+    };
+    _mediaRec.start();
+    toast('Gravando...', 'warn');
+  } catch (e) { toast('Microfone não disponível', 'err'); }
+}
 
-// ── TABS ───────────────────────────────────────────────────
-function cliTab(key, el) {
-  const map={os:'cliTabOS',historico:'cliTabHistorico',financeiro:'cliTabFinanceiro',chat:'cliTabChat'};
-  Object.values(map).forEach(id=>{const d=document.getElementById(id);if(d)d.style.display='none';});
-  const target=document.getElementById(map[key]); if(target) target.style.display='block';
-  document.querySelectorAll('.mtab').forEach(t=>t.classList.remove('active'));
-  if(el) el.classList.add('active');
+function _stopMic() { if (_mediaRec && _mediaRec.state === 'recording') _mediaRec.stop(); }
+
+async function _enviarArquivoPortal(input) {
+  const file = input.files[0]; if (!file) return;
+  try {
+    const fd = new FormData(); fd.append('file', file); fd.append('upload_preset', P.oficina?.apiKeys?.cloudPreset || 'evolution');
+    const cloudName = P.oficina?.apiKeys?.cloudName || 'dmuvm1o6m';
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data.secure_url) {
+      await db.collection('mensagens').add({
+        tenantId: P.tenantId, clienteId: P.clienteId, sender: 'cliente',
+        msg: `📎 Arquivo: ${file.name}`, fileUrl: data.secure_url, 
+        fileType: data.resource_type === 'image' ? 'image' : 'file',
+        lidaAdmin: false, lidaCliente: true, ts: Date.now()
+      });
+      toast('Arquivo enviado!', 'ok');
+    }
+  } catch (e) { toast('Erro ao enviar arquivo', 'err'); }
+}
+
+async function _aprovarOrcamento(osId) {
+  try {
+    const snap = await db.collection('ordens_servico').doc(osId).get();
+    const osData = snap.data();
+    const tl = osData.timeline || [];
+    tl.push({ dt: new Date().toISOString(), user: P.cliente?.nome || 'Cliente', acao: `Cliente APROVOU o orçamento via Portal B2C` });
+
+    await db.collection('ordens_servico').doc(osId).update({ status: 'Andamento', timeline: tl, updatedAt: new Date().toISOString() });
+    await db.collection('lixeira_auditoria').add({
+      tenantId: P.tenantId, modulo: 'PORTAL B2C', acao: `Orçamento APROVADO: OS #${osId.slice(-6)}`, usuario: P.cliente?.nome || 'Cliente', ts: new Date().toISOString()
+    });
+    toast('Orçamento aprovado!', 'ok');
+  } catch (e) { toast('Erro ao aprovar: ' + e.message, 'err'); }
+}
+
+async function _recusarOrcamento(osId) {
+  if (!confirm('Tem certeza que deseja recusar? A O.S. será cancelada.')) return;
+  try {
+    const snap = await db.collection('ordens_servico').doc(osId).get();
+    const osData = snap.data();
+    const tl = osData.timeline || [];
+    tl.push({ dt: new Date().toISOString(), user: P.cliente?.nome || 'Cliente', acao: `Cliente RECUSOU o orçamento via Portal B2C` });
+
+    await db.collection('ordens_servico').doc(osId).update({ status: 'Cancelado', timeline: tl, updatedAt: new Date().toISOString() });
+    await db.collection('lixeira_auditoria').add({
+      tenantId: P.tenantId, modulo: 'PORTAL B2C', acao: `Orçamento RECUSADO: OS #${osId.slice(-6)}`, usuario: P.cliente?.nome || 'Cliente', ts: new Date().toISOString()
+    });
+    toast('Orçamento recusado.', 'warn');
+  } catch(e) { toast('Erro ao recusar: ' + e.message, 'err'); }
 }
 </script>
 </body>
