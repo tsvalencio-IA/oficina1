@@ -681,17 +681,15 @@ async function _togglePttCli() {
   const btn = document.getElementById('btnPttCli');
   
   if (isRecordingCli && _mediaRecorderCli && _mediaRecorderCli.state === 'recording') {
-    // Parar e Enviar
     _mediaRecorderCli.stop();
     isRecordingCli = false;
-    btn.style.color = '#fff';
+    btn.style.color = 'white';
     btn.style.background = 'var(--surf-3)';
     btn.style.borderColor = 'var(--border)';
     btn.innerHTML = '🎤';
     return;
   }
 
-  // Iniciar Gravação
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     _mediaRecorderCli = new MediaRecorder(stream);
@@ -731,7 +729,7 @@ async function _togglePttCli() {
     btn.style.background = 'var(--danger)';
     btn.style.borderColor = 'var(--danger)';
     btn.innerHTML = '⏹️';
-    toast('Gravando... Clique no botão vermelho para enviar.', 'warn');
+    toast('Gravando... Clique novamente no botão vermelho para enviar.', 'warn');
 
   } catch (err) {
     toast('⚠ Permissão de microfone negada pelo navegador.', 'err');
@@ -766,11 +764,23 @@ async function _enviarArquivoPortal(input) {
   }
 }
 
+// FORMATADOR BLINDADO DE MÍDIA (CLIENTE)
 function _formatarMidiaChat(texto) {
   if (!texto) return '';
-  if (texto.startsWith('[AUDIO]')) return `<audio src="${texto.replace('[AUDIO]', '')}" controls style="height:40px; max-width:100%; outline:none; border-radius:20px;"></audio>`;
-  if (texto.startsWith('[IMAGEM]')) return `<img src="${texto.replace('[IMAGEM]', '')}" style="max-width:100%; max-height: 250px; border-radius:var(--r-md); cursor:zoom-in; border:1px solid var(--border);" onclick="window.open('${texto.replace('[IMAGEM]', '')}')">`;
-  if (texto.startsWith('[ARQUIVO]')) return `<a href="${texto.replace('[ARQUIVO]', '')}" target="_blank" style="color:var(--brand);text-decoration:underline;font-weight:700;">📎 ABRIR ANEXO DO DOCUMENTO</a>`;
+  const t = String(texto).trim();
+  
+  if (t.includes('[AUDIO]')) {
+    const url = t.split('[AUDIO]')[1].trim();
+    return `<audio src="${url}" controls style="height:40px; max-width:100%; outline:none; border-radius:20px;"></audio>`;
+  }
+  if (t.includes('[IMAGEM]')) {
+    const url = t.split('[IMAGEM]')[1].trim();
+    return `<img src="${url}" style="max-width:100%; max-height: 250px; border-radius:var(--r-md); cursor:zoom-in; border:1px solid var(--border);" onclick="window.open('${url}')">`;
+  }
+  if (t.includes('[ARQUIVO]')) {
+    const url = t.split('[ARQUIVO]')[1].trim();
+    return `<a href="${url}" target="_blank" style="color:var(--brand);text-decoration:underline;font-weight:700;">📎 Abrir Anexo de Documento</a>`;
+  }
   return texto;
 }
 
@@ -799,14 +809,12 @@ function _renderChat(msgs) {
   
   container.scrollTop = container.scrollHeight;
   
-  // Badge e leitura de msgs
   const nLidas = msgs.filter(m => m.sender === 'admin' && !m.lidaCliente).length;
   if(badge) {
       badge.textContent = nLidas;
       badge.style.display = nLidas > 0 ? 'inline-block' : 'none';
   }
   
-  // Se a aba chat está ativa, marca lida
   if (document.getElementById('tabChat').classList.contains('active')) {
     msgs.filter(m => m.sender === 'admin' && !m.lidaCliente)
       .forEach(m => db.collection('mensagens').doc(m.id).update({ lidaCliente: true }).catch(()=>{}));
@@ -825,7 +833,7 @@ async function _enviarPortalMsg() {
   inp.value = '';
 }
 
-// Botão de Negociar (Aprovações OS)
+// Negociação de Orçamento
 function _negociarOrcamento(placa) {
   switchCliTab('tabChat', document.querySelectorAll('.tab-btn')[1]);
   const inp = document.getElementById('portalChatInput');
