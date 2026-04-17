@@ -426,7 +426,6 @@ window._sh  = (id,h) => { const el=document.getElementById(id); if(el) el.innerH
 window._chk = id => { const el=document.getElementById(id); return el?el.checked:false; };
 window._ck  = (id,v) => { const el=document.getElementById(id); if(el) el.checked=!!v; };
 
-// Atalhos compatíveis com código legado (of1/of2 usam $ e $v)
 window.$  = id => document.getElementById(id);
 window.$v = id => { const el=document.getElementById(id); return el?el.value.trim():''; };
 
@@ -560,19 +559,22 @@ window.enviarArquivoChat = async function(input) {
   }
 };
 
+// ── FORMATADOR BLINDADO DE MÍDIA ──
 window.formatarMidiaChat = function(texto) {
   if (!texto) return '';
-  if (texto.startsWith('[AUDIO]')) {
-    const url = texto.replace('[AUDIO]', '');
+  const t = String(texto).trim();
+  
+  if (t.includes('[AUDIO]')) {
+    const url = t.split('[AUDIO]')[1].trim();
     return `<audio src="${url}" controls style="height:34px; max-width:200px; outline:none;"></audio>`;
   }
-  if (texto.startsWith('[IMAGEM]')) {
-    const url = texto.replace('[IMAGEM]', '');
-    return `<img src="${url}" style="max-width:200px; border-radius:4px; cursor:zoom-in" onclick="window.open('${url}')">`;
+  if (t.includes('[IMAGEM]')) {
+    const url = t.split('[IMAGEM]')[1].trim();
+    return `<img src="${url}" style="max-width:200px; border-radius:4px; cursor:zoom-in; border:1px solid var(--border);" onclick="window.open('${url}')">`;
   }
-  if (texto.startsWith('[ARQUIVO]')) {
-    const url = texto.replace('[ARQUIVO]', '');
-    return `<a href="${url}" target="_blank" style="color:var(--brand);text-decoration:underline">📎 Ver Anexo</a>`;
+  if (t.includes('[ARQUIVO]')) {
+    const url = t.split('[ARQUIVO]')[1].trim();
+    return `<a href="${url}" target="_blank" style="color:var(--brand);text-decoration:underline;font-weight:bold;">📎 Abrir Anexo de Documento</a>`;
   }
   return texto;
 };
@@ -607,7 +609,7 @@ window.renderChatMsgs = function(cid) {
   const msgs = J.mensagens.filter(m => m.clienteId === cid);
   const el = document.getElementById('chatMsgs'); if(!el) return;
   el.innerHTML = msgs.map(m => `<div class="chat-msg ${m.sender === 'admin' ? 'admin' : 'cliente'}">
-    ${window.formatarMidiaChat ? window.formatarMidiaChat(m.msg) : m.msg}
+    ${window.formatarMidiaChat(m.msg)}
     <div class="ts">${m.ts ? new Date(m.ts).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}) : ''}</div>
   </div>`).join('');
   el.scrollTop = el.scrollHeight;
@@ -650,7 +652,7 @@ window.renderChatMsgsEquipeAdmin = function(fid) {
   const el = document.getElementById('chatMsgsEquipe'); if(!el) return;
   el.innerHTML = msgs.map(m => `<div class="chat-msg ${m.sender === 'admin' ? 'admin' : 'cliente'}">
     <small style="display:block;opacity:0.6;margin-bottom:2px">${m.sender === 'admin' ? 'Você' : (J.equipe.find(f => f.id === m.de)?.nome || 'Equipe')}</small>
-    ${window.formatarMidiaChat ? window.formatarMidiaChat(m.msg) : m.msg}
+    ${window.formatarMidiaChat(m.msg)}
     <div class="ts">${m.ts ? new Date(m.ts).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}) : ''}</div>
   </div>`).join('');
   el.scrollTop = el.scrollHeight;
