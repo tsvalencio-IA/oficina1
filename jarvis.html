@@ -8,8 +8,9 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
-<script src="js/config.js"></script>
+<script src="js/config.js?v=99"></script>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&family=Exo+2:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/responsive_fix.css?v=99">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{
@@ -316,8 +317,8 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
       CRM Chat
       <span class="nav-badge" id="chatBadge">0</span>
     </div>
-    <div class="nav-item" onclick="ir('chatequipe',this)">
-      <svg viewBox="0 0 16 16"><path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path fill-rule="evenodd" d="M5.216 14A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216z"/><path d="M4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/></svg>
+    <div class="nav-item" onclick="ir('chatEquipe',this)">
+      <svg viewBox="0 0 16 16"><path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path fill-rule="evenodd" d="M5.216 14A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216z"/></svg>
       Chat Equipe
       <span class="nav-badge" id="chatEquipeBadge">0</span>
     </div>
@@ -574,27 +575,28 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
           <div class="chat-head" id="chatHead">Selecione um cliente</div>
           <div class="chat-msgs" id="chatMsgs"></div>
           <div class="chat-foot" id="chatFoot" style="display:none; gap:8px; align-items:center;">
-            <button class="btn-ghost" id="btnPTT" title="Gravar Áudio" style="padding:8px; border-radius:50%;"><svg style="width:18px;height:18px;"><path fill="currentColor" d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path fill="currentColor" d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg></button>
+            <button class="btn-ghost" id="btnPTT_CRM" title="Gravar Áudio" onclick="window.togglePTT('CRM')" style="padding:8px; border-radius:50%;"><svg style="width:18px;height:18px;"><path fill="currentColor" d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path fill="currentColor" d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg></button>
             <button class="btn-ghost" onclick="document.getElementById('chatFile').click()" title="Anexar Arquivo" style="padding:8px; border-radius:50%;"><svg style="width:18px;height:18px;"><path fill="currentColor" d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.31 2.69 6 6 6s6-2.69 6-6V6h-1.5z"/></svg></button>
-            <input type="file" id="chatFile" style="display:none" onchange="enviarArquivoChat(this)">
+            <input type="file" id="chatFile" style="display:none" accept="image/*,video/*,audio/*,.pdf" onchange="window.enviarArquivoChat(this)">
             <input class="j-input" id="chatInput" placeholder="Responder..." style="flex:1;">
-            <button class="btn-primary" onclick="enviarChat()">ENVIAR</button>
+            <button class="btn-primary" onclick="window.enviarChat()">ENVIAR</button>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ✅ CHAT EQUIPE (admin ↔ mecânicos) -->
-    <section class="section" id="s-chatequipe">
+    <section class="section" id="s-chat-equipe">
       <div class="chat-layout">
-        <!-- Lista de membros da equipe -->
-        <div class="chat-list" id="chatEquipeLista"></div>
+        <div class="chat-list" id="chatListaEquipe"></div>
         <div class="chat-main">
-          <div class="chat-head" id="chatEquipeHead">Selecione um membro da equipe</div>
-          <div class="chat-msgs" id="chatEquipeMsgs"></div>
-          <div class="chat-foot" id="chatEquipeFoot" style="display:none; gap:8px; align-items:center;">
-            <input class="j-input" id="chatEquipeInput" placeholder="Mensagem para a equipe..." style="flex:1;">
-            <button class="btn-primary" onclick="enviarChatEquipe()">ENVIAR</button>
+          <div class="chat-head" id="chatHeadEquipe">Selecione um funcionário</div>
+          <div class="chat-msgs" id="chatMsgsEquipe"></div>
+          <div class="chat-foot" id="chatFootEquipe" style="display:none; gap:8px; align-items:center;">
+            <button class="btn-ghost" id="btnPTT_Equipe" title="Gravar Áudio" onclick="window.togglePTT('Equipe')" style="padding:8px; border-radius:50%;"><svg style="width:18px;height:18px;"><path fill="currentColor" d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path fill="currentColor" d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg></button>
+            <button class="btn-ghost" onclick="document.getElementById('chatFileEquipe').click()" title="Anexar Arquivo" style="padding:8px; border-radius:50%;"><svg style="width:18px;height:18px;"><path fill="currentColor" d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.31 2.69 6 6 6s6-2.69 6-6V6h-1.5z"/></svg></button>
+            <input type="file" id="chatFileEquipe" style="display:none" accept="image/*,video/*,audio/*,.pdf" onchange="window.enviarArquivoChat(this)">
+            <input class="j-input" id="chatInputEquipeAdmin" placeholder="Mensagem para equipe..." style="flex:1;">
+            <button class="btn-primary" onclick="window.enviarMsgEquipeAdmin()">ENVIAR</button>
           </div>
         </div>
       </div>
@@ -1086,730 +1088,41 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 </div>
 </div>
 
+<script src="js/ui.js?v=99"></script>
+<script src="js/core.js?v=99"></script>
+<script src="js/clientes.js?v=99"></script>
+<script src="js/os.js?v=99"></script>
+<script src="js/financeiro.js?v=99"></script>
+<script src="js/ia.js?v=99"></script>
+<script src="js/pdf.js?v=99"></script>
+
 <script>
-// ============================================================
-// BOOTSTRAP DO SISTEMA E IA
-// ============================================================
-const J = {}; 
-const $ = id => document.getElementById(id);
-const $v = id => $(id) ? $(id).value.trim() : '';
+// Mapa de seções e títulos
+window.SECTION_MAP = {
+  dashboard:'s-dashboard', agenda:'s-agenda', kanban:'s-kanban', clientes:'s-clientes',
+  estoque:'s-estoque', financeiro:'s-financeiro', equipe:'s-equipe',
+  chat:'s-chat', chatEquipe:'s-chat-equipe', ia:'s-ia', auditoria:'s-auditoria'
+};
+window.TITLE_MAP = {
+  dashboard:'DASHBOARD', agenda:'AGENDA', kanban:'PÁTIO / O.S.', clientes:'CLIENTES & VEÍCULOS',
+  estoque:'ESTOQUE / NF', financeiro:'FINANCEIRO / DRE', equipe:'EQUIPE & RH',
+  chat:'CRM CHAT', chatEquipe:'CHAT DA EQUIPE', ia:'thIAguinho IA', auditoria:'AUDITORIA'
+};
 
-// SESSÃO
-J.tid = sessionStorage.getItem('j_tid');
-J.role = sessionStorage.getItem('j_role');
-J.nome = sessionStorage.getItem('j_nome');
-J.tnome = sessionStorage.getItem('j_tnome');
-J.gemini = sessionStorage.getItem('j_gemini');
-J.nicho = sessionStorage.getItem('j_nicho') || 'carros';
-J.cloudName = sessionStorage.getItem('j_cloud_name') || 'dmuvm1o6m';
-J.cloudPreset = sessionStorage.getItem('j_cloud_preset') || 'evolution';
+// Painel de atenção toggle
+window._painelOpen = true;
+window.toggleAtencao = function() {
+  const el = document.getElementById('painelAtencaoWrap');
+  const btn = document.getElementById('togglePainel');
+  window._painelOpen = !window._painelOpen;
+  if(el) el.classList.toggle('collapsed', !window._painelOpen);
+  if(btn) btn.textContent = window._painelOpen ? '▲' : '▼';
+};
 
-if(!J.tid) window.location.replace('index.html');
-
-const db = window.initFirebase();
-
-// ESTADO IN-MEMORY
-J.os = []; J.clientes = []; J.veiculos = []; J.estoque = [];
-J.financeiro = []; J.equipe = []; J.fornecedores = [];
-J.agendamentos = []; J.mensagens = []; J.auditoria = [];
-J.chatAtivo = null;
-
+// Inicialização Centralizada
 document.addEventListener('DOMContentLoaded', () => {
-  $('sbTenantNome').innerText = J.tnome;
-  $('sbUserNome').innerText = J.nome;
-  $('sbUserRole').innerText = J.role.toUpperCase();
-  $('sbAvatar').innerText = J.nome.charAt(0).toUpperCase();
-  
-  const nichoLabels = {carros:'🚗 CARROS', motos:'🏍️ MOTOS', bicicletas:'🚲 BICICLETAS'};
-  $('tbNicho').innerText = nichoLabels[J.nicho] || '🚗 CARROS';
-
-  if(typeof window.escutarOS === 'function') window.escutarOS(); 
-  window.escutarClientes(); window.escutarVeiculos();
-  window.escutarEstoque(); window.escutarFinanceiro(); window.escutarEquipe();
-  window.escutarFornecedores(); window.escutarMensagens(); window.escutarAgendamentos();
-  window.escutarAuditoria(); window.escutarChatEquipe();
+  if (window.initCore) window.initCore();
 });
-
-const sectionMap = { dashboard:'s-dashboard', agenda:'s-agenda', kanban:'s-kanban', clientes:'s-clientes', estoque:'s-estoque', financeiro:'s-financeiro', equipe:'s-equipe', chat:'s-chat', chatequipe:'s-chatequipe', ia:'s-ia', auditoria:'s-auditoria' };
-const titleMap = { dashboard:'DASHBOARD', agenda:'AGENDA', kanban:'PÁTIO / O.S.', clientes:'CLIENTES & VEÍCULOS', estoque:'ESTOQUE / NF', financeiro:'FINANCEIRO / DRE', equipe:'EQUIPE & RH', chat:'CRM CHAT', chatequipe:'CHAT EQUIPE', ia:'thIAguinho IA', auditoria:'AUDITORIA' };
-
-function ir(key, el) {
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  const s = $(sectionMap[key]); if(s) s.classList.add('active');
-  if(el) el.classList.add('active');
-  $('pageTitle').innerText = titleMap[key] || key.toUpperCase();
-}
-
-function sair() { sessionStorage.clear(); window.location.href='index.html'; }
-function abrirModal(id) { $(id).classList.add('open'); }
-function fecharModal(id) { $(id).classList.remove('open'); }
-
-function switchTab(el, active, ...others) {
-  el.parentElement.querySelectorAll('.mtab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-  $(active).classList.add('active');
-  others.forEach(o => $(o).classList.remove('active'));
-}
-
-window.toast = function(msg, type='ok') {
-  const el = document.createElement('div');
-  el.className = `toast-j ${type}`;
-  el.innerHTML = msg;
-  $('toastBox').appendChild(el);
-  setTimeout(() => { el.style.opacity='0'; setTimeout(()=>el.remove(),400); }, 3500);
-}
-
-async function audit(modulo, acao) {
-  try {
-    await db.collection('lixeira_auditoria').add({
-      tenantId:J.tid, modulo, acao,
-      usuario:J.nome, ts:new Date().toISOString()
-    });
-  } catch(e){}
-}
-
-const moeda = v => 'R$ ' + parseFloat(v||0).toFixed(2).replace('.',',');
-const dtBr = iso => iso ? new Date(iso).toLocaleDateString('pt-BR') : '-';
-const dtHrBr = iso => iso ? new Date(iso).toLocaleString('pt-BR') : '-';
-
-// LISTENERS
-window.escutarClientes = function() {
-  db.collection('clientes').where('tenantId','==',J.tid).onSnapshot(snap => {
-    J.clientes = snap.docs.map(d=>({id:d.id,...d.data()}));
-    window.renderClientes(); window.popularSelects();
-  });
-}
-window.escutarVeiculos = function() {
-  db.collection('veiculos').where('tenantId','==',J.tid).onSnapshot(snap => {
-    J.veiculos = snap.docs.map(d=>({id:d.id,...d.data()}));
-    window.renderVeiculos(); window.popularSelects();
-  });
-}
-window.escutarEstoque = function() {
-  db.collection('estoqueItems').where('tenantId','==',J.tid).onSnapshot(snap => {
-    J.estoque = snap.docs.map(d=>({id:d.id,...d.data()}));
-    window.renderEstoque(); window.renderDashboard();
-  });
-}
-window.escutarFinanceiro = function() {
-  db.collection('financeiro').where('tenantId','==',J.tid).onSnapshot(snap => {
-    J.financeiro = snap.docs.map(d=>({id:d.id,...d.data()}));
-    if(typeof window.renderFinanceiro === 'function') window.renderFinanceiro(); 
-    window.renderDashboard();
-  });
-}
-window.escutarEquipe = function() {
-  db.collection('funcionarios').where('tenantId','==',J.tid).onSnapshot(snap => {
-    J.equipe = snap.docs.map(d=>({id:d.id,...d.data()}));
-    window.renderEquipe(); window.popularSelects(); 
-    if(typeof window.calcComissoes === 'function') window.calcComissoes();
-    if(typeof window.renderChatEquipeLista === 'function') window.renderChatEquipeLista();
-  });
-}
-window.escutarFornecedores = function() {
-  db.collection('fornecedores').where('tenantId','==',J.tid).onSnapshot(snap => {
-    J.fornecedores = snap.docs.map(d=>({id:d.id,...d.data()}));
-    window.renderFornecedores(); window.popularSelects();
-  });
-}
-window.escutarMensagens = function() {
-  db.collection('mensagens').where('tenantId','==',J.tid).onSnapshot(snap => {
-    J.mensagens = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.ts||0)-(b.ts||0));
-    window.renderChatLista();
-    const naoLidas = J.mensagens.filter(m=>m.sender==='cliente'&&!m.lidaAdmin).length;
-    const badge = $('chatBadge');
-    if(naoLidas>0){badge.style.display='block';badge.innerText=naoLidas;}else badge.style.display='none';
-    if(J.chatAtivo) window.renderChatMsgs(J.chatAtivo);
-  });
-}
-
-// ── CHAT EQUIPE (admin ↔ mecânicos) ──────────────────────────
-J.chatEquipeAtivo = null;
-J.chatEquipeMsgs = [];
-
-window.escutarChatEquipe = function() {
-  db.collection('chat_equipe').where('tenantId','==',J.tid).onSnapshot(snap => {
-    J.chatEquipeMsgs = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.ts||0)-(b.ts||0));
-    window.renderChatEquipeLista();
-    if (J.chatEquipeAtivo) window.renderChatEquipeMsgs(J.chatEquipeAtivo);
-    // Badge: mensagens de equipe não lidas pelo admin
-    const nLidas = J.chatEquipeMsgs.filter(m => m.sender==='equipe' && !m.lidaAdmin).length;
-    const badge = $('chatEquipeBadge');
-    if(badge){ if(nLidas>0){badge.style.display='block';badge.innerText=nLidas;}else badge.style.display='none'; }
-  });
-};
-
-window.renderChatEquipeLista = function() {
-  const lista = $('chatEquipeLista');
-  if (!lista) return;
-  lista.innerHTML = J.equipe.map(f => {
-    const msgs = J.chatEquipeMsgs.filter(m => m.de === f.id || m.para === f.id);
-    const ultima = msgs[msgs.length - 1];
-    const nLidas = msgs.filter(m => m.sender === 'equipe' && !m.lidaAdmin).length;
-    return `<div class="chat-item ${J.chatEquipeAtivo===f.id?'active':''}" onclick="window.abrirChatEquipe('${f.id}','${f.nome}')">
-      <div class="chat-item-name">${f.nome} ${nLidas>0?`<span class="chat-unread">${nLidas}</span>`:''}</div>
-      <div class="chat-item-last">${f.cargo||'Equipe'} · ${ultima?.msg?.substring(0,30)||'Sem mensagens'}</div>
-    </div>`;
-  }).join('') || '<div style="padding:20px;color:var(--muted);font-size:0.75rem;text-align:center;">Nenhum membro</div>';
-};
-
-window.abrirChatEquipe = function(fid, nome) {
-  J.chatEquipeAtivo = fid;
-  const head = $('chatEquipeHead');
-  if (head) head.innerText = 'CHAT: ' + nome.toUpperCase();
-  const foot = $('chatEquipeFoot');
-  if (foot) foot.style.display = 'flex';
-  window.renderChatEquipeMsgs(fid);
-  // Marcar como lidas
-  J.chatEquipeMsgs
-    .filter(m => m.de === fid && m.sender === 'equipe' && !m.lidaAdmin)
-    .forEach(m => db.collection('chat_equipe').doc(m.id).update({lidaAdmin:true}).catch(()=>{}));
-};
-
-window.renderChatEquipeMsgs = function(fid) {
-  const box = $('chatEquipeMsgs');
-  if (!box) return;
-  const msgs = J.chatEquipeMsgs.filter(m => m.de === fid || m.para === fid);
-  box.innerHTML = msgs.map(m => {
-    const lado = m.sender === 'admin' ? 'admin' : 'cliente';
-    const nome = m.sender === 'admin' ? 'Admin' : (J.equipe.find(f=>f.id===m.de)?.nome || 'Equipe');
-    const ts = m.ts ? new Date(m.ts).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}) : '';
-    return `<div class="chat-msg ${lado}">
-      <strong style="font-size:0.65rem;color:${lado==='admin'?'var(--cyan)':'var(--muted2)'}">${nome}</strong><br>
-      ${(m.msg||'').replace(/\n/g,'<br>')}
-      <div class="ts">${ts}</div>
-    </div>`;
-  }).join('') || '<div style="text-align:center;color:var(--muted);padding:30px;font-size:0.75rem;">Sem mensagens ainda</div>';
-  box.scrollTop = box.scrollHeight;
-};
-
-window.enviarChatEquipe = async function() {
-  const msg = $v('chatEquipeInput');
-  if (!msg || !J.chatEquipeAtivo) return;
-  await db.collection('chat_equipe').add({
-    tenantId: J.tid,
-    de: J.tid,
-    para: J.chatEquipeAtivo,
-    sender: 'admin',
-    msg,
-    lidaEquipe: false,
-    lidaAdmin: true,
-    ts: Date.now()
-  });
-  if ($('chatEquipeInput')) $('chatEquipeInput').value = '';
-};
-
-document.getElementById('chatEquipeInput')?.addEventListener('keydown', e => {
-  if (e.key === 'Enter') window.enviarChatEquipe();
-});
-window.escutarAgendamentos = function() {
-  db.collection('agendamentos').where('tenantId','==',J.tid).onSnapshot(snap => {
-    J.agendamentos = snap.docs.map(d=>({id:d.id,...d.data()}));
-    window.renderAgenda();
-  });
-}
-window.escutarAuditoria = function() {
-  db.collection('lixeira_auditoria').where('tenantId','==',J.tid).onSnapshot(snap => {
-    J.auditoria = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.ts>a.ts?1:-1);
-    window.renderAuditoria();
-  });
-}
-
-window.popularSelects = function() {
-  const cOpts = '<option value="">Selecione...</option>' + J.clientes.map(c=>`<option value="${c.id}">${c.nome}</option>`).join('');
-  ['osCliente','agdCliente','veicDono'].forEach(id => { if($(id)) $(id).innerHTML = cOpts; });
-
-  const mOpts = '<option value="">Não atribuído</option>' + J.equipe.map(f=>`<option value="${f.id}">${f.nome} (${f.cargo||''})</option>`).join('');
-  ['osMec','agdMec'].forEach(id => { if($(id)) $(id).innerHTML = mOpts; });
-
-  if($('nfFornec')) $('nfFornec').innerHTML = '<option value="">Selecione...</option>' + J.fornecedores.map(f=>`<option value="${f.id}">${f.nome}</option>`).join('');
-  
-  if($('optFornec')) $('optFornec').innerHTML = J.fornecedores.map(f=>`<option value="F_${f.id}">${f.nome}</option>`).join('');
-  if($('optEquipe')) $('optEquipe').innerHTML = J.equipe.map(f=>`<option value="E_${f.id}">${f.nome}</option>`).join('');
-}
-
-window.filtrarVeiculosOS = function() {
-  const cid = $v('osCliente'); const tipo = $v('osTipoVeiculo');
-  let veics = J.veiculos.filter(v=>v.clienteId===cid);
-  if(tipo) veics = veics.filter(v=>v.tipo===tipo);
-  if($('osVeiculo')) $('osVeiculo').innerHTML = '<option value="">Selecione...</option>' + veics.map(v=>`<option value="${v.id}">${v.modelo} (${v.placa})</option>`).join('');
-}
-window.filtrarVeicsAgenda = function() {
-  const cid = $v('agdCliente'); const veics = J.veiculos.filter(v=>v.clienteId===cid);
-  if($('agdVeiculo')) $('agdVeiculo').innerHTML = '<option value="">Selecione...</option>' + veics.map(v=>`<option value="${v.id}">${v.modelo} (${v.placa})</option>`).join('');
-}
-
-// DASHBOARD
-window.renderDashboard = function() {
-  const agora = new Date(); const mesAtual = agora.getMonth(); const anoAtual = agora.getFullYear();
-  const fat = J.os.filter(o=>((o.status||'').toLowerCase()==='pronto'||(o.status||'').toLowerCase()==='entregue'||(o.status||'').toLowerCase()==='faturado')&&o.updatedAt).reduce((acc,o)=>{
-    const d = new Date(o.updatedAt);
-    if(d.getMonth()===mesAtual&&d.getFullYear()===anoAtual) return acc+(o.total||0);
-    return acc;
-  }, 0);
-  if($('kFat')) $('kFat').innerText = moeda(fat);
-  if($('kPatio')) $('kPatio').innerText = J.os.filter(o=>!['cancelado','pronto','entregue'].includes((o.status || '').toLowerCase())).length;
-  if($('kStock')) $('kStock').innerText = J.estoque.filter(p=>(p.qtd||0)<=(p.min||0)).length;
-  if($('kVenc')) $('kVenc').innerText = J.financeiro.filter(f=>f.status==='Pendente'&&f.venc&&new Date(f.venc)<agora).length;
-
-  const recOS = J.os.sort((a,b)=>b.updatedAt>a.updatedAt?1:-1).slice(0,5);
-  if($('dashRecentOS')) {
-      $('dashRecentOS').innerHTML = recOS.map(o=>{
-        const v = J.veiculos.find(x=>x.id===o.veiculoId) || {placa: o.placa};
-        const c = J.clientes.find(x=>x.id===o.clienteId) || {nome: o.cliente};
-        return `<tr><td><span class="placa-badge">${v?.placa||'-'}</span></td><td>${c?.nome||'-'}</td><td><span class="pill pill-cyan">${(o.status||'').toUpperCase()}</span></td><td style="color:var(--success);font-family:var(--fm);font-weight:700">${moeda(o.total)}</td></tr>`;
-      }).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:20px;font-family:var(--fm);">Nenhuma O.S.</td></tr>';
-  }
-
-  const criticos = J.estoque.filter(p=>(p.qtd||0)<=(p.min||0)).slice(0,5);
-  if($('dashAlertStock')) {
-      $('dashAlertStock').innerHTML = criticos.map(p=>`<tr class="stock-critical"><td>${p.desc||p.codigo}</td><td style="font-family:var(--fm);color:var(--danger);font-weight:700">${p.qtd||0}</td><td style="font-family:var(--fm);color:var(--muted)">${p.min||0}</td><td><span class="pill pill-danger">CRÍTICO</span></td></tr>`).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--success);padding:20px;font-family:var(--fm);">✓ ESTOQUE OK</td></tr>';
-  }
-}
-
-// CLIENTES E VEICULOS
-window.prepCliente = function(mode, id=null) {
-  ['cliId','cliNome','cliWpp','cliDoc','cliEmail','cliCep','cliRua','cliNum','cliBairro','cliCidade','cliLogin','cliPin'].forEach(f=>{if($(f)) $(f).value='';});
-  $('cliPin').value=Math.random().toString(36).slice(-6);
-  if(mode==='edit'&&id){
-    const c=J.clientes.find(x=>x.id===id); if(!c) return;
-    $('cliId').value=c.id; $('cliNome').value=c.nome||''; $('cliWpp').value=c.wpp||'';
-    $('cliDoc').value=c.doc||''; $('cliEmail').value=c.email||'';
-    $('cliCep').value=c.cep||''; $('cliRua').value=c.rua||''; 
-    $('cliNum').value=c.num||''; $('cliBairro').value=c.bairro||''; 
-    $('cliCidade').value=c.cidade||'';
-    $('cliLogin').value=c.login||''; $('cliPin').value=c.pin||'';
-  }
-}
-window.salvarCliente = async function() {
-  if(!$v('cliNome')) { window.toast('⚠ Nome obrigatório','warn'); return; }
-
-  // ✅ Garantir que login e pin SEMPRE são salvos
-  let login = $v('cliLogin').trim();
-  let pin   = $v('cliPin').trim();
-
-  // Gera login padrão se vazio: primeiro nome + ultimos 4 do wpp
-  if (!login) {
-    const primeiroNome = $v('cliNome').split(' ')[0].toLowerCase().replace(/[^a-z0-9]/g,'');
-    const sufWpp = ($v('cliWpp').replace(/\D/g,'')||'').slice(-4);
-    login = primeiroNome + (sufWpp || Math.floor(Math.random()*1000));
-  }
-  // Gera pin se vazio
-  if (!pin) {
-    pin = Math.random().toString(36).slice(-6).toUpperCase();
-  }
-
-  // Atualiza os campos visíveis
-  if ($('cliLogin')) $('cliLogin').value = login;
-  if ($('cliPin'))   $('cliPin').value   = pin;
-
-  const p = {
-    tenantId: J.tid,
-    nome:     $v('cliNome'),
-    wpp:      $v('cliWpp'),
-    doc:      $v('cliDoc'),
-    email:    $v('cliEmail'),
-    login:    login,
-    pin:      pin,
-    cep:      $v('cliCep'),
-    rua:      $v('cliRua'),
-    num:      $v('cliNum'),
-    bairro:   $v('cliBairro'),
-    cidade:   $v('cliCidade'),
-    updatedAt: new Date().toISOString()
-  };
-
-  const id = $v('cliId');
-  try {
-    if (id) {
-      await db.collection('clientes').doc(id).update(p);
-    } else {
-      p.createdAt = new Date().toISOString();
-      await db.collection('clientes').add(p);
-    }
-    window.toast('✓ CLIENTE SALVO');
-    fecharModal('modalCliente');
-    audit('CLIENTES', 'Salvou cliente ' + p.nome);
-  } catch(e) {
-    window.toast('✕ ERRO AO SALVAR: ' + e.message, 'err');
-  }
-};
-window.renderClientes = function() {
-  if(!$('tbClientes')) return;
-  $('tbClientes').innerHTML = J.clientes.map(c=>{
-    const nVeics = J.veiculos.filter(v=>v.clienteId===c.id).length;
-    const btnWpp = c.wpp
-      ? `<button class="btn-success" style="margin-right:4px" onclick="window._wppAcessoCliente('${c.id}')" title="Enviar acesso via WhatsApp">💬</button>`
-      : '';
-    return `<tr>
-      <td><strong>${c.nome}</strong><div style="font-family:var(--fm);font-size:0.65rem;color:var(--muted)">${c.login||'sem login'} / PIN: ${c.pin||'—'}</div></td>
-      <td style="font-family:var(--fm);font-size:0.75rem">${c.wpp||'-'}</td>
-      <td><span class="pill pill-cyan">${nVeics}</span></td>
-      <td style="white-space:nowrap">
-        <button class="btn-ghost" style="margin-right:4px" onclick="window.prepCliente('edit','${c.id}');abrirModal('modalCliente')">✏</button>
-        ${btnWpp}
-        <button class="btn-danger" onclick="window.deletarCliente('${c.id}')">🗑</button>
-      </td>
-    </tr>`;
-  }).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:20px;">Nenhum cliente</td></tr>';
-};
-
-// ✅ Envia login e PIN do cliente via WhatsApp (link correto)
-window._wppAcessoCliente = function(cid) {
-  const c = J.clientes.find(x => x.id === cid);
-  if (!c?.wpp) return;
-  const fone = c.wpp.replace(/\D/g, '');
-  const link = 'https://tsvalencio-ia.github.io/of/cliente.html';
-  const msg =
-    `Olá ${c.nome.split(' ')[0]}! 👋\n\n` +
-    `Aqui é a *${J.tnome}*. Seu acesso ao portal do cliente está pronto!\n\n` +
-    `🔗 Link: ${link}\n` +
-    `👤 Usuário: *${c.login || c.nome.split(' ')[0].toLowerCase()}*\n` +
-    `🔑 PIN: *${c.pin || '—'}*\n\n` +
-    `Pelo portal você acompanha suas O.S. e conversa com a equipe.`;
-  window.open(`https://wa.me/55${fone}?text=${encodeURIComponent(msg)}`, '_blank');
-};
-window.deletarCliente = async function(id) { if(confirm('Deletar este cliente?')){ await db.collection('clientes').doc(id).delete(); window.toast('✓ REMOVIDO'); audit('CLIENTES','Deletou cliente'); } }
-
-window.buscarCEP = async function(cep) {
-  const c = cep.replace(/\D/g,''); if(c.length!==8) return;
-  try {
-    const r = await fetch(`https://viacep.com.br/ws/${c}/json/`);
-    const d = await r.json();
-    if(!d.erro) {
-      $('cliRua').value = d.logradouro; $('cliBairro').value = d.bairro; $('cliCidade').value = d.localidade; $('cliNum').focus();
-    }
-  } catch(e){}
-}
-
-window.prepVeiculo = function(mode, id=null) {
-  ['veicId','veicPlaca','veicModelo','veicAno','veicCor','veicKm','veicObs'].forEach(f=>{if($(f)) $(f).value='';});
-  $('veicTipo').value='carro'; if($('veicDono')) window.popularSelects();
-  if(mode==='edit'&&id){
-    const v=J.veiculos.find(x=>x.id===id); if(!v) return;
-    $('veicId').value=v.id; $('veicTipo').value=v.tipo||'carro';
-    $('veicDono').value=v.clienteId||''; $('veicPlaca').value=v.placa||'';
-    $('veicModelo').value=v.modelo||''; $('veicAno').value=v.ano||'';
-    $('veicCor').value=v.cor||''; $('veicKm').value=v.km||''; $('veicObs').value=v.obs||'';
-  }
-}
-window.salvarVeiculo = async function() {
-  if(!$v('veicPlaca')||!$v('veicModelo')) { window.toast('⚠ Placa e modelo obrigatórios','warn'); return; }
-  const p={tenantId:J.tid,tipo:$v('veicTipo'),clienteId:$v('veicDono'),placa:$v('veicPlaca').toUpperCase(),modelo:$v('veicModelo'),ano:$v('veicAno'),cor:$v('veicCor'),km:$v('veicKm'),obs:$v('veicObs'),updatedAt:new Date().toISOString()};
-  const id=$v('veicId');
-  if(id) await db.collection('veiculos').doc(id).update(p); else { p.createdAt=new Date().toISOString(); await db.collection('veiculos').add(p); }
-  window.toast('✓ VEÍCULO SALVO'); fecharModal('modalVeiculo'); audit('VEÍCULOS','Salvou veículo '+p.placa);
-}
-window.renderVeiculos = function() {
-  if(!$('tbVeiculos')) return;
-  const tipos = {carro:'🚗',moto:'🏍️',bicicleta:'🚲'};
-  $('tbVeiculos').innerHTML = J.veiculos.map(v=>{
-    const c=J.clientes.find(x=>x.id===v.clienteId);
-    return `<tr><td><span class="placa-badge">${v.placa||'-'}</span></td><td>${tipos[v.tipo]||'🚗'}</td><td>${v.modelo||'-'}</td><td>${c?.nome||'-'}</td><td style="font-family:var(--fm);">${v.km||'-'}</td><td><button class="btn-ghost" onclick="window.prepVeiculo('edit','${v.id}');abrirModal('modalVeiculo')">✏</button></td></tr>`;
-  }).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px;">Nenhum veículo</td></tr>';
-}
-
-// ESTOQUE
-window.prepPeca = function(mode, id=null) {
-  ['pecaId','pecaCodigo','pecaDesc','pecaCusto','pecaVenda','pecaQtd','pecaMin'].forEach(f=>{if($(f)) $(f).value='';});
-  $('pecaUnd').value='UN'; $('pecaMargem').innerText='—';
-  if(mode==='edit'&&id){
-    const p=J.estoque.find(x=>x.id===id); if(!p) return;
-    $('pecaId').value=p.id; $('pecaCodigo').value=p.codigo||''; $('pecaDesc').value=p.desc||'';
-    $('pecaCusto').value=p.custo||0; $('pecaVenda').value=p.venda||0;
-    $('pecaQtd').value=p.qtd||0; $('pecaMin').value=p.min||0; $('pecaUnd').value=p.und||'UN';
-    window.calcMargem();
-  }
-}
-window.calcMargem = function() {
-  const c=parseFloat($v('pecaCusto')||0), v=parseFloat($v('pecaVenda')||0);
-  if(c>0&&v>0){ const m=((v-c)/c*100).toFixed(1); $('pecaMargem').innerText=m+'% MARGEM'; $('pecaMargem').style.color=m>=0?'var(--success)':'var(--danger)'; }
-  else $('pecaMargem').innerText='—';
-}
-window.salvarPeca = async function() {
-  if(!$v('pecaDesc')) { window.toast('⚠ Descrição obrigatória','warn'); return; }
-  const p={tenantId:J.tid,codigo:$v('pecaCodigo'),desc:$v('pecaDesc'),custo:parseFloat($v('pecaCusto')||0),venda:parseFloat($v('pecaVenda')||0),qtd:parseInt($v('pecaQtd')||0),min:parseInt($v('pecaMin')||0),und:$v('pecaUnd'),updatedAt:new Date().toISOString()};
-  const id=$v('pecaId');
-  if(id) await db.collection('estoqueItems').doc(id).update(p); else { p.createdAt=new Date().toISOString(); await db.collection('estoqueItems').add(p); }
-  window.toast('✓ PEÇA SALVA'); fecharModal('modalPeca'); audit('ESTOQUE','Salvou peça '+p.desc);
-}
-window.renderEstoque = function() {
-  if(!$('tbEstoque')) return;
-  $('tbEstoque').innerHTML = J.estoque.map(p=>{
-    const crit=(p.qtd||0)<=(p.min||0);
-    return `<tr class="${crit?'stock-critical':''}"><td style="font-family:var(--fm);font-size:0.75rem;color:var(--muted)">${p.codigo||'-'}</td><td><strong>${p.desc}</strong></td><td style="font-family:var(--fm)">${moeda(p.custo)}</td><td style="font-family:var(--fm);color:var(--success)">${moeda(p.venda)}</td><td style="font-family:var(--fm);font-weight:700;color:${crit?'var(--danger)':'var(--text)'}">${p.qtd||0}</td><td style="font-family:var(--fm);color:var(--muted)">${p.min||0}</td><td>${crit?'<span class="pill pill-danger">CRÍTICO</span>':'<span class="pill pill-green">OK</span>'}</td><td><button class="btn-ghost" onclick="window.prepPeca('edit','${p.id}');abrirModal('modalPeca')">✏</button></td></tr>`;
-  }).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:20px;">Nenhum item</td></tr>';
-}
-
-window.salvarFornec = async function() {
-  if(!$v('fornecNome')) return;
-  const p={tenantId:J.tid,nome:$v('fornecNome'),segmento:$v('fornecSeg'),wpp:$v('fornecWpp'),createdAt:new Date().toISOString()};
-  const id=$v('fornecId');
-  if(id) await db.collection('fornecedores').doc(id).update(p); else await db.collection('fornecedores').add(p);
-  window.toast('✓ FORNECEDOR SALVO'); fecharModal('modalFornec');
-}
-window.renderFornecedores = function() { 
-  if($('tbFornec')) $('tbFornec').innerHTML = J.fornecedores.map(f=>`<tr><td>${f.nome}</td><td>${f.segmento||'-'}</td><td><button class="btn-danger" onclick="db.collection('fornecedores').doc('${f.id}').delete()">🗑</button></td></tr>`).join(''); 
-}
-
-// EQUIPE
-window.prepFunc = function(mode, id=null) {
-  ['funcId','funcNome','funcWpp','funcComissaoServico','funcComissaoPeca','funcUser','funcPass'].forEach(f=>{if($(f)) $(f).value='';});
-  $('funcCargo').value='mecanico';
-  if(mode==='edit'&&id){
-    const f=J.equipe.find(x=>x.id===id); if(!f) return;
-    $('funcId').value=f.id; $('funcNome').value=f.nome||''; $('funcWpp').value=f.wpp||'';
-    $('funcCargo').value=f.cargo||'mecanico'; 
-    $('funcComissaoServico').value=f.comissaoServico||f.comissao||0;
-    $('funcComissaoPeca').value=f.comissaoPeca||0;
-    $('funcUser').value=f.usuario||''; $('funcPass').value=f.senha||'';
-  }
-}
-window.salvarFunc = async function() {
-  if(!$v('funcNome')||!$v('funcUser')||!$v('funcPass')) { window.toast('⚠ Preencha nome, usuário e senha','warn'); return; }
-  const p={tenantId:J.tid,nome:$v('funcNome'),wpp:$v('funcWpp'),cargo:$v('funcCargo'),
-           comissaoServico:parseFloat($v('funcComissaoServico')||0),
-           comissaoPeca:parseFloat($v('funcComissaoPeca')||0),
-           usuario:$v('funcUser'),senha:$v('funcPass'),updatedAt:new Date().toISOString()};
-  const id=$v('funcId');
-  if(id) await db.collection('funcionarios').doc(id).update(p); else { p.createdAt=new Date().toISOString(); await db.collection('funcionarios').add(p); }
-  window.toast('✓ COLABORADOR SALVO'); fecharModal('modalFunc'); audit('EQUIPE','Salvou colaborador '+p.nome);
-}
-window.renderEquipe = function() {
-  if(!$('tbEquipe')) return;
-  $('tbEquipe').innerHTML = J.equipe.map(f=>`<tr><td><strong>${f.nome}</strong></td><td><span class="pill pill-cyan">${f.cargo.toUpperCase()}</span></td><td style="font-family:var(--fm)">${f.usuario}</td>
-    <td><span style="font-family:var(--fm);font-size:0.75rem;color:var(--success)">MO: ${f.comissaoServico||f.comissao||0}%<br>PC: ${f.comissaoPeca||0}%</span></td>
-    <td><button class="btn-ghost" onclick="window.prepFunc('edit','${f.id}');abrirModal('modalFunc')">✏</button><button class="btn-danger" onclick="window.deletarFunc('${f.id}')">🗑</button></td></tr>`).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:20px;">Nenhum colaborador</td></tr>';
-}
-window.deletarFunc = async function(id) { if(confirm('Remover?')){ await db.collection('funcionarios').doc(id).delete(); window.toast('✓ REMOVIDO'); audit('EQUIPE','Removeu colaborador'); } }
-
-// CHAT CRM
-window.renderChatLista = function() {
-  if(!$('chatLista')) return;
-  $('chatLista').innerHTML = J.clientes.map(c=>{
-    const msgs=J.mensagens.filter(m=>m.clienteId===c.id); const ultima=msgs[msgs.length-1]; const nLidas=msgs.filter(m=>m.sender==='cliente'&&!m.lidaAdmin).length;
-    return `<div class="chat-item ${J.chatAtivo===c.id?'active':''}" onclick="window.abrirChat('${c.id}','${c.nome}')"><div class="chat-item-name">${c.nome} ${nLidas>0?`<span class="chat-unread">${nLidas}</span>`:''}</div><div class="chat-item-last">${ultima?.msg||'Sem mensagens'}</div></div>`;
-  }).join('');
-}
-window.abrirChat = function(cid, nome) {
-  J.chatAtivo=cid; $('chatHead').innerText='ATENDIMENTO: '+nome.toUpperCase(); $('chatFoot').style.display='flex'; window.renderChatMsgs(cid);
-  J.mensagens.filter(m=>m.clienteId===cid&&m.sender==='cliente'&&!m.lidaAdmin).forEach(m=>{ db.collection('mensagens').doc(m.id).update({lidaAdmin:true}); });
-}
-window.renderChatMsgs = function(cid) {
-  const msgs=J.mensagens.filter(m=>m.clienteId===cid);
-  if(!$('chatMsgs')) return;
-  $('chatMsgs').innerHTML=msgs.map(m=>{
-    const ts = m.ts ? new Date(m.ts).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}) : '';
-    const lado = m.sender==='admin' ? 'admin' : 'cliente';
-    let conteudo = '';
-    const txt = m.msg || '';
-
-    if (txt.startsWith('[IMG]')) {
-      const url = txt.replace('[IMG]','');
-      conteudo = `<img src="${url}" style="max-width:200px;border-radius:4px;cursor:zoom-in;display:block;" onclick="window.open('${url}','_blank')">`;
-    } else if (txt.startsWith('[VID]')) {
-      const url = txt.replace('[VID]','');
-      conteudo = `<video src="${url}" controls style="max-width:220px;border-radius:4px;display:block;"></video>`;
-    } else if (txt.startsWith('[AUD]')) {
-      const url = txt.replace('[AUD]','');
-      conteudo = `<audio src="${url}" controls style="max-width:220px;"></audio>`;
-    } else {
-      conteudo = txt.replace(/\n/g,'<br>');
-    }
-
-    return `<div class="chat-msg ${lado}">${conteudo}<div class="ts">${ts}</div></div>`;
-  }).join('');
-  $('chatMsgs').scrollTop=$('chatMsgs').scrollHeight;
-};
-window.enviarChat = async function(txt) {
-  const msg= txt || $v('chatInput'); if(!msg||!J.chatAtivo) return;
-  await db.collection('mensagens').add({tenantId:J.tid,clienteId:J.chatAtivo,sender:'admin',msg,lidaCliente:false,ts:Date.now()});
-  if($('chatInput')) $('chatInput').value='';
-}
-document.getElementById('chatInput')?.addEventListener('keydown',e=>{if(e.key==='Enter')window.enviarChat();});
-
-// ── GRAVAÇÃO DE ÁUDIO PTT ──────────────────────────────────
-(function() {
-  let _mediaRec = null;
-  let _chunks = [];
-  let _gravando = false;
-
-  const btnPTT = document.getElementById('btnPTT');
-  if (!btnPTT) return;
-
-  btnPTT.addEventListener('click', async function() {
-    if (!J.chatAtivo) { window.toast('⚠ Selecione um cliente primeiro', 'warn'); return; }
-
-    if (!_gravando) {
-      // CLIQUE 1 — iniciar gravação
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        _chunks = [];
-        _mediaRec = new MediaRecorder(stream);
-        _mediaRec.ondataavailable = e => { if (e.data.size > 0) _chunks.push(e.data); };
-        _mediaRec.onstop = async () => {
-          stream.getTracks().forEach(t => t.stop());
-          const blob = new Blob(_chunks, { type: 'audio/webm' });
-          btnPTT.innerHTML = '<svg style="width:18px;height:18px;"><path fill="currentColor" d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path fill="currentColor" d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>';
-          btnPTT.style.color = '';
-          window.toast('⏳ Enviando áudio...');
-          try {
-            const fd = new FormData();
-            fd.append('file', blob, 'audio.webm');
-            fd.append('upload_preset', J.cloudPreset || 'evolution');
-            const res = await fetch(
-              `https://api.cloudinary.com/v1_1/${J.cloudName || 'dmuvm1o6m'}/auto/upload`,
-              { method: 'POST', body: fd }
-            );
-            const data = await res.json();
-            if (!data.secure_url) throw new Error('URL não retornada');
-            await db.collection('mensagens').add({
-              tenantId: J.tid, clienteId: J.chatAtivo,
-              sender: 'admin', msg: `[AUD]${data.secure_url}`,
-              tipo: 'audio', url: data.secure_url,
-              lidaCliente: false, ts: Date.now()
-            });
-            window.toast('✓ ÁUDIO ENVIADO');
-          } catch(err) {
-            window.toast('✕ ERRO AO ENVIAR ÁUDIO: ' + err.message, 'err');
-          }
-        };
-        _mediaRec.start();
-        _gravando = true;
-        btnPTT.innerHTML = '⏹';
-        btnPTT.style.color = 'var(--danger)';
-        btnPTT.title = 'Parar gravação';
-      } catch(err) {
-        window.toast('⚠ Microfone não permitido: ' + err.message, 'warn');
-      }
-    } else {
-      // CLIQUE 2 — parar gravação e enviar
-      _gravando = false;
-      btnPTT.title = 'Gravar Áudio';
-      if (_mediaRec && _mediaRec.state !== 'inactive') _mediaRec.stop();
-    }
-  });
-})();
-
-window.enviarArquivoChat = async function(input) {
-  const file = input.files[0];
-  if (!file || !J.chatAtivo) return;
-  input.value = '';
-
-  window.toast('⏳ Enviando arquivo...');
-
-  try {
-    const fd = new FormData();
-    fd.append('file', file);
-    fd.append('upload_preset', J.cloudPreset || 'evolution');
-
-    const res = await fetch(
-      `https://api.cloudinary.com/v1_1/${J.cloudName || 'dmuvm1o6m'}/auto/upload`,
-      { method: 'POST', body: fd }
-    );
-    const data = await res.json();
-
-    if (!data.secure_url) throw new Error('URL não retornada');
-
-    const tipo = data.resource_type || 'raw'; // image, video, raw
-    let msgTexto;
-    if (tipo === 'image') msgTexto = `[IMG]${data.secure_url}`;
-    else if (tipo === 'video') msgTexto = `[VID]${data.secure_url}`;
-    else msgTexto = `📎 Arquivo: ${file.name}\n${data.secure_url}`;
-
-    await db.collection('mensagens').add({
-      tenantId: J.tid,
-      clienteId: J.chatAtivo,
-      sender: 'admin',
-      msg: msgTexto,
-      tipo: tipo,
-      url: data.secure_url,
-      nomeArquivo: file.name,
-      lidaCliente: false,
-      ts: Date.now()
-    });
-
-    window.toast('✓ ARQUIVO ENVIADO');
-  } catch (e) {
-    window.toast('✕ ERRO AO ENVIAR ARQUIVO: ' + e.message, 'err');
-  }
-};
-
-// AGENDA
-window.prepAgenda = function(mode, id=null) {
-  ['agdId','agdServico'].forEach(f=>{if($(f)) $(f).value='';});
-  $('agdData').value=new Date().toISOString().split('T')[0]; $('agdHora').value='09:00'; window.popularSelects();
-  if(mode==='edit'&&id){
-    const a=J.agendamentos.find(x=>x.id===id); if(!a) return;
-    $('agdId').value=a.id; $('agdCliente').value=a.clienteId||''; window.filtrarVeicsAgenda(); setTimeout(()=>$('agdVeiculo').value=a.veiculoId||'',100);
-    $('agdData').value=a.data||''; $('agdHora').value=a.hora||''; $('agdServico').value=a.servico||''; $('agdMec').value=a.mecId||'';
-  }
-}
-window.salvarAgenda = async function() {
-  if(!$v('agdCliente')||!$v('agdData')) return;
-  const p={tenantId:J.tid,clienteId:$v('agdCliente'),veiculoId:$v('agdVeiculo'),data:$v('agdData'),hora:$v('agdHora'),servico:$v('agdServico'),mecId:$v('agdMec'),status:'Agendado',updatedAt:new Date().toISOString()};
-  const id=$v('agdId');
-  if(id) await db.collection('agendamentos').doc(id).update(p); else { p.createdAt=new Date().toISOString(); await db.collection('agendamentos').add(p); }
-  window.toast('✓ AGENDAMENTO SALVO'); fecharModal('modalAgenda'); audit('AGENDA','Agendou '+p.servico);
-}
-window.renderAgenda = function() {
-  if(!$('tbAgenda')) return;
-  const lista=[...J.agendamentos].sort((a,b)=>a.data>b.data?1:-1);
-  $('tbAgenda').innerHTML = lista.map(a=>{
-    const c=J.clientes.find(x=>x.id===a.clienteId); const v=J.veiculos.find(x=>x.id===a.veiculoId); const m=J.equipe.find(x=>x.id===a.mecId);
-    const hoje=new Date().toISOString().split('T')[0]; const passado=a.data<hoje&&a.status==='Agendado';
-    return `<tr style="${passado?'background:rgba(255,59,59,0.04);':''}"><td style="font-family:var(--fm)">${dtBr(a.data)} ${a.hora||''}</td><td>${c?.nome||'-'}</td><td>${v?.placa||'-'}</td><td>${a.servico||'-'}</td><td>${m?.nome||'-'}</td><td>${passado?'<span class="pill pill-danger">VENCIDO</span>':'<span class="pill pill-cyan">AGENDADO</span>'}</td><td><button class="btn-ghost" onclick="window.prepAgenda('edit','${a.id}');abrirModal('modalAgenda')">✏</button><button class="btn-primary" onclick="window.converterAgendaOS('${a.id}')" style="font-size:0.65rem;padding:5px 10px;">→ ABRIR O.S.</button></td></tr>`;
-  }).join('');
-}
-window.converterAgendaOS = async function(agdId) {
-  const a=J.agendamentos.find(x=>x.id===agdId); if(!a) return;
-  await db.collection('agendamentos').doc(agdId).update({status:'Convertido',updatedAt:new Date().toISOString()});
-  window.prepOS('add');
-  setTimeout(()=>{
-    $('osCliente').value=a.clienteId; window.filtrarVeiculosOS();
-    setTimeout(()=>{ $('osVeiculo').value=a.veiculoId; },100);
-    $('osDescricao').value=a.servico||''; $('osData').value=a.data||new Date().toISOString().split('T')[0];
-    abrirModal('modalOS');
-  },100);
-}
-
-// AUDITORIA
-window.renderAuditoria = function() {
-  if(!$('tbAuditoria')) return;
-  $('tbAuditoria').innerHTML = J.auditoria.slice(0,100).map(a=>`<tr><td style="font-family:var(--fm);font-size:0.72rem;color:var(--muted)">${dtHrBr(a.ts)}</td><td><span class="pill pill-cyan">${a.modulo||'-'}</span></td><td style="font-family:var(--fm);color:var(--cyan)">${a.usuario||'-'}</td><td>${a.acao||'-'}</td></tr>`).join('');
-}
-
-// GEMINI IA
-let iaHistorico = [];
-window.iaPerguntar = async function() {
-  const inp=$('iaInput'); const msg=$v('iaInput'); if(!msg) return; inp.value='';
-  window.adicionarMsgIA('user',msg); window.adicionarMsgIA('bot','<span style="color:var(--muted)">⏳ Processando...</span>');
-  const key=J.gemini; if(!key){window.adicionarMsgIA('bot','⚠ Configure a API Key Gemini no Superadmin.');return;}
-  const ctx = `Oficina: ${J.tnome}. Mecânicos: ${J.equipe.map(f=>f.nome).join(', ')}. Veículos: ${J.veiculos.length}. O.S. Pátio: ${J.os.filter(o=>!['Cancelado','Pronto','Entregue'].includes(o.status)).length}. Peças críticas: ${J.estoque.filter(p=>(p.qtd||0)<=(p.min||0)).map(p=>p.desc).join(', ')}.`;
-  const histOS = J.os.slice(-10).map(o=>{const v=J.veiculos.find(x=>x.id===o.veiculoId);return `OS: ${v?.placa}, Sts: ${o.status}, Tot: ${moeda(o.total)}`;}).join('\n');
-  const systemPrompt = `Você é o thIAguinho, IA para gestão de oficinas.\n\nCONTEXTO:\n${ctx}\n\nÚLTIMAS O.S.:\n${histOS}\n\nResponda em português de forma técnica e direta. Não alucine dados.`;
-  iaHistorico.push({role:'user',text:msg});
-  try {
-    const contents=iaHistorico.map(h=>({role:h.role==='user'?'user':'model',parts:[{text:h.text}]}));
-    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents,systemInstruction:{parts:[{text:systemPrompt}]}})});
-    const data=await res.json(); if(!res.ok) throw new Error(data.error?.message||'Erro API');
-    const resp=data.candidates?.[0]?.content?.parts?.[0]?.text||'Sem resposta';
-    iaHistorico.push({role:'model',text:resp});
-    $('iaMsgs').lastChild?.remove(); window.adicionarMsgIA('bot',resp.replace(/\n/g,'<br>'));
-  } catch(e){ $('iaMsgs').lastChild?.remove(); window.adicionarMsgIA('bot','⚠ Erro: '+e.message); }
-}
-window.iaAnalisarDRE = async function() { $('iaInput').value='Analise o financeiro atual e sugira melhorias.'; ir('ia',document.querySelector('.nav-item:last-child')); await window.iaPerguntar(); }
-window.iaAnalisarEstoque = async function() { $('iaInput').value='Quais peças estão em nível crítico para reposição?'; ir('ia',document.querySelector('.nav-item:last-child')); await window.iaPerguntar(); }
-window.adicionarMsgIA = function(role, html) {
-  if(!$('iaMsgs')) return;
-  const div=document.createElement('div'); div.className='ia-msg '+role;
-  if(role==='bot') div.innerHTML='<strong>thIAguinho:</strong> '+html; else div.innerHTML=html;
-  $('iaMsgs').appendChild(div); $('iaMsgs').scrollTop=$('iaMsgs').scrollHeight;
-}
-document.getElementById('iaInput')?.addEventListener('keydown',e=>{if(e.key==='Enter')window.iaPerguntar();});
 </script>
-<script src="js/financeiro.js"></script>
-<script src="js/os.js"></script>
 </body>
 </html>
