@@ -8,79 +8,139 @@
 <style>
 body::after {
   content: '';
-  position: fixed; inset: 0;
-  background-image: linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
-  background-size: 52px 52px;
-  pointer-events: none; z-index: 0;
-  animation: gridDrift 40s linear infinite;
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+  z-index: 0;
+  animation: gridDrift 30s linear infinite;
 }
-@keyframes gridDrift { to { background-position: 52px 52px; } }
+@keyframes gridDrift { to { background-position: 48px 48px; } }
+
 .pwd-wrap { position: relative; }
-.pwd-wrap .j-input { padding-right: 42px; }
-.pwd-toggle { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 15px; padding: 4px; }
-.pwd-toggle:hover { color: var(--text); }
-.remember-row { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 10px; margin-top: -2px; }
-.remember-row label { font-family: var(--fm); font-size: 0.63rem; color: var(--text-muted); cursor: pointer; display: flex; align-items: flex-start; gap: 6px; line-height: 1.4; }
-.remember-row input[type=checkbox] { width: 14px; height: 14px; accent-color: var(--brand); cursor: pointer; flex-shrink: 0; margin-top: 1px; }
-.form-group:nth-child(1) { animation: slideUp 0.4s 0.1s both; }
-.form-group:nth-child(2) { animation: slideUp 0.4s 0.2s both; }
-.remember-row { animation: slideUp 0.4s 0.25s both; }
-.btn { animation: slideUp 0.4s 0.3s both; }
-#sessionIndicator { display: none; background: var(--success-dim); border: 1px solid rgba(34,211,160,.3); padding: 10px 14px; margin-bottom: 14px; font-family: var(--fm); font-size: 0.68rem; color: var(--success); text-align: center; animation: slideUp 0.3s ease; }
+.pwd-wrap .input { padding-right: 42px; }
+.pwd-toggle {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; color: var(--text-muted); cursor: pointer;
+  font-size: 15px; padding: 4px;
+}
+.pwd-toggle:hover { color: var(--text-primary); }
+
+.remember-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  margin-top: -4px;
+}
+.remember-row label {
+  font-family: var(--ff-mono);
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.remember-row input[type=checkbox] {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--brand);
+  cursor: pointer;
+}
+
+.login-card .form-group:nth-child(1) { animation: slideUp 0.4s 0.1s both; }
+.login-card .form-group:nth-child(2) { animation: slideUp 0.4s 0.2s both; }
+.remember-row                        { animation: slideUp 0.4s 0.25s both; }
+.login-card .btn                     { animation: slideUp 0.4s 0.3s both; }
+@keyframes slideUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
+
+#sessionIndicator {
+  display: none;
+  background: var(--success-dim);
+  border: 1px solid rgba(34,211,160,.3);
+  border-radius: var(--r-md);
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  font-family: var(--ff-mono);
+  font-size: 0.7rem;
+  color: var(--success);
+  text-align: center;
+  animation: slideUp 0.3s ease;
+}
 </style>
 </head>
 <body>
 <div id="toast-container"></div>
 
 <div class="login-page" style="position:relative;z-index:1">
-  <div class="login-card" style="animation:modal-in 0.35s ease">
+  <div class="login-card" style="animation: modal-in 0.3s ease">
+
     <div class="login-logo-wrap">
-      <div class="login-logo-mark sb-brand-mark" style="margin:0 auto 16px;">J</div>
+      <div class="login-logo-mark brand-logo-mark sb-brand-mark">J</div>
       <div class="login-title brand-name">JARVIS ERP</div>
       <div class="login-sub brand-tagline">Gestão Automotiva Inteligente</div>
     </div>
 
-    <div id="sessionIndicator">✓ Sessão salva — entrando automaticamente...</div>
+    <div id="sessionIndicator">
+      ✓ Sessão salva — entrando automaticamente...
+    </div>
+
     <div id="loginErr" class="login-err">Usuário ou senha incorretos.</div>
 
     <div class="form-group">
-      <label class="j-label">E-mail ou Usuário</label>
-      <input class="j-input input-mono" id="usr" type="text" placeholder="seu.usuario" autocomplete="username" spellcheck="false" autocapitalize="off">
+      <label class="form-label">E-mail ou Usuário</label>
+      <input
+        class="input input-mono"
+        id="usr"
+        type="text"
+        placeholder="seu.email@exemplo.com"
+        autocomplete="username"
+        spellcheck="false"
+        autocapitalize="off">
     </div>
 
     <div class="form-group">
-      <label class="j-label">Senha</label>
+      <label class="form-label">Senha</label>
       <div class="pwd-wrap">
-        <input class="j-input" id="pwd" type="password" placeholder="••••••••" autocomplete="current-password">
-        <button class="pwd-toggle" type="button" onclick="_togglePwd()" id="pwdToggle" title="Mostrar/ocultar senha">👁</button>
+        <input
+          class="input"
+          id="pwd"
+          type="password"
+          placeholder="••••••••"
+          autocomplete="current-password">
+        <button class="pwd-toggle" type="button" onclick="_togglePwd()" id="pwdToggle" title="Ver senha">👁</button>
       </div>
     </div>
 
-    <div class="remember-row">
+    <div class="remember-row" style="align-items: flex-start; margin-top: 8px;">
       <label>
         <input type="checkbox" id="lgpdConsent">
-        <span>Concordo com o tratamento de dados conforme a LGPD (Lei 13.709/2018).</span>
+        <span style="line-height: 1.3;">Concordo com o tratamento de dados conforme a LGPD.</span>
       </label>
     </div>
 
-    <div class="remember-row" style="margin-bottom:18px;">
+    <div class="remember-row" style="margin-bottom: 12px;">
       <label>
-        <input type="checkbox" id="rememberMe">
-        <span>Lembrar meu acesso neste dispositivo</span>
+        <input type="checkbox" id="rememberMe"> Lembrar meu usuário e senha
       </label>
     </div>
 
-    <button class="btn btn-brand btn-xl btn-full" id="btnLogin" onclick="autenticar()" style="margin-top:4px">
+    <button class="btn btn-brand btn-xl btn-full" id="btnLogin" onclick="autenticar()" style="margin-top:8px">
       Entrar no Sistema
     </button>
 
-    <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:22px;padding-top:16px;border-top:1px solid var(--border)">
+    <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
       <div class="status-dot online"></div>
-      <span style="font-family:var(--fm);font-size:0.6rem;color:var(--text-muted)">SISTEMA OPERACIONAL</span>
+      <span style="font-family:var(--ff-mono);font-size:0.62rem;color:var(--text-muted)">SISTEMA OPERACIONAL</span>
     </div>
   </div>
 
-  <div style="position:absolute;bottom:20px;left:0;right:0;text-align:center;font-family:var(--fm);font-size:0.58rem;color:var(--text-disabled)">
+  <div style="position:absolute;bottom:20px;left:0;right:0;text-align:center;font-family:var(--ff-mono);font-size:0.6rem;color:var(--text-disabled)">
     <span class="brand-footer">Powered by thIAguinho Soluções · 2026</span>
   </div>
 </div>
@@ -91,138 +151,195 @@ body::after {
 <script src="js/config.js"></script>
 <script>
 sessionStorage.clear();
+
 const db = window.initFirebase();
 
 window.addEventListener('load', () => {
-  try { const b = JSON.parse(localStorage.getItem('j_saved_brand')||'null'); if(b) window.aplicarBrand(b); } catch(e){}
+  try {
+    const brand = JSON.parse(localStorage.getItem('j_saved_brand') || 'null');
+    if (brand) window.aplicarBrand(brand);
+  } catch(e) {}
 });
 
-(function carregarSessao() {
-  const saved = JSON.parse(localStorage.getItem('j_saved_login')||'null');
-  if (!saved) return;
-  document.getElementById('usr').value = saved.usr||'';
-  document.getElementById('pwd').value = saved.pwd||'';
-  document.getElementById('rememberMe').checked = true;
-  document.getElementById('lgpdConsent').checked = true;
-  if (saved.destino && saved.tid) {
-    document.getElementById('sessionIndicator').style.display = 'block';
-    Object.entries(saved.session||{}).forEach(([k,v]) => sessionStorage.setItem(k,v));
-    setTimeout(() => window.location.href = saved.destino, 1200);
+(function carregarCredenciais() {
+  const saved = JSON.parse(localStorage.getItem('j_saved_login') || 'null');
+  if (saved) {
+    document.getElementById('usr').value = saved.usr || '';
+    document.getElementById('pwd').value = saved.pwd || '';
+    document.getElementById('rememberMe').checked = true;
+    document.getElementById('lgpdConsent').checked = true;
+
+    if (saved.destino && saved.tid) {
+      const indicator = document.getElementById('sessionIndicator');
+      indicator.style.display = 'block';
+
+      Object.entries(saved.session || {}).forEach(([k, v]) => {
+        sessionStorage.setItem(k, v);
+      });
+
+      setTimeout(() => {
+        window.location.href = saved.destino;
+      }, 1200);
+    }
   }
 })();
 
 function _togglePwd() {
-  const p=document.getElementById('pwd'), btn=document.getElementById('pwdToggle');
-  if(p.type==='password'){p.type='text';btn.textContent='🙈';}
-  else{p.type='password';btn.textContent='👁';}
+  const p = document.getElementById('pwd');
+  const btn = document.getElementById('pwdToggle');
+  if (p.type === 'password') { p.type = 'text'; btn.textContent = '🙈'; }
+  else { p.type = 'password'; btn.textContent = '👁'; }
 }
 
-document.getElementById('pwd').addEventListener('keydown', e=>{if(e.key==='Enter')autenticar();});
-document.getElementById('usr').addEventListener('keydown', e=>{if(e.key==='Enter')document.getElementById('pwd').focus();});
+document.getElementById('pwd').addEventListener('keydown', e => { if (e.key === 'Enter') autenticar(); });
+document.getElementById('usr').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('pwd').focus(); });
 
 async function autenticar() {
   const usr = document.getElementById('usr').value.trim();
   const pwd = document.getElementById('pwd').value.trim();
-  const consent = document.getElementById('lgpdConsent').checked;
-  const errEl = document.getElementById('loginErr');
-  errEl.style.display = 'none';
+  const lgpdConsent = document.getElementById('lgpdConsent').checked;
+  const err = document.getElementById('loginErr');
+  err.style.display = 'none';
 
-  if (!consent) { errEl.textContent='Aceite os termos da LGPD para continuar.'; errEl.style.display='block'; return; }
-  if (!usr||!pwd) { errEl.textContent='Preencha usuário e senha.'; errEl.style.display='block'; return; }
+  if (!lgpdConsent) {
+    err.textContent = 'Aceite a LGPD para acessar.';
+    err.style.display = 'block';
+    return;
+  }
+
+  if (!usr || !pwd) {
+    err.textContent = 'Preencha usuário e senha.';
+    err.style.display = 'block';
+    return;
+  }
 
   const btn = document.getElementById('btnLogin');
-  btn.innerHTML = '<span class="spinner"></span> Autenticando...'; btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Autenticando...';
+  btn.disabled = true;
 
   try {
-    // CAMADA 0: Superadmin via Firebase Auth (email)
-    if (usr.includes('@')) {
-      try {
-        await firebase.auth().signInWithEmailAndPassword(usr, pwd);
-        sessionStorage.setItem('j_tid','MASTER_ADMIN');
-        sessionStorage.setItem('j_role','superadmin');
-        sessionStorage.setItem('j_nome', usr);
-        window.location.href = 'superadmin.html'; return;
-      } catch(authErr) { /* tenta nas coleções */ }
+    // ── CAMADA 0: SUPERADMIN VIA FIREBASE AUTH ──
+    if(usr.includes('@')) {
+        try {
+            await firebase.auth().signInWithEmailAndPassword(usr, pwd);
+            sessionStorage.setItem('j_tid', 'MASTER_ADMIN');
+            sessionStorage.setItem('j_role', 'superadmin');
+            sessionStorage.setItem('j_nome', usr);
+            localStorage.setItem('j_role_master', 'superadmin'); 
+            
+            window.location.href = 'superadmin.html';
+            return;
+        } catch(authErr) {
+            console.log("Não autenticado no Auth principal, verificando coleções de oficinas...");
+        }
     }
 
-    // CAMADA 1: Admin/Gestor da oficina → jarvis.html
-    const snapOf = await db.collection('oficinas').where('usuario','==',usr).get();
+    // ── CAMADA 1: Admin/Gestor da oficina → jarvis.html ──
+    const snapOf = await db.collection('oficinas').where('usuario', '==', usr).get();
     if (!snapOf.empty) {
-      const doc = snapOf.docs[0]; const d = doc.data();
+      const doc = snapOf.docs[0];
+      const d   = doc.data();
+
       if (d.senha !== pwd) throw new Error('Senha incorreta.');
       if (d.status === 'Bloqueado') throw new Error('Licença bloqueada. Contate o suporte.');
+
       const sessao = {
-        j_tid: doc.id, j_tnome: d.nomeFantasia||'Oficina',
-        j_role: 'admin', j_nome: d.nomeFantasia||'Gestor',
-        j_gemini: d.apiKeys?.gemini||'',
-        j_nicho: d.nicho||'carros',
-        j_cloud_name: d.apiKeys?.cloudName||'dmuvm1o6m',
-        j_cloud_preset: d.apiKeys?.cloudPreset||'evolution',
+        j_tid:          doc.id,
+        j_tnome:        d.nomeFantasia || 'Oficina',
+        j_role:         'admin',
+        j_nome:         d.nomeFantasia || 'Gestor',
+        j_gemini:       d.apiKeys?.gemini      || '',
+        j_nicho:        d.nicho                || 'carros',
+        j_cloud_name:   d.apiKeys?.cloudName   || 'dmuvm1o6m',
+        j_cloud_preset: d.apiKeys?.cloudPreset || 'evolution',
       };
-      const brand = _buildBrand(d);
+
+      const brand = {
+        name:       d.brandName    || d.nomeFantasia,
+        tagline:    d.brandTagline || 'Gestão Automotiva',
+        logoLetter: d.brandLetter  || (d.nomeFantasia || 'J').charAt(0).toUpperCase(),
+        color:      d.brandColor   || '#3B82F6',
+        footer:     d.brandFooter  || `${d.nomeFantasia} · Powered by JARVIS ERP`
+      };
+      brand.colorDim  = _hexDim(brand.color, 0.12);
+      brand.colorGlow = _hexDim(brand.color, 0.25);
       sessao.j_brand = JSON.stringify(brand);
-      Object.entries(sessao).forEach(([k,v]) => sessionStorage.setItem(k,v));
-      _salvarLogin(usr,pwd,'jarvis.html',doc.id,sessao,brand);
-      window.location.href = 'jarvis.html'; return;
+
+      Object.entries(sessao).forEach(([k, v]) => sessionStorage.setItem(k, v));
+      _salvarCredenciais(usr, pwd, 'jarvis.html', doc.id, sessao, brand);
+
+      window.location.href = 'jarvis.html';
+      return;
     }
 
-    // CAMADA 2: Funcionário/Equipe → equipe.html
-    const snapFn = await db.collection('funcionarios').where('usuario','==',usr).get();
+    // ── CAMADA 2: Funcionário/Equipe → equipe.html ──
+    const snapFn = await db.collection('funcionarios').where('usuario', '==', usr).get();
     if (!snapFn.empty) {
-      const docF = snapFn.docs[0]; const dF = docF.data();
+      const docF = snapFn.docs[0];
+      const dF   = docF.data();
+
       if (dF.senha !== pwd) throw new Error('Senha incorreta.');
+
       const mae = await db.collection('oficinas').doc(dF.tenantId).get();
-      if (!mae.exists||mae.data().status==='Bloqueado') throw new Error('Oficina bloqueada.');
-      const md = mae.data();
+      if (!mae.exists || mae.data().status === 'Bloqueado') throw new Error('Oficina bloqueada.');
+
+      const maeData = mae.data();
+
       const sessao = {
-        j_tid: dF.tenantId, j_tnome: md.nomeFantasia||'Oficina',
-        j_role: dF.cargo==='gerente'?'gerente':'equipe',
-        j_nome: dF.nome, j_fid: docF.id,
-        j_comissao: String(dF.comissaoServico||dF.comissao||0),
-        j_gemini: md.apiKeys?.gemini||'',
-        j_nicho: md.nicho||'carros',
-        j_cloud_name: md.apiKeys?.cloudName||'dmuvm1o6m',
-        j_cloud_preset: md.apiKeys?.cloudPreset||'evolution',
+        j_tid:          dF.tenantId,
+        j_tnome:        maeData.nomeFantasia || 'Oficina',
+        j_role:         dF.cargo === 'gerente' ? 'gerente' : 'equipe',
+        j_nome:         dF.nome,
+        j_fid:          docF.id,
+        j_comissao:     String(dF.comissao || 0),
+        j_gemini:       maeData.apiKeys?.gemini      || '',
+        j_nicho:        maeData.nicho                || 'carros',
+        j_cloud_name:   maeData.apiKeys?.cloudName   || 'dmuvm1o6m',
+        j_cloud_preset: maeData.apiKeys?.cloudPreset || 'evolution',
       };
-      const brand = _buildBrand(md);
+
+      const brand = {
+        name:       maeData.brandName    || maeData.nomeFantasia,
+        logoLetter: maeData.brandLetter  || (maeData.nomeFantasia || 'J').charAt(0).toUpperCase(),
+        color:      maeData.brandColor   || '#3B82F6',
+        footer:     maeData.brandFooter  || `${maeData.nomeFantasia} · Powered by JARVIS ERP`
+      };
+      brand.colorDim = _hexDim(brand.color, 0.12);
       sessao.j_brand = JSON.stringify(brand);
-      Object.entries(sessao).forEach(([k,v]) => sessionStorage.setItem(k,v));
-      _salvarLogin(usr,pwd,'equipe.html',dF.tenantId,sessao,brand);
-      window.location.href = 'equipe.html'; return;
+
+      Object.entries(sessao).forEach(([k, v]) => sessionStorage.setItem(k, v));
+      _salvarCredenciais(usr, pwd, 'equipe.html', dF.tenantId, sessao, brand);
+
+      window.location.href = 'equipe.html';
+      return;
     }
 
     throw new Error('Usuário não encontrado no sistema.');
-  } catch(e) {
-    errEl.textContent = e.message; errEl.style.display = 'block';
-    btn.innerHTML = 'Entrar no Sistema'; btn.disabled = false;
+
+  } catch (e) {
+    err.textContent = e.message;
+    err.style.display = 'block';
+    btn.innerHTML = 'Entrar no Sistema';
+    btn.disabled = false;
   }
 }
 
-function _buildBrand(d) {
-  const brand = {
-    name: d.brandName||d.nomeFantasia||'JARVIS ERP',
-    tagline: d.brandTagline||'Gestão Automotiva',
-    logoLetter: d.brandLetter||(d.nomeFantasia||'J').charAt(0).toUpperCase(),
-    color: d.brandColor||'#3B82F6',
-    footer: d.brandFooter||`${d.nomeFantasia} · Powered by JARVIS ERP`
-  };
-  brand.colorDim  = _hexDim(brand.color, 0.12);
-  brand.colorGlow = _hexDim(brand.color, 0.25);
-  brand.colorDark = _hexDim(brand.color, 0.8);
-  return brand;
-}
-
-function _salvarLogin(usr,pwd,destino,tid,session,brand) {
-  if (!document.getElementById('rememberMe').checked) {
-    localStorage.removeItem('j_saved_login'); return;
+function _salvarCredenciais(usr, pwd, destino, tid, session, brand) {
+  const lembrar = document.getElementById('rememberMe').checked;
+  if (lembrar) {
+    localStorage.setItem('j_saved_login', JSON.stringify({ usr, pwd, destino, tid, session }));
+    localStorage.setItem('j_saved_brand', JSON.stringify(brand));
+  } else {
+    localStorage.removeItem('j_saved_login');
+    localStorage.removeItem('j_saved_brand');
   }
-  localStorage.setItem('j_saved_login', JSON.stringify({usr,pwd,destino,tid,session}));
-  localStorage.setItem('j_saved_brand', JSON.stringify(brand));
 }
 
 function _hexDim(hex, alpha) {
-  const c=(hex||'#3B82F6').replace('#','');
-  const r=parseInt(c.substring(0,2),16),g=parseInt(c.substring(2,4),16),b=parseInt(c.substring(4,6),16);
+  const c = hex.replace('#', '');
+  const r = parseInt(c.substring(0,2), 16);
+  const g = parseInt(c.substring(2,4), 16);
+  const b = parseInt(c.substring(4,6), 16);
   return `rgba(${r},${g},${b},${alpha})`;
 }
 </script>

@@ -21,75 +21,107 @@ body { overflow-y: auto; background: #060A14; color: #E8F4FF; font-family: 'Exo 
   --surf-1: #0C1426;
   --surf-2: #111D35;
   --surf-3: #162040;
-  --border: rgba(0, 212, 255, 0.1);
-  --border-med: rgba(0, 212, 255, 0.2);
+  --border: rgba(0, 212, 255, 0.15);
+  --border-med: rgba(0, 212, 255, 0.25);
   --text-primary: #E8F4FF;
   --text-secondary: #7A9AB8;
   --text-muted: #4A6B8A;
   --ff-display: 'Rajdhani', sans-serif;
   --ff-mono: 'JetBrains Mono', monospace;
-  --r-md: 4px;
-  --r-lg: 6px;
-  --r-xl: 8px;
-  --r-2xl: 12px;
+  --r-md: 6px;
+  --r-lg: 8px;
+  --r-xl: 12px;
+  --r-2xl: 16px;
 }
 
 .portal-bg { min-height: 100vh; position: relative; z-index: 1; }
 
 .portal-login { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
-.portal-login-card { width: 100%; max-width: 380px; background: var(--surf-1); border: 1px solid var(--border-med); border-radius: var(--r-2xl); padding: 32px 28px; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-.portal-login-card::before { content: ''; position: absolute; top: 0; left: 15%; right: 15%; height: 2px; background: linear-gradient(90deg, transparent, var(--brand), transparent); }
+.portal-login-card { width: 100%; max-width: 380px; background: var(--surf-1); border: 1px solid var(--border-med); border-radius: var(--r-2xl); padding: 36px 28px; position: relative; box-shadow: 0 15px 40px rgba(0,0,0,0.6); }
+.portal-login-card::before { content: ''; position: absolute; top: 0; left: 15%; right: 15%; height: 3px; background: linear-gradient(90deg, transparent, var(--brand), transparent); }
 
-.portal-header { background: var(--surf-1); border-bottom: 1px solid var(--border); padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
-.portal-body { max-width: 640px; margin: 0 auto; padding: 20px 16px; }
+.portal-header { background: rgba(12, 20, 38, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+.portal-body { max-width: 640px; margin: 0 auto; padding: 24px 16px; display: flex; flex-direction: column; gap: 24px; }
 
-.os-card { background: var(--surf-1); border: 1px solid var(--border); border-radius: var(--r-xl); overflow: hidden; margin-bottom: 16px; }
-.os-card-header { padding: 16px 20px; background: var(--surf-2); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+/* OS Card Design Clean */
+.os-card { background: var(--surf-1); border: 1px solid var(--border); border-radius: var(--r-xl); overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: all 0.3s; }
+.os-card-header { padding: 20px; background: linear-gradient(to bottom, var(--surf-2), var(--surf-1)); border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 12px; }
 .os-card-body { padding: 20px; }
 
-.stepper { display: flex; align-items: center; gap: 0; position: relative; margin: 20px 0; justify-content: space-between; }
-.step { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; position: relative; z-index: 1; }
-.step-dot { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; border: 2px solid; background: var(--surf-1); font-weight: 700; z-index: 2; }
+.placa-badge { display: inline-block; font-family: var(--ff-mono); font-size: 1.1rem; font-weight: 700; letter-spacing: 2px; background: #fff; color: #000; padding: 4px 12px; border-radius: 4px; border-top: 4px solid #003399; box-shadow: 0 2px 4px rgba(0,0,0,0.3); text-transform: uppercase; }
+.os-meta { display: flex; gap: 16px; font-size: 0.8rem; color: var(--text-secondary); font-family: var(--ff-mono); flex-wrap: wrap; }
+.os-meta span { display: flex; align-items: center; gap: 6px; }
+
+/* Status Pill */
+.status-pill { align-self: flex-start; font-family: var(--ff-mono); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 4px 12px; border-radius: 20px; border: 1px solid; }
+
+/* Detalhamento Maximizável */
+.os-details { display: none; padding-top: 16px; margin-top: 16px; border-top: 1px dashed var(--border); }
+.os-card.expanded .os-details { display: block; }
+.btn-expand { background: var(--surf-2); border: 1px solid var(--border); color: var(--text-primary); font-family: var(--ff-mono); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; border-radius: 20px; padding: 8px 16px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 8px; margin: 10px auto 0; }
+.btn-expand:hover { border-color: var(--brand); color: var(--brand); }
+
+/* Stepper */
+.stepper { display: flex; align-items: center; gap: 0; position: relative; margin: 24px 0 10px; justify-content: space-between; }
+.step { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; position: relative; z-index: 1; }
+.step-dot { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; border: 2px solid; background: var(--surf-1); font-weight: 700; z-index: 2; transition: 0.3s; }
 .step.done .step-dot { background: var(--success); border-color: var(--success); color: #000; }
-.step.active .step-dot { background: var(--brand-dim); border-color: var(--brand); color: var(--brand); box-shadow: 0 0 10px var(--brand); }
+.step.active .step-dot { background: var(--brand-dim); border-color: var(--brand); color: var(--brand); box-shadow: 0 0 12px rgba(0,212,255,0.4); }
 .step.pending .step-dot { border-color: var(--border-med); color: var(--text-muted); }
-.step-label { font-family: var(--ff-mono); font-size: 0.5rem; text-align: center; color: var(--text-muted); max-width: 50px; line-height: 1.1; }
+.step-label { font-family: var(--ff-mono); font-size: 0.55rem; text-align: center; color: var(--text-muted); line-height: 1.2; text-transform: uppercase; letter-spacing: 0.5px; }
 .step.done .step-label { color: var(--success); }
 .step.active .step-label { color: var(--brand); font-weight: 700; }
+.step-line { position: absolute; top: 13px; left: 10%; right: 10%; height: 2px; background: var(--border-med); z-index: 0; }
+.step-line-fill { position: absolute; top: 13px; left: 10%; height: 2px; background: var(--success); z-index: 0; transition: width 0.4s ease; }
 
-.step-line { position: absolute; top: 11px; left: 15px; right: 15px; height: 2px; background: var(--border); z-index: 0; }
-.step-line-fill { position: absolute; top: 11px; left: 15px; height: 2px; background: var(--success); z-index: 0; transition: width 0.4s ease; }
-
-.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
-.info-item { background: var(--surf-2); border-radius: var(--r-lg); padding: 12px 14px; border: 1px solid var(--border); }
+/* Grid de Informações */
+.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+.info-item { background: var(--surf-2); border-radius: var(--r-md); padding: 12px; border: 1px solid rgba(255,255,255,0.03); }
 .info-item-label { font-family: var(--ff-mono); font-size: 0.58rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; }
-.info-item-value { font-size: 0.9rem; font-weight: 600; color: var(--text-primary); }
+.info-item-value { font-size: 0.95rem; font-weight: 600; color: var(--text-primary); }
 
-.media-preview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px; margin-top: 12px; }
-.media-preview-item { aspect-ratio: 1; border-radius: var(--r-md); overflow: hidden; border: 1px solid var(--border); background: var(--surf-2); }
+/* Galeria */
+.media-preview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 10px; margin-top: 12px; }
+.media-preview-item { aspect-ratio: 1; border-radius: var(--r-md); overflow: hidden; border: 1px solid var(--border); background: #000; position: relative; }
 .media-preview-item img, .media-preview-item video { width: 100%; height: 100%; object-fit: cover; cursor: zoom-in; }
 
-.portal-chat { margin-top: 16px; }
-.portal-chat-messages { background: var(--surf-2); border: 1px solid var(--border); border-radius: var(--r-xl) var(--r-xl) 0 0; min-height: 200px; max-height: 300px; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
-.chat-msg { padding: 10px 14px; border-radius: var(--r-md); max-width: 85%; font-size: 0.85rem; line-height: 1.4; }
-.chat-msg.outgoing { background: var(--brand-dim); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--text-primary); align-self: flex-end; border-bottom-right-radius: 0; }
+/* Chat CRM */
+.portal-chat { display: flex; flex-direction: column; background: var(--surf-1); border: 1px solid var(--border); border-radius: var(--r-xl); overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+.portal-chat-messages { background: var(--surf-2); min-height: 250px; max-height: 350px; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.chat-msg { padding: 12px 16px; border-radius: var(--r-lg); max-width: 85%; font-size: 0.9rem; line-height: 1.4; word-break: break-word; position: relative; }
+.chat-msg.outgoing { background: linear-gradient(135deg, rgba(0,212,255,0.15), rgba(0,212,255,0.05)); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--text-primary); align-self: flex-end; border-bottom-right-radius: 0; }
 .chat-msg.incoming { background: var(--surf-3); border: 1px solid var(--border); color: var(--text-primary); align-self: flex-start; border-bottom-left-radius: 0; }
-.msg-time { font-family: var(--ff-mono); font-size: 0.6rem; color: var(--text-muted); margin-top: 4px; text-align: right; }
-.portal-chat-input { background: var(--surf-2); border: 1px solid var(--border); border-top: none; border-radius: 0 0 var(--r-xl) var(--r-xl); padding: 10px; display: flex; gap: 8px; align-items: center; }
+.msg-time { font-family: var(--ff-mono); font-size: 0.6rem; color: rgba(255,255,255,0.4); margin-top: 6px; text-align: right; }
+.portal-chat-input { background: var(--surf-1); border-top: 1px solid var(--border); padding: 12px; display: flex; gap: 10px; align-items: center; }
 
-.orcamento-alert { background: var(--warn-dim); border: 1px solid rgba(255,184,0,0.3); border-radius: var(--r-lg); padding: 16px; margin-top: 14px; }
-.btn { padding: 10px 16px; border: none; border-radius: 4px; font-family: var(--ff-display); font-weight: 700; cursor: pointer; transition: 0.2s; }
-.btn-brand { background: var(--brand); color: #000; }
+/* Alertas e Tempo Decorrido */
+.orcamento-alert { background: linear-gradient(to right, rgba(255,184,0,0.1), transparent); border-left: 4px solid var(--warn); border-radius: 0 var(--r-md) var(--r-md) 0; padding: 16px; margin: 16px 0; }
+.historico-badge { background: rgba(0, 212, 255, 0.08); border: 1px dashed var(--brand); color: var(--brand); padding: 10px 14px; border-radius: var(--r-md); font-family: var(--ff-mono); font-size: 0.8rem; text-align: center; margin-top: 16px; }
+
+/* Botões e Inputs */
+.btn { padding: 12px 20px; border: none; border-radius: var(--r-md); font-family: var(--ff-display); font-size: 0.9rem; font-weight: 700; letter-spacing: 1px; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.btn-brand { background: var(--brand); color: #000; box-shadow: 0 0 15px rgba(0,212,255,0.2); }
 .btn-success { background: var(--success); color: #000; }
 .btn-danger { background: transparent; border: 1px solid var(--danger); color: var(--danger); }
-.input { width: 100%; padding: 10px 14px; background: var(--surf-2); border: 1px solid var(--border); border-radius: 4px; color: #fff; font-family: var(--ff-mono); }
-.input:focus { border-color: var(--brand); outline: none; }
+.btn-outline { background: transparent; border: 1px solid var(--brand); color: var(--brand); }
+.input { width: 100%; padding: 12px 14px; background: rgba(0,0,0,0.2); border: 1px solid var(--border-med); border-radius: var(--r-md); color: #fff; font-family: var(--ff-mono); font-size: 0.9rem; transition: 0.2s; }
+.input:focus { border-color: var(--brand); outline: none; background: rgba(0,212,255,0.05); }
+.input::placeholder { color: var(--text-muted); }
 
+/* Timeline Auditoria */
 .timeline{padding-left:14px;border-left:2px solid var(--border); margin-top:14px;}
 .tl-item{padding:0 0 16px 16px;position:relative;}
 .tl-item::before{content:'';position:absolute;left:-21px;top:2px;width:10px;height:10px;background:var(--brand);border:2px solid var(--surf-1);border-radius:50%;}
 .tl-date{font-family:var(--ff-mono);font-size:0.6rem;color:var(--text-muted);margin-bottom:2px;}
 .tl-action{font-size:0.85rem;color:var(--text-primary); line-height:1.4;}
+
+/* Listas Financeiro e Agendamento */
+.fin-card { border-left: 4px solid transparent; padding: 14px; background: var(--surf-2); border-radius: var(--r-md); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+.fin-card.pendente { border-left-color: var(--danger); background: linear-gradient(to right, rgba(255,59,59,0.08), var(--surf-2)); }
+.fin-card.pago { border-left-color: var(--success); }
+
+/* Section Headers */
+.section-title { font-family: var(--ff-display); font-size: 1.3rem; font-weight: 700; color: white; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
 
 /* Toast */
 #toastBox{position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none;}
@@ -105,26 +137,26 @@ body { overflow-y: auto; background: #060A14; color: #E8F4FF; font-family: 'Exo 
 <div id="loginView" class="portal-bg">
   <div class="portal-login">
     <div class="portal-login-card">
-      <div style="text-align:center;margin-bottom:24px">
-        <div style="width:52px;height:52px;border-radius:var(--r-xl);background:var(--brand-dim);border:1px solid rgba(0,212,255,0.3);display:flex;align-items:center;justify-content:center;font-family:var(--ff-display);font-size:1.4rem;font-weight:800;color:var(--brand);margin:0 auto 12px" id="portalLogoMark">J</div>
-        <div style="font-family:var(--ff-display);font-size:1.2rem;font-weight:700" id="portalOficinaName">Portal do Cliente</div>
-        <div style="font-family:var(--ff-mono);font-size:0.62rem;color:var(--text-muted);margin-top:4px;letter-spacing:0.08em">ACOMPANHE SEU VEÍCULO</div>
+      <div style="text-align:center;margin-bottom:32px">
+        <div style="width:64px;height:64px;border-radius:var(--r-xl);background:linear-gradient(135deg, var(--brand-dim), transparent);border:1px solid var(--border-med);display:flex;align-items:center;justify-content:center;font-family:var(--ff-display);font-size:1.8rem;font-weight:800;color:var(--brand);margin:0 auto 16px;box-shadow: 0 0 20px rgba(0,212,255,0.1);" id="portalLogoMark">J</div>
+        <div style="font-family:var(--ff-display);font-size:1.4rem;font-weight:700;letter-spacing:1px;" id="portalOficinaName">Portal do Cliente</div>
+        <div style="font-family:var(--ff-mono);font-size:0.65rem;color:var(--brand);margin-top:6px;letter-spacing:2px;text-transform:uppercase;">Acompanhamento Digital</div>
       </div>
 
-      <div id="portalLoginErr" style="display:none; background: rgba(255,59,59,0.1); color: var(--danger); padding: 10px; border-radius: 4px; font-size: 0.8rem; margin-bottom: 15px; text-align: center; border: 1px solid rgba(255,59,59,0.2);">Credenciais inválidas.</div>
+      <div id="portalLoginErr" style="display:none; background: rgba(255,59,59,0.1); color: var(--danger); padding: 12px; border-radius: var(--r-md); font-size: 0.85rem; margin-bottom: 20px; text-align: center; border: 1px solid rgba(255,59,59,0.3);">Credenciais inválidas.</div>
 
       <div style="margin-bottom:16px;">
-        <label style="display:block;font-family:var(--ff-mono);font-size:0.6rem;color:var(--text-muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;">Placa ou Usuário</label>
+        <label style="display:block;font-family:var(--ff-mono);font-size:0.65rem;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">Placa ou Usuário</label>
         <input class="input" id="pLogin" placeholder="Ex: ABC-1234" autocomplete="off">
       </div>
-      <div style="margin-bottom:16px;">
-        <label style="display:block;font-family:var(--ff-mono);font-size:0.6rem;color:var(--text-muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;">PIN de acesso</label>
+      <div style="margin-bottom:24px;">
+        <label style="display:block;font-family:var(--ff-mono);font-size:0.65rem;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">PIN de acesso</label>
         <input class="input" id="pPin" type="password" placeholder="••••••">
       </div>
       <button class="btn btn-brand" onclick="portalLogin()" style="width:100%;">ACESSAR PORTAL</button>
 
-      <div style="text-align:center;margin-top:16px;font-size:0.75rem;color:var(--text-muted)">
-        Seu usuário e PIN foram fornecidos via WhatsApp.
+      <div style="text-align:center;margin-top:20px;font-size:0.75rem;color:var(--text-muted)">
+        Credenciais fornecidas pela oficina via WhatsApp.
       </div>
     </div>
   </div>
@@ -132,19 +164,33 @@ body { overflow-y: auto; background: #060A14; color: #E8F4FF; font-family: 'Exo 
 
 <div id="portalView" style="display:none" class="portal-bg">
   <div class="portal-header">
-    <div style="display:flex;align-items:center;gap:10px">
-      <div style="width:28px;height:28px;border-radius:var(--r-md);background:var(--brand-dim);border:1px solid rgba(0,212,255,0.2);display:flex;align-items:center;justify-content:center;font-family:var(--ff-display);font-size:0.85rem;font-weight:800;color:var(--brand)" id="portalHdrMark">J</div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="width:36px;height:36px;border-radius:var(--r-md);background:var(--brand-dim);border:1px solid rgba(0,212,255,0.3);display:flex;align-items:center;justify-content:center;font-family:var(--ff-display);font-size:1.1rem;font-weight:800;color:var(--brand)" id="portalHdrMark">J</div>
       <div>
-        <div style="font-family:var(--ff-display);font-size:0.85rem;font-weight:700" id="portalHdrName">Portal do Cliente</div>
-        <div style="font-family:var(--ff-mono);font-size:0.55rem;color:var(--brand)" id="portalClienteNome">Carregando...</div>
+        <div style="font-family:var(--ff-display);font-size:1rem;font-weight:700;letter-spacing:1px;" id="portalHdrName">Oficina</div>
+        <div style="font-family:var(--ff-mono);font-size:0.6rem;color:var(--success);text-transform:uppercase;letter-spacing:1px;" id="portalClienteNome">Carregando...</div>
       </div>
     </div>
-    <button class="btn" onclick="portalLogout()" style="background:transparent;border:1px solid var(--border);color:var(--text-muted);padding:4px 10px;font-size:0.7rem;">Sair</button>
+    <button class="btn" onclick="portalLogout()" style="background:transparent;border:1px solid rgba(255,255,255,0.1);color:var(--text-secondary);padding:6px 12px;font-size:0.75rem;border-radius:20px;">Sair ⏻</button>
   </div>
 
   <div class="portal-body">
-    <div id="portalContent">
-      </div>
+    <div>
+      <div class="section-title">🚘 Meus Veículos e O.S.</div>
+      <div id="portalOS"></div>
+    </div>
+
+    <div id="portalChatWrap"></div>
+
+    <div>
+      <div class="section-title">💳 Área Financeira</div>
+      <div id="portalFinanceiro"></div>
+    </div>
+
+    <div>
+      <div class="section-title">📅 Agendar Revisão</div>
+      <div id="portalAgendamento"></div>
+    </div>
   </div>
 </div>
 
@@ -157,7 +203,7 @@ body { overflow-y: auto; background: #060A14; color: #E8F4FF; font-family: 'Exo 
 // ============================================================
 const db = window.initFirebase();
 
-let P = { clienteId: null, tenantId: null, cliente: null, oficina: null };
+let P = { clienteId: null, tenantId: null, cliente: null, oficina: null, veiculos: [] };
 
 function toast(msg, type='ok') {
   const el = document.createElement('div');
@@ -167,7 +213,114 @@ function toast(msg, type='ok') {
   setTimeout(() => { el.style.opacity='0'; setTimeout(()=>el.remove(),400); }, 3500);
 }
 
-// Pré-carrega tenant via URL se tiver
+const formatter = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+
+// ============================================================
+// SISTEMA DE ÁUDIO E ARQUIVOS (CLOUDINARY CLIENTE)
+// ============================================================
+function _formatarMidiaChat(texto) {
+  if (!texto) return '';
+  if (texto.startsWith('[AUDIO]')) {
+    const url = texto.replace('[AUDIO]', '');
+    return `<audio src="${url}" controls style="height:40px; max-width:100%; outline:none; border-radius:20px;"></audio>`;
+  }
+  if (texto.startsWith('[IMAGEM]')) {
+    const url = texto.replace('[IMAGEM]', '');
+    return `<img src="${url}" style="max-width:100%; max-height: 250px; border-radius:var(--r-md); cursor:zoom-in" onclick="window.open('${url}')">`;
+  }
+  if (texto.startsWith('[ARQUIVO]')) {
+    const url = texto.replace('[ARQUIVO]', '');
+    return `<a href="${url}" target="_blank" style="color:var(--brand);text-decoration:underline;font-weight:700;">📎 Abrir Anexo Documento</a>`;
+  }
+  return texto;
+}
+
+let _mediaRecorderCli;
+let _audioChunksCli = [];
+
+async function _togglePttCli() {
+  const btn = document.getElementById('btnPttCli');
+  if (!btn) return;
+
+  if (_mediaRecorderCli && _mediaRecorderCli.state === 'recording') {
+    _mediaRecorderCli.stop();
+    btn.style.color = '#FF3B3B';
+    btn.innerHTML = '🎤';
+    return;
+  }
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    _mediaRecorderCli = new MediaRecorder(stream);
+    _audioChunksCli = [];
+
+    _mediaRecorderCli.ondataavailable = e => { if (e.data.size > 0) _audioChunksCli.push(e.data); };
+    _mediaRecorderCli.onstop = async () => {
+      const audioBlob = new Blob(_audioChunksCli, { type: 'audio/webm' });
+      const fd = new FormData();
+      fd.append('file', audioBlob);
+      fd.append('upload_preset', P.oficina?.cloudPreset || 'evolution');
+      
+      btn.innerHTML = '⏳';
+      
+      try {
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${P.oficina?.cloudName || 'dmuvm1o6m'}/auto/upload`, {method:'POST',body:fd});
+        const data = await res.json();
+        
+        if (data.secure_url) {
+          await db.collection('mensagens').add({
+            tenantId: P.tenantId, clienteId: P.clienteId, sender: 'cliente',
+            msg: `[AUDIO]${data.secure_url}`, lidaAdmin: false, lidaCliente: true, ts: Date.now()
+          });
+          toast('Áudio enviado!', 'ok');
+        }
+      } catch (e) {
+        toast('Erro ao enviar áudio', 'err');
+      } finally {
+        btn.innerHTML = '🎤';
+        stream.getTracks().forEach(t => t.stop());
+      }
+    };
+
+    _mediaRecorderCli.start();
+    btn.style.color = 'var(--brand)';
+    btn.innerHTML = '⏹️';
+    toast('Gravando... Toque no ⏹️ para enviar.', 'warn');
+
+  } catch (err) {
+    toast('⚠ Permissão de microfone negada.', 'err');
+  }
+}
+
+async function _enviarArquivoPortal(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  toast('Enviando arquivo...', 'warn');
+  try {
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('upload_preset', P.oficina?.cloudPreset || 'evolution');
+    
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${P.oficina?.cloudName || 'dmuvm1o6m'}/auto/upload`, {method:'POST',body:fd});
+    const data = await res.json();
+    
+    if (data.secure_url) {
+      const prefixo = data.resource_type === 'image' ? '[IMAGEM]' : '[ARQUIVO]';
+      await db.collection('mensagens').add({
+        tenantId: P.tenantId, clienteId: P.clienteId, sender: 'cliente',
+        msg: `${prefixo}${data.secure_url}`, lidaAdmin: false, lidaCliente: true, ts: Date.now()
+      });
+      toast('Arquivo enviado com sucesso!', 'ok');
+    }
+  } catch(e) {
+    toast('Erro no anexo: ' + e.message, 'err');
+  } finally {
+    input.value = '';
+  }
+}
+
+// Pré-carrega tenant
 const params = new URLSearchParams(window.location.search);
 const _tenantSlug = params.get('tenant') || params.get('t') || null;
 
@@ -183,13 +336,14 @@ async function _carregarBrandTenant(tenantId) {
     const logoL = (d.nomeFantasia||'J').charAt(0).toUpperCase();
     document.getElementById('portalLogoMark').textContent = logoL;
     document.getElementById('portalHdrMark').textContent  = logoL;
-    document.getElementById('portalHdrName').textContent  = d.nomeFantasia || 'Portal do Cliente';
+    document.getElementById('portalHdrName').textContent  = d.nomeFantasia || 'Oficina Parceira';
     
     P.tenantId = tenantId;
     P.oficina  = d;
   } catch(e) {}
 }
 
+// Login
 document.getElementById('pPin').addEventListener('keydown', e => { if (e.key === 'Enter') portalLogin(); });
 document.getElementById('pLogin').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('pPin').focus(); });
 
@@ -202,13 +356,12 @@ async function portalLogin() {
   if (!rawLogin || !pin) { err.textContent = 'Preencha usuário e PIN.'; err.style.display='block'; return; }
 
   const btn = document.querySelector('#loginView button');
-  btn.innerHTML = 'Verificando...';
+  btn.innerHTML = '<span class="spinner"></span> Validando...';
   btn.disabled = true;
 
   try {
     let authSuccess = false;
 
-    // 1. Busca direto pelo PIN nas O.S. (mais rápido e à prova de falhas de digitação)
     let qOS = db.collection('ordens_servico').where('pin', '==', pin);
     if (P.tenantId) qOS = qOS.where('tenantId', '==', P.tenantId);
     const snapOS = await qOS.get();
@@ -216,11 +369,10 @@ async function portalLogin() {
     if (!snapOS.empty) {
         for (let doc of snapOS.docs) {
             let osData = doc.data();
-            // Verifica se a placa, cpf, login ou primeiro nome bate com o que foi digitado
-            let p = (osData.placa || '').toLowerCase().replace(/[^a-z0-9]/g, ''); // Placa sem traço
-            let c = (osData.cpf || '').toLowerCase().replace(/\D/g, ''); // CPF só números
+            let p = (osData.placa || '').toLowerCase().replace(/[^a-z0-9]/g, ''); 
+            let c = (osData.cpf || '').toLowerCase().replace(/\D/g, ''); 
             let n = (osData.cliente || '').split(' ')[0].toLowerCase();
-            let userLimpo = rawLogin.replace(/[^a-z0-9]/g, ''); // Tira traços do que o cliente digitou
+            let userLimpo = rawLogin.replace(/[^a-z0-9]/g, ''); 
             
             if (p === userLimpo || c === userLimpo || n === rawLogin) {
                 P.tenantId = osData.tenantId;
@@ -232,7 +384,6 @@ async function portalLogin() {
         }
     }
 
-    // 2. Se não achou na O.S., tenta na base de Clientes
     if (!authSuccess) {
         let qCli = db.collection('clientes').where('pin', '==', pin);
         if (P.tenantId) qCli = qCli.where('tenantId', '==', P.tenantId);
@@ -256,9 +407,7 @@ async function portalLogin() {
         }
     }
 
-    if (!authSuccess) {
-        throw new Error('Usuário ou PIN incorretos. Dica: Digite a placa do veículo.');
-    }
+    if (!authSuccess) throw new Error('Usuário ou PIN incorretos. Verifique os dados recebidos pelo WhatsApp.');
 
     if (!P.oficina && P.tenantId) {
       const ofSnap = await db.collection('oficinas').doc(P.tenantId).get();
@@ -268,7 +417,7 @@ async function portalLogin() {
       }
     }
 
-    document.getElementById('portalClienteNome').textContent = P.cliente?.nome || 'Cliente';
+    document.getElementById('portalClienteNome').textContent = P.cliente?.nome || 'Olá, Cliente';
     document.getElementById('loginView').style.display  = 'none';
     document.getElementById('portalView').style.display = 'block';
 
@@ -283,7 +432,7 @@ async function portalLogin() {
 }
 
 function portalLogout() {
-  P = { clienteId: null, tenantId: null, cliente: null, oficina: null };
+  P = { clienteId: null, tenantId: null, cliente: null, oficina: null, veiculos: [] };
   document.getElementById('loginView').style.display  = 'block';
   document.getElementById('portalView').style.display = 'none';
   document.getElementById('portalLoginErr').style.display = 'none';
@@ -294,6 +443,18 @@ function portalLogout() {
 function _iniciarPortal() {
   const loginUpper = document.getElementById('pLogin').value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
   
+  // 1. Escuta Veículos do Cliente (Para popular Select do Agendamento)
+  if(P.clienteId && P.clienteId !== 'avulso') {
+    db.collection('veiculos')
+      .where('tenantId', '==', P.tenantId)
+      .where('clienteId', '==', P.clienteId)
+      .onSnapshot(snap => {
+        P.veiculos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        _atualizarDropdownVeiculos();
+      });
+  }
+
+  // 2. Escuta OS
   db.collection('ordens_servico')
     .where('tenantId', '==', P.tenantId)
     .onSnapshot(snap => {
@@ -303,13 +464,17 @@ function _iniciarPortal() {
             return (P.clienteId !== 'avulso' && d.clienteId === P.clienteId) || 
                    (pLimpa && pLimpa === loginUpper) || 
                    (d.cliente && d.cliente === P.cliente?.nome) ||
-                   (d.pin && d.pin === document.getElementById('pPin').value.trim()); // Garante que a OS com o PIN correto aparece
+                   (d.pin && d.pin === document.getElementById('pPin').value.trim()); 
         })
         .sort((a, b) => (b.updatedAt || '') > (a.updatedAt || '') ? 1 : -1);
-      _renderPortal(osList);
+      _renderPortalOS(osList);
     });
 
+  // Chat, Finanças e Agenda
   if(P.clienteId && P.clienteId !== 'avulso') {
+      document.getElementById('portalChatWrap').innerHTML = _chatHTML();
+      _bindChat();
+
       db.collection('mensagens')
         .where('tenantId', '==', P.tenantId)
         .where('clienteId', '==', P.clienteId)
@@ -317,66 +482,68 @@ function _iniciarPortal() {
           const msgs = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b)=>(a.ts||0)-(b.ts||0));
           _renderChat(msgs);
         });
+
+      db.collection('financeiro')
+        .where('tenantId', '==', P.tenantId)
+        .where('clienteId', '==', P.clienteId)
+        .onSnapshot(snap => {
+          const finList = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b)=>(b.venc||'') > (a.venc||'') ? 1 : -1);
+          _renderFinanceiro(finList);
+        });
+
+      db.collection('agendamentos')
+        .where('tenantId', '==', P.tenantId)
+        .where('clienteId', '==', P.clienteId)
+        .onSnapshot(snap => {
+          const agdList = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b)=>(b.data||'') > (a.data||'') ? 1 : -1);
+          _renderAgendamento(agdList);
+        });
   }
 }
 
-function _renderPortal(osList) {
-  const content = document.getElementById('portalContent');
+// ============================================================
+// RENDERIZAÇÃO DAS O.S. (LIMPA, PLACA EM DESTAQUE, HISTÓRICO)
+// ============================================================
+function _renderPortalOS(osList) {
+  const content = document.getElementById('portalOS');
   
-  // AS 7 ETAPAS CHEVRON DO KANBAN
   const STEPS = ['patio', 'orcamento', 'aprovacao', 'box', 'pronto', 'faturado', 'entregue'];
-  const STEP_LABELS = {
-    patio:      'Pátio',
-    orcamento:  'Orçamento',
-    aprovacao:  'Aguard.',
-    box:        'Serviço',
-    pronto:     'Pronto',
-    faturado:   'Faturado',
-    entregue:   'Entregue'
-  };
-
-  const STATUS_MAP_LEGACY = { 
-    'Aguardando': 'patio', 
-    'Concluido': 'entregue', 
-    'Triagem': 'patio', 
-    'Orcamento': 'orcamento', 
-    'Orcamento_Enviado': 'aprovacao', 
-    'Aprovado': 'box', 
-    'Andamento': 'box', 
-    'Pronto': 'pronto', 
-    'Entregue': 'entregue', 
-    'Cancelado': 'cancelado' 
-  };
+  const STEP_LABELS = { patio: 'Pátio', orcamento: 'Orçamento', aprovacao: 'Aguard.', box: 'Serviço', pronto: 'Pronto', faturado: 'Faturado', entregue: 'Entregue' };
+  const STATUS_MAP_LEGACY = { 'Aguardando': 'patio', 'Concluido': 'entregue', 'Triagem': 'patio', 'Orcamento': 'orcamento', 'Orcamento_Enviado': 'aprovacao', 'Aprovado': 'box', 'Andamento': 'box', 'Pronto': 'pronto', 'Entregue': 'entregue', 'Cancelado': 'cancelado' };
 
   if (!osList.length) {
-    content.innerHTML = `
-      <div style="text-align:center;padding:48px 20px">
-        <div style="font-size:2.5rem;margin-bottom:12px">🚗</div>
-        <div style="font-family:var(--ff-display);font-size:1rem;font-weight:700;color:var(--text-secondary)">Nenhuma O.S. no momento</div>
-        <div style="font-size:0.82rem;color:var(--text-muted);margin-top:6px">Quando você levar seu veículo, ele aparecerá aqui.</div>
-      </div>
-      ${_chatHTML()}
-    `;
-    _bindChat();
+    content.innerHTML = `<div style="text-align:center;padding:48px 20px;background:var(--surf-1);border-radius:var(--r-xl);border:1px dashed var(--border);"><div style="font-size:2.5rem;margin-bottom:12px">🚘</div><div style="font-family:var(--ff-display);font-size:1.1rem;font-weight:700;color:var(--text-secondary)">Nenhuma O.S. vinculada</div><div style="font-size:0.85rem;color:var(--text-muted);margin-top:8px">Assim que o serviço for iniciado, você o acompanhará aqui em tempo real.</div></div>`;
     return;
   }
 
   content.innerHTML = osList.map(os => {
-    // Mapeamento de Status
     let statusOriginal = os.status || 'patio';
     let statusLimpo = STATUS_MAP_LEGACY[statusOriginal] || statusOriginal.toLowerCase();
-    
-    if(!STEPS.includes(statusLimpo)) statusLimpo = 'patio';
+    if(!STEPS.includes(statusLimpo) && statusLimpo !== 'cancelado') statusLimpo = 'patio';
 
     const statusIdx = STEPS.indexOf(statusLimpo);
     const isConcluida = (statusLimpo === 'pronto' || statusLimpo === 'entregue' || statusLimpo === 'faturado');
     const isOrcamento = (statusLimpo === 'aprovacao');
+    const isCancelada = (statusLimpo === 'cancelado');
 
-    const formatter = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+    // Tempo Decorrido (Comparação Histórica)
+    let badgeHistorico = '';
+    if (isConcluida && (os.updatedAt || os.data)) {
+        const dataRef = new Date(os.updatedAt || os.data);
+        const diasDiff = Math.floor((new Date() - dataRef) / (1000 * 60 * 60 * 24));
+        if (diasDiff > 0) {
+            badgeHistorico = `<div class="historico-badge">⏱️ Último serviço realizado há <strong>${diasDiff} dias</strong>.</div>`;
+        } else {
+            badgeHistorico = `<div class="historico-badge">⏱️ Serviço concluído hoje.</div>`;
+        }
+    }
 
-    // HTML da Barra de Progresso
-    const stepperHTML = `
-      <div style="position:relative; margin-bottom: 24px;">
+    const corStatus = isConcluida ? 'var(--success)' : isOrcamento ? 'var(--warn)' : isCancelada ? 'var(--danger)' : 'var(--brand)';
+    const placaExibicao = (os.placa || 'S/PLACA').toUpperCase();
+    const kmExibicao = os.km ? `${Number(os.km).toLocaleString('pt-BR')} km` : 'KM não info.';
+
+    const stepperHTML = isCancelada ? `<div style="text-align:center;padding:14px;color:var(--danger);font-weight:700;font-family:var(--ff-mono);">O.S. CANCELADA</div>` : `
+      <div style="position:relative; margin: 24px 0 16px;">
         <div class="step-line"></div>
         <div class="step-line-fill" style="width:${Math.max(0, (statusIdx / (STEPS.length-1)) * 100)}%"></div>
         <div class="stepper">
@@ -392,87 +559,48 @@ function _renderPortal(osList) {
       </div>
     `;
 
-    // Alerta de Aprovação de Orçamento
     const orcAlerta = isOrcamento ? `
       <div class="orcamento-alert">
-        <div style="font-family:var(--ff-display);font-weight:700;color:var(--warn);margin-bottom:6px">💰 Orçamento aguardando aprovação</div>
-        <div style="font-size:0.84rem;color:var(--text-primary);margin-bottom:12px">
-          Valor do serviço: <strong>${formatter.format(os.total || 0)}</strong>
+        <div style="font-family:var(--ff-display);font-size:1.1rem;font-weight:700;color:var(--warn);margin-bottom:8px">Orçamento Aguardando Aprovação</div>
+        <div style="font-size:0.9rem;color:var(--text-primary);margin-bottom:16px">
+          Valor total estimado: <strong style="font-size:1.2rem;">${formatter.format(os.total || 0)}</strong>
         </div>
-        <div style="display:flex;gap:10px">
-          <button class="btn btn-success" onclick="_aprovarOrcamento('${os.id}')">✓ APROVAR</button>
-          <button class="btn btn-danger" onclick="_recusarOrcamento('${os.id}')">✕ RECUSAR</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-success" style="flex:1;" onclick="_aprovarOrcamento('${os.id}')">✓ APROVAR</button>
+          <button class="btn btn-outline" style="flex:1;" onclick="_negociarOrcamento('${os.id}')">💬 NEGOCIAR</button>
+          <button class="btn btn-danger" style="flex:1;" onclick="_recusarOrcamento('${os.id}')">✕ RECUSAR</button>
         </div>
       </div>
     ` : '';
 
-    // Detalhamento: Mão de Obra e Peças Separados
     let detalheHtml = '';
     if (os.servicos?.length > 0 || os.pecas?.length > 0 || os.maoObra > 0 || os.pecasLegacy?.length > 0) {
-      detalheHtml += `
-        <div style="margin-top:16px">
-          <div style="font-family:var(--ff-mono);font-size:0.65rem;color:var(--brand);letter-spacing:2px;margin-bottom:8px;">DETALHAMENTO TÉCNICO</div>
-          <div style="background:var(--surf-2);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden">`;
+      detalheHtml += `<div style="margin-top:20px"><div style="font-family:var(--ff-mono);font-size:0.65rem;color:var(--brand);letter-spacing:2px;margin-bottom:8px;">DETALHAMENTO TÉCNICO</div><div style="background:rgba(0,0,0,0.2);border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden">`;
       
-      if(os.servicos) {
-        os.servicos.forEach(s => {
-          detalheHtml += `<div style="display:flex;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border)"><div style="font-size:0.84rem;color:var(--text-primary)">🔧 ${s.desc || 'Serviço'}</div><div style="font-family:var(--ff-mono);font-size:0.82rem;">${formatter.format(s.valor || 0)}</div></div>`;
-        });
-      } else if (os.maoObra) {
-        detalheHtml += `<div style="display:flex;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border)"><div style="font-size:0.84rem;color:var(--text-primary)">🔧 Mão de Obra Geral</div><div style="font-family:var(--ff-mono);font-size:0.82rem;">${formatter.format(os.maoObra || 0)}</div></div>`;
-      }
+      if(os.servicos) os.servicos.forEach(s => { detalheHtml += `<div style="display:flex;justify-content:space-between;padding:12px;border-bottom:1px solid var(--border)"><div style="font-size:0.85rem;">🔧 ${s.desc || 'Serviço'}</div><div style="font-family:var(--ff-mono);font-size:0.85rem;">${formatter.format(s.valor || 0)}</div></div>`; });
+      else if (os.maoObra) detalheHtml += `<div style="display:flex;justify-content:space-between;padding:12px;border-bottom:1px solid var(--border)"><div style="font-size:0.85rem;">🔧 Mão de Obra Geral</div><div style="font-family:var(--ff-mono);font-size:0.85rem;">${formatter.format(os.maoObra || 0)}</div></div>`;
       
-      if(os.pecas) {
-        os.pecas.forEach(p => {
-          detalheHtml += `<div style="display:flex;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border)"><div style="font-size:0.84rem;color:var(--text-primary)">📦 ${p.desc || 'Peça'} (x${p.qtd||p.q||1})</div><div style="font-family:var(--ff-mono);font-size:0.82rem;color:var(--success)">${formatter.format((p.qtd||p.q||1) * (p.venda||p.v||0))}</div></div>`;
-        });
-      }
-
-      if(os.pecasLegacy) {
-        os.pecasLegacy.forEach(p => {
-          detalheHtml += `<div style="display:flex;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border)"><div style="font-size:0.84rem;color:var(--text-primary)">📦 ${p.desc || 'Item'} (x${p.q||1})</div><div style="font-family:var(--ff-mono);font-size:0.82rem;color:var(--success)">${formatter.format((p.q||1) * (p.v||0))}</div></div>`;
-        });
-      }
+      if(os.pecas) os.pecas.forEach(p => { detalheHtml += `<div style="display:flex;justify-content:space-between;padding:12px;border-bottom:1px solid var(--border)"><div style="font-size:0.85rem;">📦 ${p.desc || 'Peça'} (x${p.qtd||p.q||1})</div><div style="font-family:var(--ff-mono);font-size:0.85rem;color:var(--success)">${formatter.format((p.qtd||p.q||1) * (p.venda||p.v||0))}</div></div>`; });
+      if(os.pecasLegacy) os.pecasLegacy.forEach(p => { detalheHtml += `<div style="display:flex;justify-content:space-between;padding:12px;border-bottom:1px solid var(--border)"><div style="font-size:0.85rem;">📦 ${p.desc || 'Item'} (x${p.q||1})</div><div style="font-family:var(--ff-mono);font-size:0.85rem;color:var(--success)">${formatter.format((p.q||1) * (p.v||0))}</div></div>`; });
       
-      detalheHtml += `</div>
-          ${os.total ? `<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:var(--success-dim);border-radius:0 0 var(--r-lg) var(--r-lg);border:1px solid rgba(0,255,136,0.2);border-top:none"><span style="font-family:var(--ff-mono);font-size:0.7rem;color:var(--text-muted)">TOTAL APROVADO</span><span style="font-family:var(--ff-display);font-size:1.3rem;font-weight:800;color:var(--success)">${formatter.format(os.total)}</span></div>` : ''}
-        </div>`;
+      detalheHtml += `</div>${os.total ? `<div style="display:flex;justify-content:space-between;align-items:center;padding:14px;background:var(--success-dim);border-radius:0 0 var(--r-md) var(--r-md);border:1px solid rgba(0,255,136,0.3);border-top:none"><span style="font-family:var(--ff-mono);font-size:0.75rem;color:var(--success)">VALOR FINAL</span><span style="font-family:var(--ff-display);font-size:1.4rem;font-weight:800;color:var(--success)">${formatter.format(os.total)}</span></div>` : ''}</div>`;
     }
 
-    // Galeria de Fotos e Vídeos
     const fotoHTML = (os.media?.length || os.fotos?.length) ? `
-      <div style="margin-top:16px">
-        <div style="font-family:var(--ff-mono);font-size:0.65rem;color:var(--brand);letter-spacing:2px;margin-bottom:8px;">GALERIA DE FOTOS</div>
+      <div style="margin-top:20px">
+        <div style="font-family:var(--ff-mono);font-size:0.65rem;color:var(--brand);letter-spacing:2px;margin-bottom:8px;">EVIDÊNCIAS / GALERIA</div>
         <div class="media-preview-grid">
-          ${(os.media || os.fotos).map(m => (m.type !== 'video' && !m.url?.endsWith('.mp4'))
-            ? `<div class="media-preview-item"><img src="${m.url || m}" onclick="window.open('${m.url || m}','_blank')" loading="lazy"></div>`
-            : `<div class="media-preview-item" style="cursor:pointer;background:#000" onclick="window.open('${m.url || m}','_blank')"><div style="height:100%;display:flex;align-items:center;justify-content:center;font-size:1.5rem">▶️</div></div>`
-          ).join('')}
-        </div>
-      </div>
-    ` : '';
-
-    // Linha do Tempo (Timeline / Auditoria) para o Cliente
-    const timelineHTML = (os.timeline?.length) ? `
-      <div style="margin-top:16px; background: var(--surf-2); padding: 14px; border-radius: var(--r-lg); border: 1px solid var(--border);">
-        <div style="font-family:var(--ff-mono);font-size:0.65rem;color:var(--brand);letter-spacing:2px;margin-bottom:12px;">LINHA DO TEMPO DO VEÍCULO</div>
-        <div class="timeline">
-          ${[...os.timeline].reverse().map(tl => `
-            <div class="tl-item">
-              <div class="tl-date">${new Date(tl.dt).toLocaleString('pt-BR')}</div>
-              <div class="tl-action">${tl.acao}</div>
-            </div>
-          `).join('')}
+          ${(os.media || os.fotos).map(m => (m.type !== 'video' && !m.url?.endsWith('.mp4')) ? `<div class="media-preview-item"><img src="${m.url || m}" onclick="window.open('${m.url || m}','_blank')" loading="lazy"></div>` : `<div class="media-preview-item" style="cursor:pointer;background:#111" onclick="window.open('${m.url || m}','_blank')"><div style="height:100%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:var(--brand);">▶️</div></div>`).join('')}
         </div>
       </div>
     ` : '';
 
     const entregaHTML = isConcluida ? `
-      <div style="background:var(--success-dim);border:1px solid rgba(0,255,136,0.3);border-radius:var(--r-lg);padding:14px 16px;margin-top:14px;display:flex;align-items:center;gap:12px">
-        <div style="font-size:1.5rem">🎉</div>
+      <div style="background:var(--success-dim);border:1px solid rgba(0,255,136,0.3);border-radius:var(--r-md);padding:16px;margin-top:16px;display:flex;align-items:center;gap:14px">
+        <div style="font-size:1.8rem">🎉</div>
         <div>
-          <div style="font-family:var(--ff-display);font-weight:700;color:var(--success)">Veículo Liberado!</div>
-          <div style="font-size:0.82rem;color:var(--text-primary)">Seu veículo está pronto para retirada em ${P.oficina?.nomeFantasia || 'nossa oficina'}.</div>
+          <div style="font-family:var(--ff-display);font-size:1.2rem;font-weight:700;color:var(--success)">Veículo Liberado!</div>
+          <div style="font-size:0.85rem;color:var(--text-primary);line-height:1.4;">Seu veículo está pronto e aguardando retirada.</div>
         </div>
       </div>
     ` : '';
@@ -480,57 +608,169 @@ function _renderPortal(osList) {
     return `
       <div class="os-card">
         <div class="os-card-header">
-          <div>
-            <div style="font-family:var(--ff-mono);font-size:0.72rem;color:var(--text-muted);margin-bottom:2px">OS #${os.id.slice(-6).toUpperCase()}</div>
-            <div style="font-family:var(--ff-display);font-size:1rem;font-weight:700;color:white;">${os.placa || 'Veículo'} - ${os.veiculo || ''}</div>
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <div class="placa-badge">${placaExibicao}</div>
+            <div class="status-pill" style="border-color:${corStatus};color:${corStatus};">${STEP_LABELS[statusLimpo] || statusOriginal}</div>
           </div>
-          <span style="font-family:var(--ff-mono);font-size:0.7rem;color:var(--brand);font-weight:700;text-transform:uppercase;border:1px solid var(--brand);padding:2px 8px;border-radius:10px;">${STEP_LABELS[statusLimpo] || statusLimpo}</span>
+          <div class="os-meta">
+            <span>🚘 ${os.veiculo || 'Veículo Padrão'}</span>
+            <span>🛣️ ${kmExibicao}</span>
+            <span style="font-size:0.7rem; opacity:0.6;">(ID: #${os.id.slice(-5).toUpperCase()})</span>
+          </div>
         </div>
         <div class="os-card-body">
           ${stepperHTML}
           ${orcAlerta}
           ${entregaHTML}
+          ${badgeHistorico}
 
-          <div class="info-grid">
-            <div class="info-item">
-              <div class="info-item-label">Data de Entrada</div>
-              <div class="info-item-value">${os.data ? new Date(os.data).toLocaleDateString('pt-BR') : '—'}</div>
+          <button class="btn-expand" onclick="this.closest('.os-card').classList.toggle('expanded'); this.innerHTML = this.closest('.os-card').classList.contains('expanded') ? 'Minimizar Resumo ▲' : 'Ver Resumo Completo ▼'">Ver Resumo Completo ▼</button>
+
+          <div class="os-details">
+            <div class="info-grid">
+              <div class="info-item"><div class="info-item-label">Data de Entrada</div><div class="info-item-value">${os.data ? new Date(os.data).toLocaleDateString('pt-BR') : '—'}</div></div>
+              <div class="info-item"><div class="info-item-label">Defeito / Reclamação</div><div class="info-item-value" style="font-size:0.85rem;">${os.desc || os.relato || 'Não informado'}</div></div>
             </div>
-            <div class="info-item">
-              <div class="info-item-label">KM / Milhagem</div>
-              <div class="info-item-value">${os.km ? Number(os.km).toLocaleString('pt-BR') + ' km' : '—'}</div>
-            </div>
+            ${detalheHtml}
+            ${fotoHTML}
           </div>
-
-          ${detalheHtml}
-          ${fotoHTML}
-          ${timelineHTML}
         </div>
       </div>
     `;
-  }).join('') + _chatHTML();
-
-  _bindChat();
+  }).join('');
 }
 
-function _chatHTML() {
-  return `
-    <div class="os-card portal-chat">
-      <div class="os-card-header">
-        <div style="font-family:var(--ff-display);font-weight:700;color:white;">💬 Fale com o Mecânico</div>
-        <div style="width:8px;height:8px;background:var(--success);border-radius:50%;"></div>
-      </div>
-      <div class="portal-chat-messages" id="portalChatMsgs">
-        <div style="text-align:center;color:var(--text-muted);font-size:0.78rem;padding:16px">
-          Envie uma mensagem direta para a oficina.
+// ============================================================
+// RENDERIZAÇÃO FINANCEIRO CLARA (EM ABERTO VS PAGO)
+// ============================================================
+function _renderFinanceiro(finList) {
+  const container = document.getElementById('portalFinanceiro');
+  if (!container) return;
+
+  const docsCli = finList.filter(f => f.tipo === 'Entrada');
+  if (docsCli.length === 0) { container.innerHTML = `<div style="padding:16px;background:var(--surf-1);border-radius:var(--r-md);text-align:center;color:var(--text-muted);font-size:0.85rem;">Nenhum histórico financeiro encontrado.</div>`; return; }
+
+  let emAberto = 0; let totalPago = 0;
+  
+  const listHTML = docsCli.map(f => {
+    if (f.status === 'Pendente') emAberto += (f.valor || 0);
+    if (f.status === 'Pago') totalPago += (f.valor || 0);
+    const isPago = f.status === 'Pago';
+    return `
+      <div class="fin-card ${isPago ? 'pago' : 'pendente'}">
+        <div>
+          <div style="font-size:0.9rem; font-weight:700; color:var(--text-primary);">${f.desc || 'Serviço'}</div>
+          <div style="font-family:var(--ff-mono); font-size:0.7rem; color:var(--text-muted); margin-top:2px;">Venc: ${f.venc ? new Date(f.venc).toLocaleDateString('pt-BR') : '-'}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-family:var(--ff-mono); font-size:1rem; color:${isPago ? 'var(--success)' : 'var(--danger)'}; font-weight:700;">${formatter.format(f.valor||0)}</div>
+          <div style="font-family:var(--ff-mono); font-size:0.6rem; text-transform:uppercase; color:${isPago ? 'var(--success)' : 'var(--danger)'}; margin-top:2px;">${f.status}</div>
         </div>
       </div>
+    `;
+  }).join('');
+
+  container.innerHTML = `
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:16px;">
+      <div style="background:linear-gradient(135deg, rgba(255,59,59,0.15), rgba(255,59,59,0.05)); border:1px solid rgba(255,59,59,0.3); padding:16px; border-radius:var(--r-md);">
+        <div style="font-family:var(--ff-mono);font-size:0.65rem;color:var(--danger);letter-spacing:1px;margin-bottom:4px;">Faturas em Aberto</div>
+        <div style="font-family:var(--ff-display);font-size:1.6rem;font-weight:700;color:var(--danger);">${formatter.format(emAberto)}</div>
+      </div>
+      <div style="background:var(--surf-2); border:1px solid var(--border); padding:16px; border-radius:var(--r-md);">
+        <div style="font-family:var(--ff-mono);font-size:0.65rem;color:var(--success);letter-spacing:1px;margin-bottom:4px;">Histórico Pago</div>
+        <div style="font-family:var(--ff-display);font-size:1.4rem;font-weight:700;color:var(--success);">${formatter.format(totalPago)}</div>
+      </div>
+    </div>
+    <div style="background:var(--surf-1); border:1px solid var(--border); border-radius:var(--r-md); padding:16px;">
+      <div style="font-family:var(--ff-display);font-weight:700;color:white;margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:8px;">🧾 Lançamentos</div>
+      ${listHTML}
+    </div>
+  `;
+}
+
+// ============================================================
+// AGENDAMENTO COM LINK DE VEÍCULO
+// ============================================================
+function _atualizarDropdownVeiculos() {
+  const el = document.getElementById('agdVeiculoCli');
+  if (el && P.veiculos.length > 0) {
+    el.innerHTML = '<option value="">Selecione o Veículo...</option>' + P.veiculos.map(v => `<option value="${v.id}">${v.placa} - ${v.modelo}</option>`).join('');
+  }
+}
+
+function _renderAgendamento(agdList) {
+  const container = document.getElementById('portalAgendamento');
+  if (!container) return;
+
+  const listHTML = agdList.map(a => {
+    const vInfo = a.veiculoId ? (P.veiculos.find(x => x.id === a.veiculoId)?.placa || 'Veículo Linkado') : '';
+    return `
+      <div style="background:var(--surf-2); border:1px solid var(--border); border-left:4px solid var(--brand); padding:14px; border-radius:var(--r-md); margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <div style="font-size:0.9rem; font-weight:700; color:white;">${a.servico || 'Revisão'}</div>
+          <div style="font-family:var(--ff-mono); font-size:0.7rem; color:var(--text-muted); margin-top:4px;">🗓️ ${a.data ? new Date(a.data).toLocaleDateString('pt-BR') : '-'} ${vInfo ? `| 🚘 ${vInfo}` : ''}</div>
+        </div>
+        <div style="font-family:var(--ff-mono); font-size:0.65rem; padding: 4px 10px; border-radius: 20px; background:var(--brand-dim); color:var(--brand); text-transform:uppercase; font-weight:700;">${a.status || 'Solicitado'}</div>
+      </div>
+    `;
+  }).join('');
+
+  container.innerHTML = `
+    <div style="background:var(--surf-1); border:1px solid var(--border); border-radius:var(--r-md); padding:20px; margin-bottom:20px;">
+      <div style="font-family:var(--ff-display);font-size:1.1rem;font-weight:700;color:white;margin-bottom:16px;">Solicitar Nova Revisão</div>
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <select class="input" id="agdVeiculoCli">
+          <option value="">Selecione o Veículo...</option>
+          ${P.veiculos.map(v => `<option value="${v.id}">${v.placa} - ${v.modelo}</option>`).join('')}
+        </select>
+        <div style="display:grid; grid-template-columns: 1fr 2fr; gap:12px;">
+          <input type="date" class="input" id="agdDataCli">
+          <input type="text" class="input" id="agdServicoCli" placeholder="Descreva o problema/serviço...">
+        </div>
+        <button class="btn btn-brand" style="width:100%; margin-top:4px;" onclick="_salvarAgendamentoCli()">ENVIAR SOLICITAÇÃO</button>
+      </div>
+    </div>
+    ${listHTML ? `<div style="font-family:var(--ff-display);font-weight:700;color:white;margin-bottom:12px;">Meus Agendamentos</div>${listHTML}` : ''}
+  `;
+}
+
+async function _salvarAgendamentoCli() {
+  const data = document.getElementById('agdDataCli').value;
+  const servico = document.getElementById('agdServicoCli').value.trim();
+  const veicId = document.getElementById('agdVeiculoCli').value;
+
+  if (!data || !servico || !veicId) { toast('Selecione veículo, data e descreva o serviço.', 'warn'); return; }
+
+  try {
+    await db.collection('agendamentos').add({
+      tenantId: P.tenantId, clienteId: P.clienteId, veiculoId: veicId,
+      data, servico, status: 'Solicitado', createdAt: new Date().toISOString()
+    });
+    toast('Agendamento solicitado com sucesso!', 'ok');
+    document.getElementById('agdServicoCli').value = '';
+    document.getElementById('agdDataCli').value = '';
+  } catch(e) { toast('Erro ao solicitar agendamento', 'err'); }
+}
+
+// ============================================================
+// CHAT CRM & NEGOCIAÇÃO
+// ============================================================
+function _chatHTML() {
+  return `
+    <div class="portal-chat">
+      <div style="padding:16px 20px; background:linear-gradient(to right, var(--surf-2), var(--surf-1)); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between;">
+        <div style="font-family:var(--ff-display);font-size:1.1rem;font-weight:700;color:white;display:flex;align-items:center;gap:10px;">💬 Fale com a Oficina</div>
+        <div style="font-family:var(--ff-mono);font-size:0.6rem;color:var(--success);border:1px solid var(--success);padding:2px 8px;border-radius:12px;display:flex;align-items:center;gap:6px;"><div style="width:6px;height:6px;background:var(--success);border-radius:50%;box-shadow:0 0 5px var(--success);"></div> ONLINE</div>
+      </div>
+      <div class="portal-chat-messages" id="portalChatMsgs">
+        <div style="text-align:center;color:var(--text-muted);font-size:0.8rem;padding:20px;">Utilize este canal para aprovar serviços, negociar valores e tirar dúvidas diretamente com o mecânico.</div>
+      </div>
       <div class="portal-chat-input">
-        <button title="Gravar Áudio" onmousedown="toast('Gravando...','warn')" onmouseup="toast('Áudio enviado!','ok')" style="background:none;border:none;color:#FF3B3B;font-size:1.2rem;cursor:pointer;">🎤</button>
-        <button title="Anexar Arquivo" onclick="document.getElementById('portalFile').click()" style="background:none;border:none;color:var(--brand);font-size:1.2rem;cursor:pointer;">📎</button>
-        <input type="file" id="portalFile" style="display:none" onchange="toast('Arquivo anexado com sucesso!','ok')">
-        <input class="input" id="portalChatInput" placeholder="Sua mensagem..." style="flex:1;">
-        <button class="btn btn-brand" onclick="_enviarPortalMsg()">ENVIAR</button>
+        <button id="btnPttCli" title="Gravar Áudio" onmousedown="_togglePttCli()" onmouseup="_togglePttCli()" style="background:none;border:none;color:#FF3B3B;font-size:1.4rem;cursor:pointer;width:36px;transition:0.2s;">🎤</button>
+        <button title="Anexar Foto" onclick="document.getElementById('portalFile').click()" style="background:none;border:none;color:var(--brand);font-size:1.4rem;cursor:pointer;width:36px;transition:0.2s;">📎</button>
+        <input type="file" id="portalFile" style="display:none" accept="image/*,video/*,audio/*,.pdf" onchange="_enviarArquivoPortal(this)">
+        <input class="input" id="portalChatInput" placeholder="Digite sua mensagem..." style="flex:1;border-radius:20px;padding:12px 16px;">
+        <button class="btn btn-brand" style="border-radius:20px;padding:10px 16px;" onclick="_enviarPortalMsg()">➤</button>
       </div>
     </div>
   `;
@@ -548,7 +788,7 @@ function _renderChat(msgs) {
   container.innerHTML = msgs.map(m => {
     const t   = m.ts ? new Date(m.ts).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' }) : '';
     const dir = m.sender === 'cliente' ? 'outgoing' : 'incoming';
-    return `<div class="chat-msg ${dir}">${m.msg}<div class="msg-time">${t}</div></div>`;
+    return `<div class="chat-msg ${dir}">${_formatarMidiaChat(m.msg)}<div class="msg-time">${t}</div></div>`;
   }).join('');
   container.scrollTop = container.scrollHeight;
   
@@ -561,15 +801,18 @@ async function _enviarPortalMsg() {
   const msg = inp?.value?.trim();
   if (!msg) return;
   await db.collection('mensagens').add({
-    tenantId:    P.tenantId,
-    clienteId:   P.clienteId,
-    sender:      'cliente',
-    msg,
-    lidaAdmin:   false,
-    lidaCliente: true,
-    ts:          Date.now()
+    tenantId: P.tenantId, clienteId: P.clienteId, sender: 'cliente', msg, lidaAdmin: false, lidaCliente: true, ts: Date.now()
   });
   inp.value = '';
+}
+
+function _negociarOrcamento(osId) {
+  const inp = document.getElementById('portalChatInput');
+  if(inp) {
+    inp.value = `Gostaria de negociar o orçamento da O.S. #${osId.slice(-5).toUpperCase()}: `;
+    inp.focus();
+    document.getElementById('portalChatWrap').scrollIntoView({behavior: 'smooth', block: 'center'});
+  }
 }
 
 async function _aprovarOrcamento(osId) {
@@ -578,35 +821,24 @@ async function _aprovarOrcamento(osId) {
     const osData = snap.data();
     const tl = osData.timeline || [];
     tl.push({ dt: new Date().toISOString(), user: P.cliente?.nome || 'Cliente', acao: `Cliente APROVOU o orçamento via Portal B2C` });
-
     await db.collection('ordens_servico').doc(osId).update({ status: 'Andamento', timeline: tl, updatedAt: new Date().toISOString() });
-    
-    await db.collection('lixeira_auditoria').add({
-      tenantId: P.tenantId, modulo: 'PORTAL B2C', acao: `Orçamento APROVADO: OS #${osId.slice(-6)}`, usuario: P.cliente?.nome || 'Cliente', ts: new Date().toISOString()
-    });
-    
-    toast('Orçamento aprovado! O veículo irá para o box de serviço.', 'ok');
+    await db.collection('lixeira_auditoria').add({ tenantId: P.tenantId, modulo: 'PORTAL B2C', acao: `Orçamento APROVADO: OS #${osId.slice(-5)}`, usuario: P.cliente?.nome || 'Cliente', ts: new Date().toISOString() });
+    toast('Orçamento aprovado com sucesso! Veículo liberado para o box de serviço.', 'ok');
   } catch (e) { toast('Erro ao aprovar: ' + e.message, 'err'); }
 }
 
 async function _recusarOrcamento(osId) {
-  if (!confirm('Tem certeza que deseja recusar? A O.S. será cancelada.')) return;
+  if (!confirm('Tem certeza que deseja recusar? A Ordem de Serviço será cancelada.')) return;
   try {
     const snap = await db.collection('ordens_servico').doc(osId).get();
     const osData = snap.data();
     const tl = osData.timeline || [];
     tl.push({ dt: new Date().toISOString(), user: P.cliente?.nome || 'Cliente', acao: `Cliente RECUSOU o orçamento via Portal B2C` });
-
     await db.collection('ordens_servico').doc(osId).update({ status: 'Cancelado', timeline: tl, updatedAt: new Date().toISOString() });
-    
-    await db.collection('lixeira_auditoria').add({
-      tenantId: P.tenantId, modulo: 'PORTAL B2C', acao: `Orçamento RECUSADO: OS #${osId.slice(-6)}`, usuario: P.cliente?.nome || 'Cliente', ts: new Date().toISOString()
-    });
-    
+    await db.collection('lixeira_auditoria').add({ tenantId: P.tenantId, modulo: 'PORTAL B2C', acao: `Orçamento RECUSADO: OS #${osId.slice(-5)}`, usuario: P.cliente?.nome || 'Cliente', ts: new Date().toISOString() });
     toast('Orçamento recusado. O.S. cancelada.', 'warn');
   } catch(e) { toast('Erro ao recusar: ' + e.message, 'err'); }
 }
-
 </script>
 </body>
 </html>

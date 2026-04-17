@@ -1,155 +1,109 @@
 /**
  * JARVIS ERP — ui.js
- * Sistema de UI: toast, modal, tabs, loaders, navegação
+ * Sistema Universal de UI: toast, modal, tabs, loaders, navegação, badges
  */
+
 'use strict';
 
-// ── TOAST ──────────────────────────────────────────────────
-window.toast = function(msg, type='success', title=null) {
-  const icons = { success:'✓', error:'✕', warn:'⚠', info:'ℹ' };
-  let container = document.getElementById('toast-container');
-  if (!container) {
-    container = document.createElement('div');
-    container.id = 'toast-container';
-    document.body.appendChild(container);
-  }
+// ============================================================
+// TOAST SYSTEM
+// ============================================================
+window.toast = function(msg, type = 'ok', title = null) {
+  const icons = { ok: '✓', err: '✕', warn: '⚠', info: 'ℹ', success: '✓', error: '✕' };
+  const t = (type === 'error') ? 'err' : (type === 'success' ? 'ok' : type);
+  const container = document.getElementById('toastBox') || document.body;
   const el = document.createElement('div');
-  el.className = `toast ${type}`;
-  el.innerHTML = `
-    <div class="toast-icon">${icons[type]||'✓'}</div>
-    <div class="toast-content">
-      ${title ? `<div class="toast-title">${title}</div>` : ''}
-      <div class="toast-msg">${msg}</div>
-    </div>`;
+  el.className = `toast-j ${t}`;
+  el.innerHTML = `${icons[t] || '✓'} ${msg}`;
   container.appendChild(el);
-  const remove = () => {
-    el.style.opacity = '0'; el.style.transform = 'translateX(20px)'; el.style.transition = 'all 0.3s';
-    setTimeout(() => el.remove(), 330);
-  };
-  setTimeout(remove, type === 'error' ? 5000 : 3500);
-  el.addEventListener('click', remove);
+  setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 400); }, 3500);
 };
-window.toastOk   = msg => toast(msg, 'success');
-window.toastErr  = msg => toast(msg, 'error', 'Erro');
+
+window.toastOk   = msg => toast(msg, 'ok');
+window.toastErr  = msg => toast(msg, 'err');
 window.toastWarn = msg => toast(msg, 'warn');
 window.toastInfo = msg => toast(msg, 'info');
 
-// Compat com código legado do jarvis.html
-window.toast_j = window.toast;
-
-// ── MODAL ──────────────────────────────────────────────────
+// ============================================================
+// MODAL SYSTEM (Adaptador Universal)
+// ============================================================
 window.abrirModal = window.openModal = function(id) {
-  const el = document.getElementById(id); if (!el) return;
-  el.classList.add('open');
-  document.body.style.overflow = 'hidden';
-  setTimeout(() => {
-    const first = el.querySelector('input:not([type=hidden]),select,textarea');
-    if (first) first.focus();
-  }, 120);
+  const el = document.getElementById(id);
+  if (el) el.classList.add('open');
 };
 
 window.fecharModal = window.closeModal = function(id) {
-  const el = document.getElementById(id); if (!el) return;
-  el.classList.remove('open');
-  document.body.style.overflow = '';
+  const el = document.getElementById(id);
+  if (el) el.classList.remove('open');
 };
 
-window.closeAllModals = function() {
+window.fecharTodosModais = window.closeAllModals = function() {
   document.querySelectorAll('.overlay.open').forEach(el => el.classList.remove('open'));
-  document.body.style.overflow = '';
 };
 
-// Fechar no overlay
 document.addEventListener('click', e => {
-  if (e.target.classList.contains('overlay') && e.target.id !== 'buscaGlobalWrap') {
-    e.target.classList.remove('open');
-    document.body.style.overflow = '';
-  }
+  if (e.target.classList.contains('overlay')) e.target.classList.remove('open');
 });
 
-// Fechar com ESC
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closeAllModals();
-});
-
-// ── TABS ───────────────────────────────────────────────────
-window.switchTab = function(tabEl, activeId, ...others) {
-  tabEl.parentElement.querySelectorAll('.mtab').forEach(t => t.classList.remove('active'));
-  tabEl.classList.add('active');
-  const pane = document.getElementById(activeId);
-  if (pane) pane.classList.add('active');
-  others.forEach(id => { const p = document.getElementById(id); if (p) p.classList.remove('active'); });
+// ============================================================
+// TABS E NAVEGAÇÃO (Adaptador Universal)
+// ============================================================
+window.switchTab = function(el, active, ...others) {
+  el.parentElement.querySelectorAll('.mtab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  const a = document.getElementById(active); if(a) a.classList.add('active');
+  others.forEach(o => { const oe = document.getElementById(o); if(oe) oe.classList.remove('active'); });
 };
 
-// ── NAVEGAÇÃO SEÇÕES ───────────────────────────────────────
 window.ir = window.irSecao = function(key, navEl) {
-  const map = window.SECTION_MAP || {};
-  const titles = window.TITLE_MAP || {};
+  const sectionMap = window.SECTION_MAP || { dashboard:'s-dashboard', agenda:'s-agenda', kanban:'s-kanban', clientes:'s-clientes', estoque:'s-estoque', financeiro:'s-financeiro', equipe:'s-equipe', chat:'s-chat', chatEquipe:'s-chat-equipe', ia:'s-ia', auditoria:'s-auditoria' };
+  const titleMap   = window.TITLE_MAP   || { dashboard:'DASHBOARD', agenda:'AGENDA', kanban:'PÁTIO / O.S.', clientes:'CLIENTES & VEÍCULOS', estoque:'ESTOQUE / NF', financeiro:'FINANCEIRO / DRE', equipe:'EQUIPE & RH', chat:'CRM CHAT', chatEquipe:'CHAT DA EQUIPE', ia:'thIAguinho IA', auditoria:'AUDITORIA' };
 
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
 
-  const secId = map[key]; if (!secId) return;
-  const sec = document.getElementById(secId); if (sec) sec.classList.add('active');
-  if (navEl) navEl.classList.add('active');
-
-  const titleEl = document.getElementById('pageTitle'); if (titleEl) titleEl.textContent = titles[key] || key.toUpperCase();
-  const subEl   = document.getElementById('pageSub');   if (subEl)   subEl.textContent = 'SISTEMA OPERACIONAL';
-
-  if (window.onSectionChange) onSectionChange(key);
-};
-
-// ── LOADER GLOBAL ──────────────────────────────────────────
-window.showPageLoader = function(show) {
-  const loader = document.getElementById('page-loader'); if (!loader) return;
-  if (show) { loader.classList.remove('hidden','fade-out'); }
-  else { loader.classList.add('fade-out'); setTimeout(() => loader.classList.add('hidden'), 460); }
-};
-
-window.setLoading = function(btnId, loading, origText) {
-  const btn = document.getElementById(btnId); if (!btn) return;
-  if (loading) {
-    btn._orig = btn.innerHTML;
-    btn.innerHTML = `<span class="spinner"></span> ${origText||'Aguarde...'}`;
-    btn.disabled = true; btn.classList.add('btn-loading');
-  } else {
-    btn.innerHTML = btn._orig || origText || 'Salvar';
-    btn.disabled = false; btn.classList.remove('btn-loading');
+  const secId = sectionMap[key];
+  if (secId) {
+    const sec = document.getElementById(secId);
+    if (sec) sec.classList.add('active');
   }
+
+  if (navEl) navEl.classList.add('active');
+  const titleEl = document.getElementById('pageTitle');
+  if (titleEl) titleEl.textContent = titleMap[key] || key.toUpperCase();
 };
 
-// ── HELPERS DE TABELA ──────────────────────────────────────
+// ============================================================
+// LOADERS, BADGES & HELPERS
+// ============================================================
+window.showPageLoader = function(show) {};
+
+window.confirmar = function(msg, titulo = 'Confirmação') {
+  return new Promise(resolve => resolve(window.confirm(`${titulo}\n\n${msg}`)));
+};
+
 window.tableEmpty = function(cols, icon, msg) {
-  return `<tr><td colspan="${cols}" class="table-empty">${icon} ${msg}</td></tr>`;
+  return `<tr><td colspan="${cols}" style="text-align:center;color:var(--muted);padding:24px;">${icon} ${msg}</td></tr>`;
 };
 
-window.emptyState = function(icon, title, sub) {
-  return `<div class="empty-state">
-    <div class="empty-state-icon">${icon}</div>
-    <div class="empty-state-title">${title}</div>
-    ${sub ? `<div class="empty-state-sub">${sub}</div>` : ''}
-  </div>`;
+window.setBadge = function(id, count) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = count;
+  el.style.display = count > 0 ? 'block' : 'none';
 };
 
-// ── BADGES SEMÂNTICOS ──────────────────────────────────────
 window.badgeStatus = function(status) {
-  const map = {
-    Triagem:'badge-neutral', Orcamento:'badge-warn', Orcamento_Enviado:'badge-purple',
-    Aprovado:'badge-brand', Andamento:'badge-warn', Pronto:'badge-success',
-    Entregue:'badge-success', Cancelado:'badge-danger',
-    Pago:'badge-success', Pendente:'badge-warn',
-    Ativo:'badge-success', Bloqueado:'badge-danger', Trial:'badge-warn'
-  };
-  return `<span class="badge ${map[status]||'badge-neutral'}">${status}</span>`;
+  const map = { 'Aguardando': 'pill-gray', 'Triagem': 'pill-gray', 'Orcamento': 'pill-warn', 'Orcamento_Enviado': 'pill-purple', 'Aprovado': 'pill-cyan', 'Andamento': 'pill-warn', 'Concluido': 'pill-green', 'Cancelado': 'pill-danger', 'Pago': 'pill-green', 'Pendente': 'pill-warn', 'Entregue': 'pill-green', 'Pronto': 'pill-green' };
+  return `<span class="pill ${map[status] || 'pill-gray'}">${status}</span>`;
 };
 
 window.badgeTipo = function(tipo) {
-  const map = { carro:['badge-brand','🚗 Carro'], moto:['badge-warn','🏍️ Moto'], bicicleta:['badge-success','🚲 Bicicleta'] };
-  const [cls, lbl] = map[tipo] || ['badge-neutral', tipo];
-  return `<span class="badge ${cls}">${lbl}</span>`;
+  const map = { carro: ['pill-cyan', '🚗 Carro'], moto: ['pill-warn', '🏍️ Moto'], bicicleta: ['pill-green', '🚲 Bicicleta'] };
+  const [cls, lbl] = map[tipo] || ['pill-gray', tipo];
+  return `<span class="pill ${cls}">${lbl}</span>`;
 };
 
-// ── CONFIRM PERSONALIZADO ──────────────────────────────────
-window.confirmar = function(msg, titulo='Confirmação') {
-  return Promise.resolve(window.confirm(`${titulo}\n\n${msg}`));
+window.badgeEntradaSaida = function(tipo) {
+  return tipo === 'Entrada' ? `<span class="pill pill-green">${tipo}</span>` : `<span class="pill pill-danger">${tipo}</span>`;
 };

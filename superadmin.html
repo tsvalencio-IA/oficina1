@@ -3,359 +3,714 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>thIAguinho Soluções — Gestor SaaS Master</title>
+<title>J.A.R.V.I.S — SUPERADMIN SaaS</title>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="js/config.js"></script>
-<link rel="stylesheet" href="css/design.css">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=JetBrains+Mono:wght@400;700&family=Exo+2:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-:root { --brand: #0dcaf0; --brand-dim: rgba(13,202,240,.12); --brand-dark: #0099b8; }
-.sa-layout { min-height: 100vh; display: flex; flex-direction: column; }
-.sa-header { background: var(--surf); border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; }
-.sa-content { flex: 1; padding: 24px; max-width: 1400px; margin: 0 auto; width: 100%; }
-.plan-badge { padding: 3px 8px; font-family: var(--fm); font-size: .58rem; letter-spacing: 1px; font-weight: 700; }
-.plan-starter   { background: rgba(13,202,240,.12); color: #0dcaf0; }
-.plan-pro       { background: rgba(245,158,11,.12); color: #f59e0b; }
-.plan-enterprise{ background: rgba(139,92,246,.12); color: #8b5cf6; }
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#030508;--surf:#080E1A;--surf2:#0C1426;--surf3:#111D35;
+  --cyan:#00D4FF;--danger:#FF3B3B;--warn:#FFB800;--success:#00FF88;--purple:#9B5CF6;
+  --text:#E8F4FF;--muted:#4A6B8A;--muted2:#7A9AB8;
+  --border:rgba(0,212,255,0.1);--border2:rgba(0,212,255,0.2);
+  --ff:'Exo 2',sans-serif;--fm:'JetBrains Mono',monospace;--fd:'Rajdhani',sans-serif;
+  --sidebar:230px;
+}
+html,body{height:100%;background:var(--bg);font-family:var(--ff);color:var(--text);overflow:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,212,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,0.02) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:var(--surf);}
+::-webkit-scrollbar-thumb{background:var(--surf3);}
+
+/* LOGIN */
+.login-page{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:999;background:var(--bg);}
+.login-box{background:var(--surf2);border:1px solid var(--border2);border-radius:4px;padding:36px;width:100%;max-width:400px;position:relative;}
+.login-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--purple),transparent);}
+.login-title{font-family:var(--fd);font-size:1.6rem;font-weight:700;letter-spacing:4px;text-align:center;margin-bottom:4px;}
+.login-sub{font-family:var(--fm);font-size:0.62rem;color:var(--muted);text-align:center;letter-spacing:2px;margin-bottom:28px;}
+
+/* LAYOUT */
+.layout{display:flex;height:100vh;position:relative;z-index:1;}
+.sidebar{width:var(--sidebar);background:var(--surf);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;}
+.sb-logo{padding:20px 16px;border-bottom:1px solid var(--border);}
+.sb-logo-title{font-family:var(--fd);font-size:1rem;font-weight:700;letter-spacing:3px;color:var(--purple);}
+.sb-logo-sub{font-family:var(--fm);font-size:0.55rem;color:var(--muted);letter-spacing:2px;margin-top:2px;}
+.sb-nav{flex:1;overflow-y:auto;padding:10px 8px;}
+.nav-sec{font-family:var(--fm);font-size:0.52rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase;padding:10px 8px 5px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:2px;cursor:pointer;color:var(--muted2);font-size:0.8rem;font-weight:600;letter-spacing:0.5px;transition:all 0.15s;border-left:2px solid transparent;margin-bottom:2px;}
+.nav-item:hover{background:rgba(155,92,246,0.06);color:var(--text);}
+.nav-item.active{background:rgba(155,92,246,0.08);color:var(--purple);border-left-color:var(--purple);}
+.sb-foot{padding:12px;border-top:1px solid var(--border);}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{padding:12px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surf);flex-shrink:0;}
+.page-title{font-family:var(--fd);font-size:1.3rem;font-weight:700;letter-spacing:2px;}
+.content{flex:1;overflow-y:auto;padding:22px;}
+.section{display:none;}.section.active{display:block;}
+
+/* KPI */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
+.kpi{background:var(--surf2);border:1px solid var(--border);border-radius:3px;padding:16px;position:relative;overflow:hidden;}
+.kpi::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;}
+.kpi.p{--accent:var(--purple)}.kpi.c{--accent:var(--cyan)}.kpi.g{--accent:var(--success)}.kpi.d{--accent:var(--danger)}
+.kpi::after{background:var(--accent);}
+.kpi-label{font-family:var(--fm);font-size:0.58rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
+.kpi-val{font-family:var(--fd);font-size:1.9rem;font-weight:700;color:var(--accent);}
+
+/* CARD */
+.j-card{background:var(--surf2);border:1px solid var(--border);border-radius:3px;overflow:hidden;margin-bottom:14px;}
+.j-card-head{padding:13px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.j-card-title{font-family:var(--fd);font-size:0.95rem;font-weight:700;letter-spacing:1px;}
+
+/* TABLE */
+.j-table{width:100%;border-collapse:collapse;font-size:0.8rem;}
+.j-table th{padding:9px 13px;text-align:left;font-family:var(--fm);font-size:0.58rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--surf3);}
+.j-table td{padding:10px 13px;border-bottom:1px solid rgba(0,212,255,0.04);vertical-align:middle;}
+.j-table tr:hover td{background:rgba(155,92,246,0.02);}
+.j-table tr:last-child td{border-bottom:none;}
+
+/* INPUTS */
+.j-input{background:var(--surf3);border:1px solid var(--border);border-radius:2px;color:var(--text);font-family:var(--ff);font-size:0.84rem;padding:9px 12px;outline:none;transition:all 0.2s;width:100%;}
+.j-input:focus{border-color:var(--cyan);}
+.j-input::placeholder{color:var(--muted);font-size:0.76rem;}
+.j-select{background:var(--surf3);border:1px solid var(--border);border-radius:2px;color:var(--text);font-family:var(--ff);font-size:0.84rem;padding:9px 12px;outline:none;cursor:pointer;width:100%;}
+.j-select option{background:var(--surf3);}
+.j-label{display:block;font-family:var(--fm);font-size:0.58rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:5px;}
+.form-group{margin-bottom:13px;}
+.form-row{display:grid;gap:12px;margin-bottom:13px;}
+.form-row.c2{grid-template-columns:1fr 1fr;}
+.form-row.c3{grid-template-columns:1fr 1fr 1fr;}
+
+/* BUTTONS */
+.btn-primary{padding:8px 16px;background:var(--purple);color:#fff;border:none;border-radius:2px;font-family:var(--fd);font-size:0.85rem;font-weight:700;letter-spacing:1px;cursor:pointer;transition:all 0.2s;display:inline-flex;align-items:center;gap:6px;}
+.btn-primary:hover{background:#8B4CE6;}
+.btn-cyan{padding:7px 14px;background:var(--cyan);color:#000;border:none;border-radius:2px;font-family:var(--fd);font-size:0.82rem;font-weight:700;cursor:pointer;transition:all 0.2s;}
+.btn-ghost{padding:7px 12px;background:transparent;border:1px solid var(--border);border-radius:2px;color:var(--muted2);font-family:var(--fm);font-size:0.68rem;cursor:pointer;transition:all 0.2s;}
+.btn-ghost:hover{border-color:var(--border2);color:var(--text);}
+.btn-danger{padding:6px 11px;background:transparent;border:1px solid rgba(255,59,59,0.3);border-radius:2px;color:var(--danger);font-family:var(--fm);font-size:0.67rem;cursor:pointer;}
+.btn-success{padding:6px 11px;background:transparent;border:1px solid rgba(0,255,136,0.3);border-radius:2px;color:var(--success);font-family:var(--fm);font-size:0.67rem;cursor:pointer;}
+.btn-warn{padding:6px 11px;background:transparent;border:1px solid rgba(255,184,0,0.3);border-radius:2px;color:var(--warn);font-family:var(--fm);font-size:0.67rem;cursor:pointer;}
+.btn-sair{width:100%;padding:8px;background:transparent;border:1px solid rgba(255,59,59,0.25);border-radius:2px;color:rgba(255,59,59,0.6);font-family:var(--fm);font-size:0.65rem;letter-spacing:2px;cursor:pointer;transition:all 0.2s;}
+.btn-sair:hover{background:rgba(255,59,59,0.08);color:var(--danger);}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:1000;display:none;align-items:flex-start;justify-content:center;padding:30px 16px;backdrop-filter:blur(4px);overflow-y:auto;}
+.overlay.open{display:flex;}
+.modal{background:var(--surf2);border:1px solid var(--border2);border-radius:4px;width:100%;max-width:700px;margin:auto;position:relative;}
+.modal::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--purple),transparent);}
+.modal-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.modal-title{font-family:var(--fd);font-size:1.1rem;font-weight:700;letter-spacing:2px;color:var(--purple);}
+.modal-close{background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;padding:4px 8px;}
+.modal-close:hover{color:var(--danger);}
+.modal-body{padding:20px;}
+.modal-foot{padding:14px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;}
+
+/* PILL */
+.pill{display:inline-block;padding:2px 9px;border-radius:10px;font-family:var(--fm);font-size:0.58rem;letter-spacing:1px;}
+.pill-purple{background:rgba(155,92,246,0.15);color:var(--purple);}
+.pill-cyan{background:rgba(0,212,255,0.12);color:var(--cyan);}
+.pill-green{background:rgba(0,255,136,0.12);color:var(--success);}
+.pill-warn{background:rgba(255,184,0,0.12);color:var(--warn);}
+.pill-danger{background:rgba(255,59,59,0.12);color:var(--danger);}
+.pill-gray{background:rgba(255,255,255,0.06);color:var(--muted2);}
+.live-dot{width:6px;height:6px;background:var(--success);border-radius:50%;animation:blink 2s infinite;display:inline-block;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0.2;}}
+
+/* TOAST */
+#toastBox{position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:6px;}
+.toast-j{padding:9px 14px;border-radius:2px;font-family:var(--fm);font-size:0.7rem;border-left:2px solid;display:flex;align-items:center;gap:8px;transition:opacity 0.4s;}
+.toast-j.ok{background:#0a2218;border-color:var(--success);color:var(--success);}
+.toast-j.err{background:#1a0a0a;border-color:var(--danger);color:var(--danger);}
+.toast-j.warn{background:#1a1400;border-color:var(--warn);color:var(--warn);}
+
+/* CHECKBOX MODS */
+.mod-checks{display:flex;flex-wrap:wrap;gap:8px;}
+.mod-check{display:flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--border);border-radius:2px;cursor:pointer;font-family:var(--fm);font-size:0.65rem;color:var(--muted2);transition:all 0.15s;}
+.mod-check:has(input:checked){border-color:var(--purple);background:rgba(155,92,246,0.08);color:var(--purple);}
+.mod-check input{accent-color:var(--purple);}
 </style>
 </head>
 <body>
-<div id="toast-container"></div>
+<div id="toastBox"></div>
 
-<!-- LOGIN MASTER -->
-<div id="loginScreen" style="display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px">
-  <div class="login-card" style="max-width:400px">
-    <div class="login-logo-wrap">
-      <div class="login-logo-mark" style="width:50px;height:50px;font-size:1.5rem;background:rgba(13,202,240,.12);border:1px solid #0dcaf0;display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-weight:700;color:#0dcaf0;margin:0 auto 14px">T</div>
-      <div class="login-title" style="color:#0dcaf0">GESTOR SaaS</div>
-      <div class="login-sub">thIAguinho Soluções Digitais</div>
-    </div>
-    <div id="saLoginErr" class="login-err">Credenciais inválidas.</div>
-    <div class="form-group"><label class="j-label">E-mail Master</label><input class="j-input input-mono" id="saUser" type="email" placeholder="master@thiaguinho.com.br"></div>
-    <div class="form-group"><label class="j-label">Senha</label><input class="j-input" id="saPass" type="password" placeholder="••••••••"></div>
-    <button class="btn btn-xl btn-full" id="btnSaLogin" onclick="saLogin()" style="background:#0dcaf0;color:#000;margin-top:8px">AUTENTICAR SISTEMA</button>
+<!-- LOGIN SCREEN -->
+<div class="login-page" id="loginPage">
+  <div class="login-box">
+    <div class="login-title" style="color:var(--purple)">⚡ SUPERADMIN</div>
+    <div class="login-sub">J.A.R.V.I.S SAAS MASTER</div>
+    <div class="form-group"><label class="j-label">Email Master</label><input class="j-input" id="lUser" placeholder="admin@exemplo.com" autocomplete="off"></div>
+    <div class="form-group"><label class="j-label">Senha</label><input type="password" class="j-input" id="lPass" placeholder="••••••••"></div>
+    <div id="loginErr" style="color:var(--danger);font-family:var(--fm);font-size:0.72rem;margin-bottom:12px;display:none;">⚠ Credenciais inválidas</div>
+    <button class="btn-primary" style="width:100%;padding:12px;justify-content:center;" onclick="fazerLogin()">AUTENTICAR</button>
   </div>
 </div>
 
-<!-- PAINEL MASTER -->
-<div id="adminPanel" style="display:none">
-<div class="sa-layout">
-  <div class="sa-header">
-    <div style="display:flex;align-items:center;gap:12px">
-      <div style="width:32px;height:32px;background:rgba(13,202,240,.15);border:1px solid #0dcaf0;display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-weight:700;color:#0dcaf0">T</div>
-      <div>
-        <div style="font-family:var(--fd);font-size:1rem;font-weight:700;color:#0dcaf0">thIAguinho Soluções — MASTER</div>
-        <div style="font-family:var(--fm);font-size:.58rem;color:var(--text-muted)">SaaS Control Panel</div>
-      </div>
+<!-- MAIN PANEL -->
+<div class="layout" id="mainPanel" style="display:none;">
+
+<aside class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-title">⚡ SUPERADMIN</div>
+    <div class="sb-logo-sub">JARVIS SAAS MASTER</div>
+  </div>
+  <nav class="sb-nav">
+    <div class="nav-sec">PAINEL</div>
+    <div class="nav-item active" onclick="ir('s-dashboard',this)">📊 Dashboard</div>
+    <div class="nav-item" onclick="ir('s-tenants',this)">🏢 Oficinas (Tenants)</div>
+    <div class="nav-sec">CONFIGURAÇÃO</div>
+    <div class="nav-item" onclick="ir('s-ia',this)">🤖 IA / Gemini Key</div>
+    <div class="nav-item" onclick="ir('s-saas',this)">💰 Financeiro SaaS</div>
+    <div class="nav-sec">SUPORTE</div>
+    <div class="nav-item" onclick="ir('s-auditoria',this)">🔒 Auditoria Global</div>
+  </nav>
+  <div class="sb-foot">
+    <button class="btn-sair" onclick="sair()">⏻ ENCERRAR SESSÃO</button>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div class="page-title" id="pageTitle" style="color:var(--purple)">DASHBOARD</div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span style="display:flex;align-items:center;gap:6px;font-family:var(--fm);font-size:0.62rem;color:var(--muted2);padding:5px 12px;border:1px solid var(--border);border-radius:2px;"><div class="live-dot"></div> FIREBASE ONLINE</span>
     </div>
-    <button class="btn-sair" onclick="saSair()" style="width:auto;padding:7px 16px">⏻ SAIR</button>
   </div>
 
-  <div class="sa-content">
-    <!-- KPIs -->
-    <div class="kpi-grid" style="margin-bottom:24px">
-      <div class="kpi-card" style="border-top:2px solid #0dcaf0"><div class="kpi-label">CLIENTES SaaS</div><div class="kpi-value" id="saKpiTotal" style="color:#0dcaf0">0</div></div>
-      <div class="kpi-card" style="border-top:2px solid var(--success)"><div class="kpi-label">LICENÇAS ATIVAS</div><div class="kpi-value" id="saKpiAtivos" style="color:var(--success)">0</div></div>
-      <div class="kpi-card" style="border-top:2px solid var(--danger)"><div class="kpi-label">BLOQUEADAS</div><div class="kpi-value" id="saKpiBloq" style="color:var(--danger)">0</div></div>
-      <div class="kpi-card" style="border-top:2px solid var(--warn)"><div class="kpi-label">MRR (SaaS)</div><div class="kpi-value" id="saKpiMRR" style="color:var(--warn)">R$ 0</div></div>
-    </div>
+  <div class="content">
 
-    <!-- Tabs -->
-    <div class="modal-tabs" style="padding:0;border-bottom:1px solid var(--border);margin-bottom:20px">
-      <div class="mtab active" onclick="switchTab(this,'saTabOficinas','saTabFin')">🏢 OFICINAS / LICENÇAS</div>
-      <div class="mtab" onclick="switchTab(this,'saTabFin','saTabOficinas')">💰 FINANCEIRO SaaS</div>
-    </div>
-
-    <!-- Tab Oficinas -->
-    <div id="saTabOficinas" class="tab-pane active" style="padding:0">
+    <!-- DASHBOARD -->
+    <div class="section active" id="s-dashboard">
+      <div class="kpi-grid">
+        <div class="kpi p"><div class="kpi-label">TENANTS ATIVOS</div><div class="kpi-val" id="kTA">0</div></div>
+        <div class="kpi c"><div class="kpi-label">LICENÇAS ONLINE</div><div class="kpi-val" id="kLO">0</div></div>
+        <div class="kpi g"><div class="kpi-label">MRR ESTIMADO</div><div class="kpi-val" id="kMRR">R$ 0</div></div>
+        <div class="kpi d"><div class="kpi-label">BLOQUEADOS</div><div class="kpi-val" id="kBL">0</div></div>
+      </div>
       <div class="j-card">
-        <div class="j-card-header">
-          <div class="j-card-title" style="color:#0dcaf0">GESTÃO DE LICENÇAS</div>
-          <button class="btn btn-sm" style="background:#0dcaf0;color:#000;border:none" onclick="saAbrirModalOficina('add')">+ CADASTRAR OFICINA</button>
+        <div class="j-card-head"><div class="j-card-title">🏢 OFICINAS CADASTRADAS</div><button class="btn-primary" onclick="ir('s-tenants',document.querySelector('.nav-item:nth-child(2)'));prepTenant('add');abrirModal('modalTenant')">+ NOVA OFICINA</button></div>
+        <div style="padding:0;overflow-x:auto;">
+          <table class="j-table"><thead><tr><th>Oficina</th><th>Nicho</th><th>Acesso</th><th>Status</th><th>Plano</th><th>IA Key</th></tr></thead><tbody id="dashTenants"></tbody></table>
         </div>
-        <div class="j-card-body" style="padding:0">
+      </div>
+    </div>
+
+    <!-- TENANTS -->
+    <div class="section" id="s-tenants">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div></div>
+        <button class="btn-primary" onclick="prepTenant('add');abrirModal('modalTenant')">+ CADASTRAR OFICINA</button>
+      </div>
+      <div class="j-card">
+        <div class="j-card-head">
+          <div class="j-card-title">TODOS OS TENANTS</div>
+          <input class="j-input" style="width:200px;" placeholder="Buscar..." oninput="filtrarTenants(this.value)">
+        </div>
+        <div style="overflow-x:auto;">
           <table class="j-table">
-            <thead><tr><th>ID</th><th>Oficina</th><th>Responsável</th><th>Acesso</th><th>Plano</th><th>Módulos</th><th>Status</th><th>Ação</th></tr></thead>
-            <tbody id="saTabela"></tbody>
+            <thead><tr><th>Nome Fantasia</th><th>Nicho</th><th>Usuário / Senha</th><th>Plano</th><th>Status</th><th>Módulos</th><th>Ações</th></tr></thead>
+            <tbody id="tbTenants"></tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <!-- Tab Financeiro SaaS -->
-    <div id="saTabFin" class="tab-pane" style="padding:0">
-      <div class="dre-grid" style="margin-bottom:20px">
-        <div class="dre-card entradas"><div class="dre-label">RECEITAS SaaS</div><div class="dre-val" id="saReceit">R$ 0,00</div></div>
-        <div class="dre-card saidas"><div class="dre-label">CUSTOS OPERACIONAIS</div><div class="dre-val" id="saDespesas">R$ 0,00</div></div>
-        <div class="dre-card saldo"><div class="dre-label">RESULTADO LÍQUIDO</div><div class="dre-val" id="saSaldo">R$ 0,00</div></div>
-      </div>
-      <div class="j-card">
-        <div class="j-card-header">
-          <div class="j-card-title">CAIXA MASTER</div>
-          <button class="btn btn-sm" style="background:#0dcaf0;color:#000;border:none" onclick="document.getElementById('modalSaasFin').classList.add('open')">+ LANÇAMENTO</button>
+    <!-- IA CONFIG -->
+    <div class="section" id="s-ia">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="j-card">
+          <div class="j-card-head"><div class="j-card-title">🔑 CHAVES GLOBAIS DA API</div></div>
+          <div style="padding:18px;">
+            <div class="form-group"><label class="j-label">Google Gemini API Key (Global)</label><input type="password" class="j-input" id="iaGeminiKey" placeholder="AIzaSy..."></div>
+            <div class="form-group"><label class="j-label">Cloudinary Cloud Name</label><input class="j-input" id="iaCloudName" placeholder="dmuvm1o6m"></div>
+            <div class="form-group"><label class="j-label">Cloudinary Upload Preset</label><input class="j-input" id="iaCloudPreset" placeholder="evolution"></div>
+            <button class="btn-cyan" onclick="salvarConfigIA()" style="width:100%;padding:10px;justify-content:center;">SALVAR E PROPAGAR PARA TODOS OS TENANTS</button>
+          </div>
         </div>
-        <div class="j-card-body" style="padding:0">
-          <table class="j-table"><thead><tr><th>Data</th><th>Tipo</th><th>Descrição</th><th>Valor</th><th>Ação</th></tr></thead><tbody id="saTabelaFin"></tbody></table>
+        <div class="j-card">
+          <div class="j-card-head"><div class="j-card-title">🎙️ TESTAR GEMINI</div></div>
+          <div style="padding:18px;">
+            <div class="form-group"><label class="j-label">Pergunta de Teste</label><textarea class="j-input" id="iaTestInput" rows="3" placeholder="Teste a API aqui..." style="resize:vertical;min-height:80px;"></textarea></div>
+            <button class="btn-primary" onclick="testarGemini()" style="margin-bottom:12px;">TESTAR AGORA</button>
+            <div id="iaTestResult" style="background:rgba(0,0,0,0.3);border-radius:3px;padding:12px;font-size:0.8rem;min-height:60px;color:var(--muted2);display:none;font-family:var(--fm);line-height:1.6;"></div>
+          </div>
         </div>
       </div>
     </div>
+
+    <!-- FINANCEIRO SaaS -->
+    <div class="section" id="s-saas">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px;">
+        <div class="kpi g"><div class="kpi-label">RECEITA TOTAL</div><div class="kpi-val" id="saasRec">R$ 0</div></div>
+        <div class="kpi d"><div class="kpi-label">DESPESAS</div><div class="kpi-val" id="saasDes">R$ 0</div></div>
+        <div class="kpi c"><div class="kpi-label">LUCRO LÍQUIDO</div><div class="kpi-val" id="saasLuc">R$ 0</div></div>
+      </div>
+      <div class="j-card">
+        <div class="j-card-head"><div class="j-card-title">LANÇAMENTOS SaaS</div><button class="btn-primary" onclick="prepSaasFin();abrirModal('modalSaasFin')">+ LANÇAMENTO</button></div>
+        <div style="overflow-x:auto;"><table class="j-table"><thead><tr><th>Data</th><th>Tipo</th><th>Descrição</th><th>Tenant</th><th>Valor</th></tr></thead><tbody id="tbSaasFin"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- AUDITORIA -->
+    <div class="section" id="s-auditoria">
+      <div class="j-card">
+        <div class="j-card-head"><div class="j-card-title">LOG GLOBAL DE AUDITORIA</div></div>
+        <div style="overflow-x:auto;"><table class="j-table"><thead><tr><th>Data/Hora</th><th>Tenant</th><th>Módulo</th><th>Usuário</th><th>Ação</th></tr></thead><tbody id="tbAudit"></tbody></table></div>
+      </div>
+    </div>
+
   </div>
 </div>
 </div>
 
-<!-- MODAL OFICINA -->
-<div class="overlay" id="modalOficina">
-<div class="modal" style="max-width:680px">
-  <div class="modal-head"><div class="modal-title" style="color:#0dcaf0">LICENÇA DA OFICINA</div><button class="modal-close" onclick="document.getElementById('modalOficina').classList.remove('open')">✕</button></div>
+<!-- MODAL TENANT -->
+<div class="overlay" id="modalTenant">
+<div class="modal">
+  <div class="modal-head">
+    <div class="modal-title" id="modalTenantTitle">NOVA OFICINA (TENANT)</div>
+    <button class="modal-close" onclick="fecharModal('modalTenant')">✕</button>
+  </div>
   <div class="modal-body">
-    <input type="hidden" id="ofcId">
-    <div class="section-label">DADOS DO INQUILINO</div>
-    <div class="form-row cols-2">
-      <div class="form-group"><label class="j-label">Nome Fantasia *</label><input class="j-input" id="ofcNome"></div>
-      <div class="form-group"><label class="j-label">Responsável *</label><input class="j-input" id="ofcResp"></div>
-      <div class="form-group"><label class="j-label">WhatsApp</label><input type="tel" class="j-input" id="ofcTel"></div>
-      <div class="form-group"><label class="j-label">Plano</label>
-        <select class="j-select" id="ofcPlano"><option value="starter">Starter — R$ 97/mês</option><option value="pro">Pro — R$ 197/mês</option><option value="enterprise">Enterprise — R$ 397/mês</option></select>
-      </div>
-      <div class="form-group"><label class="j-label">Nicho</label>
-        <select class="j-select" id="ofcNicho"><option value="carros">🚗 Carros</option><option value="motos">🏍️ Motos</option><option value="multi">🔧 Multi-Marca</option></select>
-      </div>
-      <div class="form-group"><label class="j-label">Status Licença</label>
-        <select class="j-select" id="ofcStatus"><option value="Ativo">Em Dia (Ativo)</option><option value="Bloqueado">Inadimplente (Bloqueado)</option></select>
+    <input type="hidden" id="tId">
+    <div class="form-row c2">
+      <div class="form-group"><label class="j-label">Nome Fantasia</label><input class="j-input" id="tNome" placeholder="Oficina Silva Ltda."></div>
+      <div class="form-group"><label class="j-label">Nicho Principal</label>
+        <select class="j-select" id="tNicho">
+          <option value="carros">🚗 Oficina de Carros</option>
+          <option value="motos">🏍️ Oficina de Motos</option>
+          <option value="bicicletas">🚲 Bicicletaria</option>
+          <option value="multi">🔧 Multi (Carros+Motos)</option>
+        </select>
       </div>
     </div>
-    <hr class="divider">
-    <div class="section-label">CREDENCIAIS DE ACESSO</div>
-    <div class="form-row cols-2">
-      <div class="form-group"><label class="j-label">Usuário Login *</label><input class="j-input input-mono" id="ofcUser"></div>
-      <div class="form-group"><label class="j-label">Senha *</label><input type="text" class="j-input input-mono" id="ofcPass"></div>
+    <div class="form-row c2">
+      <div class="form-group"><label class="j-label">Usuário de Login (Admin)</label><input class="j-input" id="tUser" placeholder="oficina.silva" style="font-family:var(--fm);"></div>
+      <div class="form-group"><label class="j-label">Senha do Admin</label><input class="j-input" id="tSenha" placeholder="senhasegura123"></div>
     </div>
-    <hr class="divider">
-    <div class="section-label">APIs E INTEGRAÇÕES</div>
-    <div class="form-row cols-2">
-      <div class="form-group"><label class="j-label">Chave API Gemini (IA)</label><input type="password" class="j-input input-mono" id="ofcGemini" placeholder="AIzaSy..."></div>
-      <div class="form-group"><label class="j-label">Cloud Name (Cloudinary)</label><input class="j-input input-mono" id="ofcCloudName" placeholder="dmuvm1o6m"></div>
-      <div class="form-group"><label class="j-label">Upload Preset</label><input class="j-input input-mono" id="ofcCloudPreset" placeholder="evolution"></div>
+    <div class="form-row c2">
+      <div class="form-group"><label class="j-label">WhatsApp do Proprietário</label><input class="j-input" id="tWpp" placeholder="17999999999"></div>
+      <div class="form-group"><label class="j-label">Plano Contratado</label>
+        <select class="j-select" id="tPlano">
+          <option value="trial">Trial (7 dias grátis)</option>
+          <option value="starter">Starter — R$ 97/mês</option>
+          <option value="pro">Pro — R$ 197/mês</option>
+          <option value="enterprise">Enterprise — R$ 397/mês</option>
+        </select>
+      </div>
     </div>
-    <hr class="divider">
-    <div class="section-label">BRAND (WHITE-LABEL)</div>
-    <div class="form-row cols-2">
-      <div class="form-group"><label class="j-label">Nome do Sistema</label><input class="j-input" id="ofcBrandName" placeholder="Ex: Minha Oficina ERP"></div>
-      <div class="form-group"><label class="j-label">Tagline</label><input class="j-input" id="ofcBrandTagline" placeholder="Gestão Automotiva"></div>
-      <div class="form-group"><label class="j-label">Cor Principal (HEX)</label><input type="color" class="j-input" id="ofcBrandColor" value="#3B82F6"></div>
-      <div class="form-group"><label class="j-label">Letra do Logo</label><input class="j-input" id="ofcBrandLetter" placeholder="J" maxlength="1"></div>
+    <div class="form-row c2">
+      <div class="form-group"><label class="j-label">Status da Licença</label>
+        <select class="j-select" id="tStatus"><option value="Online">Online (Ativo)</option><option value="Trial">Trial</option><option value="Bloqueado">Bloqueado</option></select>
+      </div>
+      <div class="form-group"><label class="j-label">Gemini API Key Própria (opcional)</label><input class="j-input" id="tGemini" placeholder="AIzaSy... (deixe vazio para usar a global)"></div>
     </div>
-    <hr class="divider">
-    <div class="section-label">MÓDULOS PREMIUM</div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:14px;background:var(--surf3);border:1px solid var(--border)">
-      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.82rem"><input type="checkbox" id="modFin" style="accent-color:#0dcaf0"> 💰 Financeiro Avançado</label>
-      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.82rem"><input type="checkbox" id="modChat" style="accent-color:#0dcaf0"> 💬 Chat CRM</label>
-      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.82rem"><input type="checkbox" id="modIA" style="accent-color:#0dcaf0"> 🤖 IA thIAguinho</label>
+    <div class="form-row c2">
+      <div class="form-group"><label class="j-label">Cloudinary Cloud Name</label><input class="j-input" id="tCloudName" placeholder="dmuvm1o6m"></div>
+      <div class="form-group"><label class="j-label">Cloudinary Upload Preset</label><input class="j-input" id="tCloudPreset" placeholder="evolution"></div>
+    </div>
+    <div class="form-group">
+      <label class="j-label" style="margin-bottom:8px;">Módulos Habilitados</label>
+      <div class="mod-checks">
+        <label class="mod-check"><input type="checkbox" id="mOS" value="os"> 📋 O.S. / Kanban</label>
+        <label class="mod-check"><input type="checkbox" id="mCrm" value="crm"> 👥 CRM / Clientes</label>
+        <label class="mod-check"><input type="checkbox" id="mEst" value="estoque"> 📦 Estoque</label>
+        <label class="mod-check"><input type="checkbox" id="mFin" value="financeiro"> 💰 Financeiro / DRE</label>
+        <label class="mod-check"><input type="checkbox" id="mIA" value="ia"> 🤖 IA / Gemini</label>
+        <label class="mod-check"><input type="checkbox" id="mChat" value="chat"> 💬 Chat CRM</label>
+        <label class="mod-check"><input type="checkbox" id="mAgd" value="agenda"> 📅 Agenda</label>
+        <label class="mod-check"><input type="checkbox" id="mRH" value="rh"> 👷 Equipe / RH</label>
+      </div>
     </div>
   </div>
   <div class="modal-foot">
-    <button class="btn btn-ghost" onclick="document.getElementById('modalOficina').classList.remove('open')">CANCELAR</button>
-    <button class="btn btn-sm" style="background:#0dcaf0;color:#000;border:none" onclick="saSalvarOficina()">SALVAR LICENÇA</button>
+    <button class="btn-ghost" onclick="fecharModal('modalTenant')">CANCELAR</button>
+    <button class="btn-primary" onclick="salvarTenant()">SALVAR TENANT</button>
   </div>
 </div>
 </div>
 
-<!-- MODAL FINANCEIRO SAAS -->
+<!-- MODAL SAAS FIN -->
 <div class="overlay" id="modalSaasFin">
-<div class="modal" style="max-width:440px">
-  <div class="modal-head"><div class="modal-title" style="color:#0dcaf0">LANÇAMENTO SaaS</div><button class="modal-close" onclick="document.getElementById('modalSaasFin').classList.remove('open')">✕</button></div>
+<div class="modal" style="max-width:460px;">
+  <div class="modal-head"><div class="modal-title">LANÇAMENTO SaaS</div><button class="modal-close" onclick="fecharModal('modalSaasFin')">✕</button></div>
   <div class="modal-body">
-    <div class="form-group"><label class="j-label">Tipo</label><select class="j-select" id="sfTipo"><option value="Entrada">💰 Receita (Assinatura)</option><option value="Saida">💸 Despesa (Servidor)</option></select></div>
-    <div class="form-group"><label class="j-label">Descrição / Oficina *</label><input class="j-input" id="sfDesc"></div>
-    <div class="form-group"><label class="j-label">Valor (R$) *</label><input type="number" step="0.01" class="j-input" id="sfValor"></div>
-    <div class="form-group"><label class="j-label">Data *</label><input type="date" class="j-input" id="sfData"></div>
+    <div class="form-row c2">
+      <div class="form-group"><label class="j-label">Tipo</label><select class="j-select" id="sfTipo"><option value="Entrada">💰 Receita</option><option value="Saída">💸 Despesa</option></select></div>
+      <div class="form-group"><label class="j-label">Valor (R$)</label><input type="number" step="0.01" class="j-input" id="sfValor" placeholder="0,00"></div>
+    </div>
+    <div class="form-group"><label class="j-label">Descrição</label><input class="j-input" id="sfDesc" placeholder="Ex: Mensalidade Pro — Oficina Silva"></div>
+    <div class="form-row c2">
+      <div class="form-group"><label class="j-label">Tenant</label><select class="j-select" id="sfTenant"><option value="">Avulso</option></select></div>
+      <div class="form-group"><label class="j-label">Data</label><input type="date" class="j-input" id="sfData"></div>
+    </div>
   </div>
-  <div class="modal-foot"><button class="btn btn-ghost" onclick="document.getElementById('modalSaasFin').classList.remove('open')">CANCELAR</button><button class="btn btn-sm" style="background:#0dcaf0;color:#000;border:none" onclick="saSalvarFin()">REGISTRAR</button></div>
+  <div class="modal-foot"><button class="btn-ghost" onclick="fecharModal('modalSaasFin')">CANCELAR</button><button class="btn-primary" onclick="salvarSaasFin()">LANÇAR</button></div>
 </div>
 </div>
 
-<script src="js/ui.js"></script>
 <script>
-const db = window.initFirebase();
-let _dbOficinas=[], _dbSaasFin=[];
+const $=id=>document.getElementById(id), $v=id=>$(id)?$(id).value.trim():'';
+const FB={apiKey:"AIzaSyBqIuCsHHuy_f-mBWV4JBkbyOorXpqQvqg",authDomain:"hub-thiaguinho.firebaseapp.com",projectId:"hub-thiaguinho",storageBucket:"hub-thiaguinho.firebasestorage.app",messagingSenderId:"453508098543",appId:"1:453508098543:web:305f4d48edd9be40bd6e1a"};
+if(!firebase.apps.length) firebase.initializeApp(FB);
+const db=firebase.firestore();
 
-document.getElementById('saPass').addEventListener('keydown',e=>{if(e.key==='Enter')saLogin();});
-document.getElementById('saUser').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('saPass').focus();});
+// ============================================================
+// AUTH SUPERADMIN — tripla camada de segurança
+// ============================================================
 
-async function saLogin() {
-  const usr=document.getElementById('saUser').value.trim(), pass=document.getElementById('saPass').value.trim();
-  const errEl=document.getElementById('saLoginErr'); errEl.style.display='none';
-  if(!usr||!pass){errEl.textContent='Preencha e-mail e senha.';errEl.style.display='block';return;}
-  const btn=document.getElementById('btnSaLogin');
-  btn.innerHTML='<span class="spinner"></span> Autenticando...'; btn.disabled=true;
-  try {
-    await firebase.auth().signInWithEmailAndPassword(usr, pass);
-    document.getElementById('loginScreen').style.display='none';
-    document.getElementById('adminPanel').style.display='block';
-    _escutarOficinas(); _escutarSaasFin();
-  } catch(e) {
-    errEl.textContent = e.message==='Firebase: Error (auth/wrong-password).'?'Senha incorreta.':e.message;
-    errEl.style.display='block';
-    btn.innerHTML='AUTENTICAR SISTEMA'; btn.disabled=false;
+// Credenciais Firebase Auth (email real da conta)
+const MASTER_EMAIL = 'tsvalencio@gmail.com';
+const MASTER_UID   = 'H347zQ8bUccyjBeFzQQEJQdtDKy2';
+
+// Credenciais locais de emergência (quando Firebase Auth não está configurado)
+const MASTER_LOCAL = [
+  { u: 'thiaguinho', p: 'master2026' },
+  { u: 'admin',      p: 'jarvis@2026' },
+  { u: MASTER_EMAIL, p: null } // preenchido em runtime só pra referência de email
+];
+
+let allTenants=[], allSaasFin=[], allAudit=[];
+
+function toast(msg,type='ok'){const el=document.createElement('div');el.className=`toast-j ${type}`;el.innerHTML=msg;$('toastBox').appendChild(el);setTimeout(()=>{el.style.opacity='0';setTimeout(()=>el.remove(),400);},3500);}
+function abrirModal(id){$(id).classList.add('open');}
+function fecharModal(id){$(id).classList.remove('open');}
+const moeda=v=>'R$ '+parseFloat(v||0).toFixed(2).replace('.',',');
+const dtBr=iso=>iso?new Date(iso).toLocaleDateString('pt-BR'):'-';
+const dtHrBr=iso=>iso?new Date(iso).toLocaleString('pt-BR'):'-';
+
+// AUTH
+$('lPass').addEventListener('keydown',e=>{if(e.key==='Enter')fazerLogin();});
+
+async function fazerLogin() {
+  const input = $v('lUser').trim();
+  const pass  = $v('lPass').trim();
+  const btn   = document.querySelector('.login-box .btn-primary');
+  const orig  = btn.innerText;
+  const errEl = $('loginErr');
+  errEl.style.display = 'none';
+
+  if (!input || !pass) {
+    errEl.innerText = '⚠ Preencha o usuário e a senha.';
+    errEl.style.display = 'block';
+    return;
   }
+
+  btn.disabled = true;
+  btn.innerText = '⏳ AUTENTICANDO...';
+
+  // ─── CAMADA 1: credenciais locais (thiaguinho/admin) ──────
+  const localOk = MASTER_LOCAL.some(c => c.u === input && c.p !== null && c.p === pass);
+  if (localOk) {
+    _abrirPainel();
+    btn.disabled = false; btn.innerText = orig;
+    return;
+  }
+
+  // ─── CAMADA 2: Firebase Auth email/senha ─────────────────
+  // Só tenta se o input parecer um email
+  const isEmail = input.includes('@');
+  if (isEmail) {
+    try {
+      const res  = await firebase.auth().signInWithEmailAndPassword(input, pass);
+      const user = res.user;
+      // Valida que é o dono certo (email OU uid)
+      if (user.email === MASTER_EMAIL || user.uid === MASTER_UID) {
+        _abrirPainel();
+        btn.disabled = false; btn.innerText = orig;
+        return;
+      } else {
+        await firebase.auth().signOut();
+        _mostrarErro('Acesso negado — conta sem permissão de superadmin.', btn, orig);
+        return;
+      }
+    } catch (e) {
+      // Se Auth não está habilitado ou usuário não existe via email/senha,
+      // mostra erro específico e orientativo
+      const msgs = {
+        'auth/user-not-found':          'Email não cadastrado no Firebase Auth. Use o usuário "thiaguinho".',
+        'auth/wrong-password':          'Senha incorreta.',
+        'auth/invalid-email':           'Email inválido.',
+        'auth/too-many-requests':       'Muitas tentativas. Aguarde alguns minutos.',
+        'auth/operation-not-allowed':   'Login por email não habilitado no Firebase. Use o usuário "thiaguinho".',
+        'auth/network-request-failed':  'Sem conexão. Tente o usuário "thiaguinho" como alternativa.',
+        'auth/configuration-not-found': 'Firebase Auth não configurado neste projeto. Use o usuário "thiaguinho".',
+        'auth/api-key-not-valid':       'Chave de API inválida.',
+      };
+      _mostrarErro(msgs[e.code] || ('Erro Firebase: ' + e.message), btn, orig);
+      return;
+    }
+  }
+
+  // ─── CAMADA 3: nenhuma camada funcionou ───────────────────
+  _mostrarErro('Usuário ou senha incorretos.', btn, orig);
 }
 
-function saSair(){ firebase.auth().signOut(); location.reload(); }
-
-function moeda(v){return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(parseFloat(v)||0);}
-function dtBr(iso){try{return new Date(iso).toLocaleDateString('pt-BR');}catch{return iso||'—';}}
-
-function switchTab(el,a,...others){
-  el.parentElement.querySelectorAll('.mtab').forEach(t=>t.classList.remove('active')); el.classList.add('active');
-  const ap=document.getElementById(a); if(ap){ap.classList.add('active');}
-  others.forEach(id=>{const p=document.getElementById(id);if(p)p.classList.remove('active');});
+function _abrirPainel() {
+  $('loginPage').style.display = 'none';
+  $('mainPanel').style.display = 'flex';
+  sessionStorage.setItem('sa_auth', '1');
+  inicializar();
+  toast('✓ ACESSO MASTER CONCEDIDO');
 }
 
-function _escutarOficinas(){
+function _mostrarErro(msg, btn, orig) {
+  const errEl = $('loginErr');
+  errEl.innerText = '⚠ ' + msg;
+  errEl.style.display = 'block';
+  if (btn) { btn.disabled = false; btn.innerText = orig; }
+  setTimeout(() => errEl.style.display = 'none', 6000);
+}
+
+async function sair() {
+  try { await firebase.auth().signOut(); } catch(e) {}
+  sessionStorage.removeItem('sa_auth');
+  location.reload();
+}
+
+// NAVEGAÇÃO
+function ir(id,el){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  $(id)?.classList.add('active'); el?.classList.add('active');
+  $('pageTitle').innerText=(id.replace('s-','').toUpperCase());
+}
+
+// INIT
+function inicializar(){
+  escutarTenants(); escutarSaasFin(); escutarAuditoria(); carregarConfigIA();
+}
+
+function escutarTenants(){
   db.collection('oficinas').onSnapshot(snap=>{
-    _dbOficinas=snap.docs.map(d=>({id:d.id,...d.data()}));
-    _renderOficinas();
+    allTenants=snap.docs.map(d=>({id:d.id,...d.data()}));
+    renderTenants(); renderDashboard();
+    // Popula select de tenants no financeiro
+    $('sfTenant').innerHTML='<option value="">Avulso</option>'+allTenants.map(t=>`<option value="${t.id}">${t.nomeFantasia||t.id}</option>`).join('');
   });
 }
-function _escutarSaasFin(){
+function escutarSaasFin(){
   db.collection('saas_financeiro').onSnapshot(snap=>{
-    _dbSaasFin=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.data>a.data?1:-1);
-    _renderSaasFin();
-  });
+    allSaasFin=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.data>a.data?1:-1);
+    renderSaasFin();
+  },()=>{});
+}
+function escutarAuditoria(){
+  db.collection('lixeira_auditoria').onSnapshot(snap=>{
+    allAudit=snap.docs.map(d=>d.data()).sort((a,b)=>b.ts>a.ts?1:-1);
+    renderAuditoria();
+  },()=>{});
 }
 
-function _renderOficinas(){
-  const ativas=_dbOficinas.filter(o=>o.status==='Ativo').length;
-  const bloq=_dbOficinas.filter(o=>o.status==='Bloqueado').length;
-  const mrr=_dbOficinas.filter(o=>o.status==='Ativo').reduce((acc,o)=>acc+(JARVIS_CONST.PLANOS[o.plano]?.preco||97),0);
-  document.getElementById('saKpiTotal').textContent=_dbOficinas.length;
-  document.getElementById('saKpiAtivos').textContent=ativas;
-  document.getElementById('saKpiBloq').textContent=bloq;
-  document.getElementById('saKpiMRR').textContent=moeda(mrr);
+function renderDashboard(){
+  const ativos=allTenants.filter(t=>t.status==='Online').length;
+  $('kTA').innerText=allTenants.length;
+  $('kLO').innerText=ativos;
+  $('kBL').innerText=allTenants.filter(t=>t.status==='Bloqueado').length;
+  const mrr=allTenants.filter(t=>t.status==='Online').reduce((a,t)=>{
+    if(t.plano==='starter') return a+97;
+    if(t.plano==='pro') return a+197;
+    if(t.plano==='enterprise') return a+397;
+    return a;
+  },0);
+  $('kMRR').innerText='R$ '+mrr;
+  // Tabela resumo
+  $('dashTenants').innerHTML=allTenants.slice(0,8).map(t=>{
+    const stCls=t.status==='Online'?'pill-green':t.status==='Trial'?'pill-warn':'pill-danger';
+    return `<tr><td><strong>${t.nomeFantasia||'-'}</strong></td><td><span class="pill pill-purple">${t.nicho||'-'}</span></td><td style="font-family:var(--fm);font-size:0.72rem;color:var(--cyan)">${t.usuario||'-'}</td><td><span class="pill ${stCls}">${t.status||'?'}</span></td><td style="font-family:var(--fm);font-size:0.72rem">${t.plano||'trial'}</td><td style="text-align:center">${t.apiKeys?.gemini?'✅':'❌'}</td></tr>`;
+  }).join('')||'<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--muted);font-family:var(--fm);font-size:0.75rem">Nenhum tenant cadastrado</td></tr>';
+}
 
-  const tb=document.getElementById('saTabela'); if(!tb) return;
-  if(!_dbOficinas.length){tb.innerHTML='<tr><td colspan="8" class="table-empty">Nenhuma oficina cadastrada</td></tr>';return;}
-  tb.innerHTML=_dbOficinas.map(o=>{
-    const bdg=o.status==='Ativo'?'<span class="badge badge-success">ATIVO</span>':'<span class="badge badge-danger">BLOQUEADO</span>';
-    const plano=`<span class="plan-badge plan-${o.plano||'starter'}">${(o.plano||'starter').toUpperCase()}</span>`;
-    const mods=`${o.modulos?.financeiro?'💰':''}${o.modulos?.chat?'💬':''}${o.modulos?.ia?'🤖':''}`;
+function renderTenants(filter=''){
+  const list=filter?allTenants.filter(t=>(t.nomeFantasia||'').toLowerCase().includes(filter.toLowerCase())):allTenants;
+  const mods_map={os:'O.S.',crm:'CRM',estoque:'Est.',financeiro:'Fin.',ia:'IA',chat:'Chat',agenda:'Agd.',rh:'RH'};
+  $('tbTenants').innerHTML=list.map(t=>{
+    const stCls=t.status==='Online'?'pill-green':t.status==='Trial'?'pill-warn':'pill-danger';
+    const mods=Object.entries(t.modulos||{}).filter(([,v])=>v).map(([k])=>`<span class="pill pill-purple" style="font-size:0.5rem;padding:1px 6px">${mods_map[k]||k}</span>`).join(' ');
     return `<tr>
-      <td style="font-family:var(--fm);font-size:.65rem;color:var(--text-muted)">${o.id.substring(0,8)}...</td>
-      <td style="font-weight:700;color:#0dcaf0">${o.nomeFantasia||'—'}</td>
-      <td>${o.responsavel||'—'}<br><span style="font-family:var(--fm);font-size:.65rem;color:var(--text-muted)">${o.telefone||''}</span></td>
-      <td style="font-family:var(--fm);font-size:.7rem">${o.usuario}<br><span style="color:var(--text-muted)">${o.senha}</span></td>
-      <td>${plano}</td>
-      <td style="font-size:1rem">${mods||'—'}</td>
-      <td>${bdg}</td>
-      <td><button class="btn btn-outline btn-sm" onclick="saAbrirModalOficina('edit','${o.id}')">✏ Editar</button></td>
+      <td><strong>${t.nomeFantasia||'-'}</strong><div style="font-family:var(--fm);font-size:0.6rem;color:var(--muted)">${t.wpp||''}</div></td>
+      <td><span class="pill pill-cyan">${t.nicho||'-'}</span></td>
+      <td><code style="font-family:var(--fm);font-size:0.7rem;color:var(--cyan)">${t.usuario||'-'}</code> / <code style="font-family:var(--fm);font-size:0.7rem;color:var(--muted2)">${t.senha||'-'}</code></td>
+      <td style="font-family:var(--fm);font-size:0.7rem">${t.plano||'trial'}</td>
+      <td><span class="pill ${stCls}">${t.status||'?'}</span></td>
+      <td style="max-width:150px">${mods||'<span style="color:var(--muted);font-size:0.62rem">nenhum</span>'}</td>
+      <td style="white-space:nowrap">
+        <button class="btn-ghost" style="margin-right:4px" onclick="prepTenant('edit','${t.id}');abrirModal('modalTenant')">✏</button>
+        <button class="btn-warn" style="margin-right:4px" onclick="toggleStatus('${t.id}','${t.status}')">${t.status==='Online'?'🔒':'🔓'}</button>
+        <button class="btn-danger" onclick="deletarTenant('${t.id}','${t.nomeFantasia}')">🗑</button>
+      </td>
     </tr>`;
-  }).join('');
+  }).join('')||'<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--muted);font-family:var(--fm);font-size:0.75rem">Nenhum tenant</td></tr>';
 }
 
-function _renderSaasFin(){
-  let ent=0, sai=0;
-  const tb=document.getElementById('saTabelaFin'); if(!tb) return;
-  tb.innerHTML=_dbSaasFin.map(f=>{
-    if(f.tipo==='Entrada')ent+=f.valor||0; else sai+=f.valor||0;
-    return `<tr><td style="font-family:var(--fm);font-size:.73rem">${dtBr(f.data)}</td><td><span class="badge ${f.tipo==='Entrada'?'badge-success':'badge-danger'}">${f.tipo}</span></td><td>${f.desc||'—'}</td><td style="font-family:var(--fd);font-weight:700;color:${f.tipo==='Entrada'?'var(--success)':'var(--danger)'}">${moeda(f.valor)}</td><td><button class="btn btn-danger btn-sm" onclick="db.collection('saas_financeiro').doc('${f.id}').delete()">🗑</button></td></tr>`;
-  }).join('')||'<tr><td colspan="5" class="table-empty">Nenhum lançamento</td></tr>';
-  document.getElementById('saReceit').textContent=moeda(ent);
-  document.getElementById('saDespesas').textContent=moeda(sai);
-  document.getElementById('saSaldo').textContent=moeda(ent-sai);
-}
+function filtrarTenants(v){renderTenants(v);}
 
-function saAbrirModalOficina(mode, id=''){
-  ['ofcId','ofcNome','ofcResp','ofcTel','ofcUser','ofcPass','ofcGemini','ofcCloudName','ofcCloudPreset','ofcBrandName','ofcBrandTagline','ofcBrandLetter'].forEach(f=>{const el=document.getElementById(f);if(el)el.value='';});
-  document.getElementById('ofcBrandColor').value='#3B82F6';
-  document.getElementById('ofcPlano').value='starter';
-  document.getElementById('ofcNicho').value='carros';
-  document.getElementById('ofcStatus').value='Ativo';
-  document.getElementById('modFin').checked=false;
-  document.getElementById('modChat').checked=false;
-  document.getElementById('modIA').checked=false;
+// TENANT CRUD
+function prepTenant(mode,id=null){
+  ['tId','tNome','tUser','tSenha','tWpp','tGemini','tCloudName','tCloudPreset'].forEach(f=>{if($(f))$(f).value='';});
+  ['mOS','mCrm','mEst','mFin','mIA','mChat','mAgd','mRH'].forEach(f=>{if($(f))$(f).checked=false;});
+  $('tStatus').value='Online'; $('tNicho').value='carros'; $('tPlano').value='trial';
+  $('tCloudName').value='dmuvm1o6m'; $('tCloudPreset').value='evolution';
+  $('modalTenantTitle').innerText='NOVA OFICINA (TENANT)';
+  // Habilita módulos padrão
+  ['mOS','mCrm','mEst','mFin'].forEach(f=>{if($(f))$(f).checked=true;});
   if(mode==='edit'&&id){
-    const o=_dbOficinas.find(x=>x.id===id); if(!o) return;
-    document.getElementById('ofcId').value=o.id;
-    document.getElementById('ofcNome').value=o.nomeFantasia||'';
-    document.getElementById('ofcResp').value=o.responsavel||'';
-    document.getElementById('ofcTel').value=o.telefone||'';
-    document.getElementById('ofcUser').value=o.usuario||'';
-    document.getElementById('ofcPass').value=o.senha||'';
-    document.getElementById('ofcGemini').value=o.apiKeys?.gemini||'';
-    document.getElementById('ofcCloudName').value=o.apiKeys?.cloudName||'';
-    document.getElementById('ofcCloudPreset').value=o.apiKeys?.cloudPreset||'';
-    document.getElementById('ofcBrandName').value=o.brandName||'';
-    document.getElementById('ofcBrandTagline').value=o.brandTagline||'';
-    document.getElementById('ofcBrandColor').value=o.brandColor||'#3B82F6';
-    document.getElementById('ofcBrandLetter').value=o.brandLetter||'';
-    document.getElementById('ofcPlano').value=o.plano||'starter';
-    document.getElementById('ofcNicho').value=o.nicho||'carros';
-    document.getElementById('ofcStatus').value=o.status||'Ativo';
-    document.getElementById('modFin').checked=o.modulos?.financeiro||false;
-    document.getElementById('modChat').checked=o.modulos?.chat||false;
-    document.getElementById('modIA').checked=o.modulos?.ia||false;
+    const t=allTenants.find(x=>x.id===id); if(!t) return;
+    $('tId').value=t.id; $('tNome').value=t.nomeFantasia||''; $('tUser').value=t.usuario||'';
+    $('tSenha').value=t.senha||''; $('tWpp').value=t.wpp||''; $('tNicho').value=t.nicho||'carros';
+    $('tPlano').value=t.plano||'trial'; $('tStatus').value=t.status||'Online';
+    $('tGemini').value=t.apiKeys?.gemini||''; $('tCloudName').value=t.apiKeys?.cloudName||'dmuvm1o6m';
+    $('tCloudPreset').value=t.apiKeys?.cloudPreset||'evolution';
+    const m=t.modulos||{};
+    $('mOS').checked=!!m.os; $('mCrm').checked=!!m.crm; $('mEst').checked=!!m.estoque;
+    $('mFin').checked=!!m.financeiro; $('mIA').checked=!!m.ia; $('mChat').checked=!!m.chat;
+    $('mAgd').checked=!!m.agenda; $('mRH').checked=!!m.rh;
+    $('modalTenantTitle').innerText='EDITAR TENANT: '+(t.nomeFantasia||'').toUpperCase();
   }
-  document.getElementById('modalOficina').classList.add('open');
 }
 
-async function saSalvarOficina(){
-  const nome=document.getElementById('ofcNome').value.trim();
-  const usr =document.getElementById('ofcUser').value.trim();
-  const pass=document.getElementById('ofcPass').value.trim();
-  if(!nome||!usr||!pass){toast('⚠ Nome, usuário e senha são obrigatórios','warn');return;}
-  const id=document.getElementById('ofcId').value;
-  const data={
-    nomeFantasia:nome, responsavel:document.getElementById('ofcResp').value, telefone:document.getElementById('ofcTel').value,
-    usuario:usr, senha:pass, status:document.getElementById('ofcStatus').value,
-    plano:document.getElementById('ofcPlano').value, nicho:document.getElementById('ofcNicho').value,
-    brandName:document.getElementById('ofcBrandName').value,
-    brandTagline:document.getElementById('ofcBrandTagline').value,
-    brandColor:document.getElementById('ofcBrandColor').value,
-    brandLetter:document.getElementById('ofcBrandLetter').value,
+async function salvarTenant(){
+  if(!$v('tNome')||!$v('tUser')||!$v('tSenha')){toast('⚠ Preencha nome, usuário e senha','warn');return;}
+  const geminiKey=$v('tGemini');
+  const payload={
+    nomeFantasia:$v('tNome'), usuario:$v('tUser'), senha:$v('tSenha'),
+    wpp:$v('tWpp'), nicho:$v('tNicho'), plano:$v('tPlano'), status:$v('tStatus'),
     apiKeys:{
-      gemini:document.getElementById('ofcGemini').value.trim(),
-      cloudName:document.getElementById('ofcCloudName').value.trim()||'dmuvm1o6m',
-      cloudPreset:document.getElementById('ofcCloudPreset').value.trim()||'evolution',
+      gemini:geminiKey||await buscarKeyGlobal(),
+      cloudName:$v('tCloudName')||'dmuvm1o6m',
+      cloudPreset:$v('tCloudPreset')||'evolution'
     },
     modulos:{
-      financeiro:document.getElementById('modFin').checked,
-      chat:document.getElementById('modChat').checked,
-      ia:document.getElementById('modIA').checked,
+      os:$('mOS').checked, crm:$('mCrm').checked, estoque:$('mEst').checked,
+      financeiro:$('mFin').checked, ia:$('mIA').checked, chat:$('mChat').checked,
+      agenda:$('mAgd').checked, rh:$('mRH').checked
     },
     updatedAt:new Date().toISOString()
   };
-  if(id) await db.collection('oficinas').doc(id).update(data);
-  else { data.createdAt=new Date().toISOString(); await db.collection('oficinas').add(data); }
-  toast('✓ Licença salva com sucesso!');
-  document.getElementById('modalOficina').classList.remove('open');
+  const id=$v('tId');
+  try{
+    if(id){
+      await db.collection('oficinas').doc(id).update(payload);
+      // Sincroniza em tenants também
+      try{await db.collection('tenants').doc(id).update(payload);}catch(e){}
+      toast('✓ TENANT ATUALIZADO');
+    }else{
+      payload.criadoEm=new Date().toISOString();
+      const ref=await db.collection('oficinas').add(payload);
+      await db.collection('tenants').doc(ref.id).set({...payload,oficinasId:ref.id});
+      toast('✓ NOVA OFICINA IMPLANTADA! ID: '+ref.id.slice(-6).toUpperCase());
+    }
+    fecharModal('modalTenant');
+  }catch(e){toast('✕ ERRO: '+e.message,'err');}
 }
 
-async function saSalvarFin(){
-  const desc=document.getElementById('sfDesc').value.trim();
-  const val=document.getElementById('sfValor').value;
-  if(!desc||!val){toast('⚠ Preencha todos os campos','warn');return;}
-  await db.collection('saas_financeiro').add({tipo:document.getElementById('sfTipo').value,desc,valor:parseFloat(val),data:document.getElementById('sfData').value,createdAt:new Date().toISOString()});
-  toast('✓ Lançamento registrado!');
-  document.getElementById('modalSaasFin').classList.remove('open');
+async function deletarTenant(id,nome){
+  if(!confirm(`⚠ EXPURGAR "${nome}" PERMANENTEMENTE?\n\nTodos os dados serão removidos.`)) return;
+  await db.collection('oficinas').doc(id).delete();
+  try{await db.collection('tenants').doc(id).delete();}catch(e){}
+  toast('✓ TENANT REMOVIDO','warn');
 }
 
-function toast(msg,type='success'){
-  let c=document.getElementById('toast-container');
-  if(!c){c=document.createElement('div');c.id='toast-container';document.body.appendChild(c);}
-  const el=document.createElement('div');el.className=`toast ${type}`;
-  el.innerHTML=`<div class="toast-icon">${type==='error'?'✕':type==='warn'?'⚠':'✓'}</div><div class="toast-content"><div class="toast-msg">${msg}</div></div>`;
-  c.appendChild(el);
-  setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity .3s';setTimeout(()=>el.remove(),350);},3500);
+async function toggleStatus(id,status){
+  const novo=status==='Online'?'Bloqueado':'Online';
+  await db.collection('oficinas').doc(id).update({status:novo,updatedAt:new Date().toISOString()});
+  try{await db.collection('tenants').doc(id).update({status:novo});}catch(e){}
+  toast(`✓ STATUS → ${novo}`);
 }
 
-// Fechar modal clicando no overlay
-document.addEventListener('click',e=>{
-  if(e.target.classList.contains('overlay'))e.target.classList.remove('open');
-});
-document.addEventListener('keydown',e=>{
-  if(e.key==='Escape')document.querySelectorAll('.overlay.open').forEach(el=>el.classList.remove('open'));
-});
+// IA CONFIG
+async function carregarConfigIA(){
+  try{
+    const res=await fetch('https://thiaguinho-40a14-default-rtdb.firebaseio.com/admin_config.json');
+    const cfg=await res.json();
+    if(cfg?.gemini_api_key) $('iaGeminiKey').value=cfg.gemini_api_key;
+    if(cfg?.cloudinary_name) $('iaCloudName').value=cfg.cloudinary_name;
+    if(cfg?.cloudinary_preset) $('iaCloudPreset').value=cfg.cloudinary_preset;
+  }catch(e){}
+}
+
+async function buscarKeyGlobal(){
+  try{
+    const res=await fetch('https://thiaguinho-40a14-default-rtdb.firebaseio.com/admin_config/gemini_api_key.json');
+    const key=await res.json();
+    return key||'';
+  }catch(e){return '';}
+}
+
+async function salvarConfigIA(){
+  const key=$v('iaGeminiKey'), cloud=$v('iaCloudName'), preset=$v('iaCloudPreset');
+  try{
+    // Salva no RTDB global
+    await fetch('https://thiaguinho-40a14-default-rtdb.firebaseio.com/admin_config/gemini_api_key.json',{method:'PUT',body:JSON.stringify(key)});
+    await fetch('https://thiaguinho-40a14-default-rtdb.firebaseio.com/admin_config/cloudinary_name.json',{method:'PUT',body:JSON.stringify(cloud)});
+    await fetch('https://thiaguinho-40a14-default-rtdb.firebaseio.com/admin_config/cloudinary_preset.json',{method:'PUT',body:JSON.stringify(preset)});
+    // Propaga para todos os tenants que não têm key própria
+    const batch=db.batch();
+    allTenants.forEach(t=>{
+      if(!t.apiKeys?.gemini&&key){
+        batch.update(db.collection('oficinas').doc(t.id),{'apiKeys.gemini':key,'apiKeys.cloudName':cloud,'apiKeys.cloudPreset':preset});
+        try{batch.update(db.collection('tenants').doc(t.id),{'apiKeys.gemini':key});}catch(e){}
+      }
+    });
+    await batch.commit();
+    toast('✓ CONFIG SALVA E PROPAGADA PARA '+allTenants.filter(t=>!t.apiKeys?.gemini).length+' TENANTS');
+  }catch(e){toast('✕ ERRO: '+e.message,'err');}
+}
+
+async function testarGemini(){
+  const key=$v('iaGeminiKey'); const prompt=$v('iaTestInput');
+  if(!key){toast('⚠ Configure a key primeiro','warn');return;}
+  if(!prompt){toast('⚠ Digite uma pergunta','warn');return;}
+  const res=$('iaTestResult'); res.style.display='block'; res.innerText='⏳ Chamando Gemini...';
+  try{
+    const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})});
+    const data=await r.json();
+    if(!r.ok) throw new Error(data.error?.message||'Erro HTTP '+r.status);
+    res.innerText=data.candidates?.[0]?.content?.parts?.[0]?.text||'Sem resposta';
+    res.style.color='var(--success)';
+  }catch(e){res.innerText='✕ '+e.message;res.style.color='var(--danger)';}
+}
+
+// SAAS FIN
+function prepSaasFin(){
+  ['sfDesc','sfValor'].forEach(f=>{if($(f))$(f).value='';});
+  $('sfTipo').value='Entrada';
+  $('sfData').value=new Date().toISOString().split('T')[0];
+}
+async function salvarSaasFin(){
+  if(!$v('sfDesc')||!$v('sfValor')){toast('⚠ Preencha descrição e valor','warn');return;}
+  await db.collection('saas_financeiro').add({
+    tipo:$v('sfTipo'),desc:$v('sfDesc'),valor:parseFloat($v('sfValor')||0),
+    tenantId:$v('sfTenant')||null,data:$v('sfData'),createdAt:new Date().toISOString()
+  });
+  toast('✓ LANÇAMENTO REGISTRADO'); fecharModal('modalSaasFin');
+}
+function renderSaasFin(){
+  let rec=0,des=0;
+  $('tbSaasFin').innerHTML=allSaasFin.map(f=>{
+    if(f.tipo==='Entrada') rec+=f.valor||0; else des+=f.valor||0;
+    const t=allTenants.find(x=>x.id===f.tenantId);
+    return `<tr><td style="font-family:var(--fm);font-size:0.72rem;color:var(--muted)">${dtBr(f.data)}</td><td><span class="pill ${f.tipo==='Entrada'?'pill-green':'pill-danger'}">${f.tipo}</span></td><td>${f.desc||'-'}</td><td style="font-size:0.75rem">${t?.nomeFantasia||'Avulso'}</td><td style="font-family:var(--fm);font-weight:700;color:${f.tipo==='Entrada'?'var(--success)':'var(--danger)'}">${moeda(f.valor)}</td></tr>`;
+  }).join('')||'<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted);font-family:var(--fm);font-size:0.75rem">Sem lançamentos</td></tr>';
+  $('saasRec').innerText=moeda(rec); $('saasDes').innerText=moeda(des);
+  const luc=rec-des; $('saasLuc').innerText=moeda(luc); $('saasLuc').style.color=luc>=0?'var(--cyan)':'var(--danger)';
+}
+function renderAuditoria(){
+  $('tbAudit').innerHTML=allAudit.slice(0,100).map(a=>{
+    const t=allTenants.find(x=>x.id===a.tenantId);
+    return `<tr><td style="font-family:var(--fm);font-size:0.68rem;color:var(--muted)">${dtHrBr(a.ts)}</td><td style="font-size:0.75rem">${t?.nomeFantasia||a.tenantId?.slice(-6)||'-'}</td><td><span class="pill pill-purple">${a.modulo||'-'}</span></td><td style="font-family:var(--fm);color:var(--cyan);font-size:0.7rem">${a.usuario||'-'}</td><td style="font-size:0.78rem">${a.acao||'-'}</td></tr>`;
+  }).join('')||'<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted);font-family:var(--fm);font-size:0.75rem">Sem registros</td></tr>';
+}
+
+// AUTO-LOGIN
+window.onload=()=>{
+  if(sessionStorage.getItem('sa_auth')==='1'){
+    $('loginPage').style.display='none';
+    $('mainPanel').style.display='flex';
+    inicializar();
+  }
+};
 </script>
 </body>
 </html>
