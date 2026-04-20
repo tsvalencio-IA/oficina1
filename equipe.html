@@ -228,6 +228,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   <div class="tab-bar">
     <div class="tab active" onclick="irTab('t-kanban',this)">🔧 PÁTIO / O.S.</div>
     <div class="tab" onclick="irTab('t-chat',this)">💬 CHAT COM ADMIN <span class="tab-badge d-none" id="chatTabBadge">0</span></div>
+    <div class="tab" onclick="irTab('t-ia',this)">🤖 thIAguinho</div>
     <div class="tab" onclick="irTab('t-comissao',this)">💰 MINHAS COMISSÕES</div>
   </div>
 
@@ -284,6 +285,35 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
             <button type="button" class="btn-chat-icon" onclick="document.getElementById('fileInputEquipe').click()" title="Anexar foto ou arquivo" aria-label="Anexar arquivo">📎</button>
             <input class="j-input" id="chatInput" placeholder="Escreva uma mensagem..." style="flex:1;" autocomplete="off">
             <button class="btn-primary" onclick="enviarMsg()">ENVIAR</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- thIAguinho IA -->
+    <div class="section" id="t-ia">
+      <div class="j-card">
+        <div class="j-card-header"><div class="j-card-title">🤖 thIAguinho — CONSULTE O HISTÓRICO</div></div>
+        <div style="padding:10px 14px;border-bottom:1px solid var(--border);display:flex;gap:6px;flex-wrap:wrap;">
+          <span style="font-family:var(--fm);font-size:0.58rem;color:var(--muted);align-self:center;letter-spacing:1px;">SUGESTÕES:</span>
+          <button class="btn-ghost" style="font-size:0.65rem;padding:4px 10px;" onclick="$('iaInput').value='Liste as O.S. em aberto atribuídas a mim com status atual e último diagnóstico.';iaPerguntar();">📋 Minhas O.S.</button>
+          <button class="btn-ghost" style="font-size:0.65rem;padding:4px 10px;" onclick="$('iaInput').value='Me mostre o histórico completo de atendimentos desta placa: informe a placa';iaPerguntar();">🚘 Histórico de placa</button>
+          <button class="btn-ghost" style="font-size:0.65rem;padding:4px 10px;" onclick="$('iaInput').value='Liste os clientes que já apresentaram problema de motor ou transmissão.';iaPerguntar();">⚙️ Problemas recorrentes</button>
+          <button class="btn-ghost" style="font-size:0.65rem;padding:4px 10px;" onclick="$('iaInput').value='Quais veículos tiveram códigos OBD reportados recentemente?';iaPerguntar();">🔌 Scanner OBD</button>
+        </div>
+        <div style="padding:14px;">
+          <div id="iaMsgs" style="background:var(--surf2);border:1px solid var(--border);border-radius:3px;padding:14px;min-height:300px;max-height:50vh;overflow-y:auto;display:flex;flex-direction:column;gap:12px;">
+            <div class="ia-msg bot" style="background:var(--surf3);border-left:3px solid var(--warn);border-radius:3px;padding:12px 14px;max-width:92%;color:var(--text);font-size:0.85rem;line-height:1.5;">
+              <strong>thIAguinho:</strong> Olá mecânico! Posso te ajudar com histórico de atendimentos, diagnóstico de códigos OBD e padrões de problemas na oficina.<br><br>
+              Exemplos:<br>
+              • <em>"Qual o histórico da placa ABC1234?"</em><br>
+              • <em>"O que significa P0300?"</em><br>
+              • <em>"Quais peças já troquei nesse veículo?"</em>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:12px;">
+            <input class="j-input" id="iaInput" placeholder="Ex: Qual o histórico da placa ABC-1234?" style="flex:1;" onkeydown="if(event.key==='Enter')iaPerguntar();">
+            <button class="btn-primary" onclick="iaPerguntar()">ENVIAR</button>
           </div>
         </div>
       </div>
@@ -433,8 +463,8 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 const $ = id => document.getElementById(id);
 const $v = id => $(id) ? $(id).value.trim() : '';
 
-// SESSÃO
-const J = {
+// SESSÃO — J exposto em window para js/ia.js poder acessar
+window.J = {
   tid: sessionStorage.getItem('j_tid'),
   role: sessionStorage.getItem('j_role'),
   nome: sessionStorage.getItem('j_nome'),
@@ -442,9 +472,13 @@ const J = {
   fid: sessionStorage.getItem('j_fid'),
   comissao: parseFloat(sessionStorage.getItem('j_comissao')||0),
   gemini: sessionStorage.getItem('j_gemini'),
+  claude: sessionStorage.getItem('j_claude'),
   cloudName: sessionStorage.getItem('j_cloud_name')||'dmuvm1o6m',
-  cloudPreset: sessionStorage.getItem('j_cloud_preset')||'evolution'
+  cloudPreset: sessionStorage.getItem('j_cloud_preset')||'evolution',
+  // Listas populadas pelos onSnapshot — usadas pela IA contextual
+  os: [], clientes: [], veiculos: [], estoque: [], equipe: [], auditoria: []
 };
+const J = window.J;
 if(!J.tid || J.role==='admin') window.location.replace('index.html');
 
 // FIREBASE
@@ -485,6 +519,14 @@ function irTab(id,el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   $(id)?.classList.add('active'); el?.classList.add('active');
 }
+
+// Alias global usado por js/ia.js (que chama window.ir('ia')).
+// No equipe.html as seções têm prefixo 't-', então mapeia 'ia' -> 't-ia'.
+window.ir = function(alias){
+  const id = alias.startsWith('t-') ? alias : ('t-' + alias);
+  const tabEl = document.querySelector(`.tab[onclick*="${id}"]`);
+  irTab(id, tabEl);
+};
 
 const moeda = v=>'R$ '+parseFloat(v||0).toFixed(2).replace('.',',');
 const dtBr = iso=>iso?new Date(iso).toLocaleDateString('pt-BR'):'-';
@@ -797,18 +839,26 @@ async function enviarFotosBatch(){
 document.addEventListener('DOMContentLoaded',()=>{
   db.collection('ordens_servico').where('tenantId','==',J.tid).onSnapshot(snap=>{
     dbOS=snap.docs.map(d=>({id:d.id,...d.data()}));
+    window.J.os = dbOS; // espelha pra IA
     renderKanban(); renderKPIs();
   });
   db.collection('clientes').where('tenantId','==',J.tid).onSnapshot(snap=>{
     dbClientes=snap.docs.map(d=>({id:d.id,...d.data()}));
+    window.J.clientes = dbClientes;
     popularSelects();
   });
   db.collection('veiculos').where('tenantId','==',J.tid).onSnapshot(snap=>{
     dbVeiculos=snap.docs.map(d=>({id:d.id,...d.data()}));
+    window.J.veiculos = dbVeiculos;
     popularSelects();
   });
   db.collection('estoqueItems').where('tenantId','==',J.tid).onSnapshot(snap=>{
     dbEstoque=snap.docs.map(d=>({id:d.id,...d.data()}));
+    window.J.estoque = dbEstoque;
+  });
+  // funcionários (pra IA saber nome dos mecânicos)
+  db.collection('funcionarios').where('tenantId','==',J.tid).onSnapshot(snap=>{
+    window.J.equipe = snap.docs.map(d=>({id:d.id,...d.data()}));
   });
   // Chat interno (mensagens da equipe com admin)
   db.collection('chat_equipe').where('tenantId','==',J.tid).onSnapshot(snap=>{
@@ -1127,5 +1177,6 @@ function renderComissoes(fins){
 
 /* Powered by thIAguinho Soluções Digitais */
 </script>
+<script src="js/ia.js"></script>
 </body>
 </html>
