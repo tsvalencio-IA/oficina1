@@ -228,6 +228,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   <div class="tab-bar">
     <div class="tab active" onclick="irTab('t-kanban',this)">🔧 PÁTIO / O.S.</div>
     <div class="tab" onclick="irTab('t-chat',this)">💬 CHAT COM ADMIN <span class="tab-badge d-none" id="chatTabBadge">0</span></div>
+    <div class="tab" onclick="irTab('t-ia',this)">🤖 thIAguinho</div>
     <div class="tab" onclick="irTab('t-comissao',this)">💰 MINHAS COMISSÕES</div>
   </div>
 
@@ -284,6 +285,46 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
             <button type="button" class="btn-chat-icon" onclick="document.getElementById('fileInputEquipe').click()" title="Anexar foto ou arquivo" aria-label="Anexar arquivo">📎</button>
             <input class="j-input" id="chatInput" placeholder="Escreva uma mensagem..." style="flex:1;" autocomplete="off">
             <button class="btn-primary" onclick="enviarMsg()">ENVIAR</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         🤖 thIAguinho — IA Mecânico (auto-contida, padrão idêntico
+         ao do cliente.html que funciona; usa J.gemini do sessionStorage)
+         Powered by thIAguinho Soluções Digitais
+         ═══════════════════════════════════════════════════════ -->
+    <div class="section" id="t-ia">
+      <div class="j-card">
+        <div class="j-card-header">
+          <div class="j-card-title">🤖 thIAguinho — CONSULTOR DO MECÂNICO</div>
+        </div>
+
+        <!-- Chips de sugestões -->
+        <div style="padding:10px 14px;border-bottom:1px solid var(--border);display:flex;gap:6px;flex-wrap:wrap;">
+          <span style="font-family:var(--fm);font-size:0.58rem;color:var(--muted);align-self:center;letter-spacing:1px;">SUGESTÕES:</span>
+          <button class="btn-ghost" type="button" style="font-size:0.65rem;padding:4px 10px;" onclick="iaMecChip('Liste minhas O.S. em aberto agora com placa, cliente e status.')">📋 Minhas O.S.</button>
+          <button class="btn-ghost" type="button" style="font-size:0.65rem;padding:4px 10px;" onclick="iaMecChip('Me mostre o histórico completo de atendimentos da placa ABC1234 (substitua pela placa real). Quero ver diagnósticos, peças trocadas e DTCs.')">🚘 Histórico de placa</button>
+          <button class="btn-ghost" type="button" style="font-size:0.65rem;padding:4px 10px;" onclick="iaMecChip('Liste veículos com problemas recorrentes de motor, freio ou transmissão na oficina.')">⚙️ Recorrentes</button>
+          <button class="btn-ghost" type="button" style="font-size:0.65rem;padding:4px 10px;" onclick="iaMecChip('Quais veículos tiveram códigos OBD reportados pelos clientes recentemente?')">🔌 Scanner OBD</button>
+        </div>
+
+        <!-- Mensagens -->
+        <div style="padding:14px;">
+          <div id="iaMecMsgs" style="background:var(--surf3);border:1px solid var(--border);border-radius:3px;padding:14px;min-height:300px;max-height:55vh;overflow-y:auto;display:flex;flex-direction:column;gap:12px;">
+            <div style="background:var(--surf2);border-left:3px solid var(--warn);border-radius:3px;padding:12px 14px;max-width:92%;color:var(--text);font-size:0.85rem;line-height:1.5;">
+              <strong>thIAguinho:</strong> Olá! Sou seu consultor automotivo. Tenho acesso ao histórico de O.S. da oficina, peças, diagnósticos e códigos OBD.<br><br>
+              Exemplos do que posso responder:<br>
+              • <em>"Qual o histórico da placa ABC1234?"</em><br>
+              • <em>"O que significa o código P0420?"</em><br>
+              • <em>"Quais clientes têm reincidência de problema de motor?"</em><br>
+              • <em>"Me ajude a diagnosticar: motor falhando em marcha lenta após troca de velas"</em>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:12px;">
+            <input class="j-input" id="iaMecInput" placeholder="Pergunte sobre uma placa, cliente, código DTC, ou peça orientação técnica..." style="flex:1;" onkeydown="if(event.key==='Enter')iaMecEnviar();">
+            <button class="btn-primary" type="button" onclick="iaMecEnviar()">ENVIAR</button>
           </div>
         </div>
       </div>
@@ -1123,6 +1164,155 @@ function renderComissoes(fins){
         </div>
       </div>`).join('')||'<div style="text-align:center;color:var(--muted);font-family:var(--fm);font-size:0.75rem;padding:20px;">Nenhuma comissão registrada</div>'}
   `;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   🤖 thIAguinho — IA do MECÂNICO (auto-contida)
+   Mesmo padrão da IA do cliente.html (que funciona). Lê J.gemini
+   do sessionStorage. Faz busca contextual: detecta placa, cliente
+   e DTC na pergunta e traz o histórico relevante da oficina.
+   Powered by thIAguinho Soluções Digitais
+   ═══════════════════════════════════════════════════════════════ */
+let _iaMecHist = [];
+
+function iaMecChip(txt){
+  const el = document.getElementById('iaMecInput');
+  if(el) el.value = txt;
+  iaMecEnviar();
+}
+
+function _iaMecMsgUser(txt){
+  const c = document.getElementById('iaMecMsgs'); if(!c) return;
+  const d = document.createElement('div');
+  d.style.cssText = 'background:rgba(0,212,255,0.08);border:1px solid var(--cyan);border-radius:3px;padding:10px 14px;max-width:85%;align-self:flex-end;color:var(--text);font-size:0.85rem;word-break:break-word;';
+  d.textContent = txt;
+  c.appendChild(d);
+  c.scrollTop = c.scrollHeight;
+}
+
+let _iaMecCnt = 0;
+function _iaMecMsgBot(html){
+  const c = document.getElementById('iaMecMsgs'); if(!c) return null;
+  const id = 'iam-' + (_iaMecCnt++);
+  const d = document.createElement('div');
+  d.id = id;
+  d.style.cssText = 'background:var(--surf2);border-left:3px solid var(--warn);border-radius:3px;padding:12px 14px;max-width:92%;color:var(--text);font-size:0.85rem;line-height:1.5;word-break:break-word;';
+  d.innerHTML = `<strong>thIAguinho:</strong> ${html}`;
+  c.appendChild(d);
+  c.scrollTop = c.scrollHeight;
+  return id;
+}
+
+function _iaMecReplace(id, html){
+  const el = document.getElementById(id);
+  if(el) el.innerHTML = `<strong>thIAguinho:</strong> ${html}`;
+}
+
+async function iaMecEnviar(){
+  const inp = document.getElementById('iaMecInput');
+  const msg = inp?.value?.trim();
+  if(!msg) return;
+  inp.value = '';
+
+  _iaMecMsgUser(msg);
+  const lid = _iaMecMsgBot('<span style="opacity:.6">⏳ Consultando histórico e processando...</span>');
+
+  const key = J.gemini;
+  if(!key){
+    _iaMecReplace(lid, '⚠ Chave Gemini não configurada. Peça ao admin para colocar a chave no painel Superadmin (campo apiKeys.gemini da oficina).');
+    return;
+  }
+
+  // ── BUSCA CONTEXTUAL: identifica placa, cliente, DTC na pergunta ──
+  const _msgUp = msg.toUpperCase();
+  const _msgLow = msg.toLowerCase();
+  const _placas = ([..._msgUp.matchAll(/\b([A-Z]{3})-?([0-9][A-Z0-9][0-9]{2})\b/g)]).map(m=>m[0].replace('-',''));
+  const _dtcs   = ([..._msgUp.matchAll(/\b([PCBU][0-9][0-9A-F]{3})\b/g)]).map(m=>m[0]);
+  const _clientesMatch = (dbClientes||[]).filter(c=>{
+    const n=(c.nome||'').toLowerCase().trim(); if(!n||n.length<3) return false;
+    const primeiro=n.split(' ')[0];
+    return _msgLow.includes(n) || (primeiro.length>=4 && _msgLow.includes(primeiro));
+  });
+
+  // Filtra OS relevantes
+  let osRel = [];
+  if(_placas.length){
+    _placas.forEach(pl=>{
+      const v = (dbVeiculos||[]).find(x=>(x.placa||'').toUpperCase().replace('-','')===pl);
+      (dbOS||[]).forEach(o=>{
+        const plOS=(o.placa||'').toUpperCase().replace('-','');
+        if(plOS===pl || (v && o.veiculoId===v.id)) osRel.push(o);
+      });
+    });
+  }
+  if(_clientesMatch.length){
+    _clientesMatch.forEach(c=>{(dbOS||[]).forEach(o=>{ if(o.clienteId===c.id) osRel.push(o); });});
+  }
+  if(_dtcs.length){
+    _dtcs.forEach(code=>{(dbOS||[]).forEach(o=>{
+      if((o.dtcsCliente||[]).some(d=>(d.code||'').toUpperCase()===code)) osRel.push(o);
+    });});
+  }
+  // Filtro por mecânico: se nada casou, mostra as do mecânico logado
+  if(!osRel.length){
+    osRel = (dbOS||[]).filter(o => !o.mecId || o.mecId === J.fid);
+  }
+
+  // De-dup + ordena
+  const _vistos = new Set();
+  osRel = osRel.filter(o=>{ if(_vistos.has(o.id)) return false; _vistos.add(o.id); return true; });
+  osRel.sort((a,b)=>(b.data||b.createdAt||'').localeCompare(a.data||a.createdAt||''));
+
+  const _fmtOS = (o) => {
+    const v = (dbVeiculos||[]).find(x=>x.id===o.veiculoId)||{};
+    const c = (dbClientes||[]).find(x=>x.id===o.clienteId)||{};
+    let s = `OS #${(o.id||'').slice(-6).toUpperCase()} | Data:${o.data||'—'} | Status:${o.status||'—'} | Total:${moeda(o.total||0)}`;
+    s += `\n  Veículo: ${o.placa||v.placa||'—'} ${v.modelo||o.veiculo||''} (KM:${o.km||'—'})`;
+    s += `\n  Cliente: ${c.nome||o.cliente||'—'}`;
+    if(o.relato)      s += `\n  Queixa: ${o.relato}`;
+    if(o.diagnostico) s += `\n  Diagnóstico: ${o.diagnostico}`;
+    if((o.servicos||[]).length) s += `\n  Serviços: ${o.servicos.map(x=>x.desc).join('; ')}`;
+    if((o.pecas||[]).length)    s += `\n  Peças: ${o.pecas.map(x=>x.desc).join('; ')}`;
+    if((o.dtcsCliente||[]).length) s += `\n  DTCs OBD: ${o.dtcsCliente.map(d=>`${d.code}(${d.description||''})`).join('; ')}`;
+    return s;
+  };
+
+  let ctx = `MECÂNICO LOGADO: ${J.nome}
+OFICINA: ${J.tnome}
+Total clientes: ${(dbClientes||[]).length} | Total veículos: ${(dbVeiculos||[]).length} | Total O.S.: ${(dbOS||[]).length}
+`;
+  ctx += `\nO.S. RELEVANTES À PERGUNTA (${osRel.length}):\n` + osRel.slice(0,15).map(_fmtOS).join('\n\n');
+
+  const systemPrompt = `Você é o thIAguinho, IA consultora de diagnóstico automotivo para mecânicos.
+
+REGRAS:
+1. Use APENAS os dados do contexto. NUNCA invente.
+2. Se a informação não está disponível, responda "Não encontrei no histórico da oficina."
+3. Cite OS pelo número curto (últimos 6 caracteres) e data.
+4. Para defeitos por placa: liste TODAS as OS relevantes em ordem cronológica.
+5. Para DTCs: explique o que significam e sugira inspeções práticas.
+6. Português técnico mas acessível ao mecânico de bancada. HTML simples (<strong>, <br>).
+
+CONTEXTO REAL:
+${ctx}
+
+Responda APENAS com base nesses dados.`;
+
+  _iaMecHist.push({role:'user',text:msg});
+  try {
+    const contents = _iaMecHist.map(h=>({role:h.role==='user'?'user':'model',parts:[{text:h.text}]}));
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(key)}`,{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ contents, systemInstruction:{ parts:[{text:systemPrompt}] } })
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data?.error?.message || `HTTP ${res.status}`);
+    const resp = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sem resposta';
+    _iaMecHist.push({role:'model', text:resp});
+    _iaMecReplace(lid, resp.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>'));
+  } catch(e){
+    _iaMecReplace(lid, '⚠ Erro: ' + (e.message||e));
+  }
 }
 
 /* Powered by thIAguinho Soluções Digitais */
