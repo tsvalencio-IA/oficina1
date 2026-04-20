@@ -45,6 +45,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .tab:hover{color:var(--text);}
 .tab.active{color:var(--cyan);border-bottom-color:var(--cyan);}
 .tab-badge{background:var(--danger);color:#fff;font-size:0.55rem;padding:1px 5px;border-radius:8px;}
+.d-none{display:none;}
 
 .content{padding:20px;}
 .section{display:none;}
@@ -103,12 +104,22 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 /* BOTÕES */
 .btn-primary{padding:8px 16px;background:var(--cyan);color:#000;border:none;border-radius:2px;font-family:var(--fd);font-size:0.85rem;font-weight:700;letter-spacing:1px;cursor:pointer;transition:all 0.2s;display:inline-flex;align-items:center;gap:6px;}
 .btn-primary:hover{background:#0099CC;}
+.btn-primary:disabled{opacity:0.5;cursor:not-allowed;}
 .btn-outline{padding:7px 14px;background:transparent;border:1px solid var(--border2);border-radius:2px;color:var(--cyan);font-family:var(--fm);font-size:0.7rem;letter-spacing:1px;cursor:pointer;transition:all 0.2s;}
 .btn-outline:hover{background:rgba(0,212,255,0.08);}
 .btn-ghost{padding:7px 12px;background:transparent;border:1px solid var(--border);border-radius:2px;color:var(--muted2);font-family:var(--fm);font-size:0.68rem;cursor:pointer;transition:all 0.2s;}
 .btn-ghost:hover{border-color:var(--border2);color:var(--text);}
 .btn-danger{padding:6px 12px;background:transparent;border:1px solid rgba(255,59,59,0.3);border-radius:2px;color:var(--danger);font-family:var(--fm);font-size:0.68rem;cursor:pointer;}
 .btn-success{padding:6px 12px;background:transparent;border:1px solid rgba(0,255,136,0.3);border-radius:2px;color:var(--success);font-family:var(--fm);font-size:0.68rem;cursor:pointer;}
+
+/* BOTÃO ÍCONE DO CHAT (microfone / clipe) — CORREÇÃO #2 e #3 */
+.btn-chat-icon{width:40px;height:40px;min-width:40px;background:var(--surf3);border:1px solid var(--border);border-radius:3px;color:var(--cyan);font-size:1.05rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;touch-action:manipulation;user-select:none;-webkit-tap-highlight-color:transparent;}
+.btn-chat-icon:hover{border-color:var(--cyan);background:rgba(0,212,255,0.1);}
+.btn-chat-icon:active{transform:scale(0.96);}
+.btn-chat-icon:disabled{opacity:0.5;cursor:not-allowed;}
+
+@keyframes spin{to{transform:rotate(360deg);}}
+.j-spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--cyan);border-right-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;}
 
 /* MODAL */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:1000;display:none;align-items:flex-start;justify-content:center;padding:30px 16px;backdrop-filter:blur(4px);overflow-y:auto;}
@@ -140,7 +151,8 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .media-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;}
 .media-item{aspect-ratio:1;border-radius:2px;overflow:hidden;border:1px solid var(--border);position:relative;background:var(--surf3);}
 .media-item img,.media-item video{width:100%;height:100%;object-fit:cover;}
-.media-del{position:absolute;top:3px;right:3px;background:rgba(255,59,59,0.85);border:none;border-radius:50%;width:18px;height:18px;color:#fff;cursor:pointer;font-size:9px;display:flex;align-items:center;justify-content:center;}
+.media-del{position:absolute;top:3px;right:3px;background:rgba(255,59,59,0.85);border:none;border-radius:50%;width:18px;height:18px;color:#fff;cursor:pointer;font-size:9px;display:flex;align-items:center;justify-content:center;z-index:2;}
+.media-pending{position:absolute;inset:0;background:rgba(6,10,20,0.55);display:flex;align-items:center;justify-content:center;color:var(--cyan);font-family:var(--fm);font-size:0.58rem;letter-spacing:1px;pointer-events:none;}
 
 /* PILL */
 .pill{display:inline-block;padding:2px 9px;border-radius:10px;font-family:var(--fm);font-size:0.58rem;letter-spacing:1px;}
@@ -152,7 +164,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .placa-badge{font-family:var(--fm);font-size:0.78rem;font-weight:700;letter-spacing:2px;padding:3px 9px;border:1px solid var(--border2);border-radius:2px;color:var(--cyan);}
 
 /* TOAST */
-#toastBox{position:fixed;top:80px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:6px;}
+#toastBox{position:fixed;top:80px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:6px;max-width:calc(100vw - 32px);}
 .toast-j{padding:9px 14px;border-radius:2px;font-family:var(--fm);font-size:0.7rem;border-left:2px solid;display:flex;align-items:center;gap:8px;transition:opacity 0.4s;}
 .toast-j.ok{background:#0a2218;border-color:var(--success);color:var(--success);}
 .toast-j.err{background:#1a0a0a;border-color:var(--danger);color:var(--danger);}
@@ -161,17 +173,34 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 /* CHAT */
 .chat-box{background:var(--surf2);border:1px solid var(--border);border-radius:3px;height:55vh;display:flex;flex-direction:column;}
 .chat-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px;}
-.chat-msg{max-width:75%;padding:9px 13px;border-radius:3px;font-size:0.82rem;line-height:1.5;}
+.chat-msg{max-width:75%;padding:9px 13px;border-radius:3px;font-size:0.82rem;line-height:1.5;word-break:break-word;}
 .chat-msg.admin{background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.2);align-self:flex-end;}
 .chat-msg.cliente{background:var(--surf3);border:1px solid var(--border);align-self:flex-start;}
 .chat-msg .ts{font-family:var(--fm);font-size:0.55rem;color:var(--muted);margin-top:3px;}
-.chat-foot{padding:10px;border-top:1px solid var(--border);display:flex;gap:8px;}
+.chat-msg img{max-width:100%;height:auto;border-radius:4px;margin-top:4px;}
+.chat-msg audio{max-width:100%;margin-top:4px;}
+.chat-foot{padding:10px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:center;}
 
 @media(max-width:600px){
   .mec-kpis{grid-template-columns:1fr;}
   .form-row.c2,.form-row.c3{grid-template-columns:1fr;}
   .kanban-wrap{flex-direction:column;}
-  .k-col{min-width:100%;}
+  .k-col{min-width:100%;width:100%;max-height:none;}
+  .topbar{padding:10px 14px;}
+  .topbar-info{display:none;}
+  .content{padding:14px;}
+  .tab-bar{padding:0 10px;overflow-x:auto;}
+  .tab{padding:10px 14px;font-size:0.62rem;white-space:nowrap;}
+  .chat-box{height:60vh;}
+  .chat-foot{padding:8px;gap:6px;flex-wrap:nowrap;}
+  .chat-foot .j-input{font-size:16px;}  /* evita zoom automático do iOS */
+  .btn-chat-icon{width:38px;height:38px;min-width:38px;}
+  .chat-foot .btn-primary{padding:8px 10px;font-size:0.72rem;}
+  .modal{max-width:100%;}
+  .modal-body,.tab-pane{padding:14px;}
+  .modal-tabs{overflow-x:auto;}
+  .mtab{padding:9px 12px;font-size:0.62rem;white-space:nowrap;}
+  .media-grid{grid-template-columns:repeat(auto-fill,minmax(85px,1fr));}
 }
 </style>
 </head>
@@ -247,8 +276,13 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
           <div class="chat-msgs" id="chatMsgs">
             <div style="text-align:center;color:var(--muted);font-family:var(--fm);font-size:0.72rem;padding:30px;">Sem mensagens ainda</div>
           </div>
+          <!-- CORREÇÃO #2: botões de microfone e clipe adicionados -->
+          <!-- CORREÇÃO #3: click-to-record vinculado ao #btnPTTEquipe -->
           <div class="chat-foot">
-            <input class="j-input" id="chatInput" placeholder="Escreva uma mensagem..." style="flex:1;">
+            <button type="button" class="btn-chat-icon" id="btnPTTEquipe" onclick="togglePTT('btnPTTEquipe')" title="Gravar áudio" aria-label="Gravar áudio">🎤</button>
+            <input type="file" id="fileInputEquipe" accept="image/*,audio/*,video/*,application/pdf,.doc,.docx,.xls,.xlsx" style="display:none" onchange="enviarArquivoChat(this)">
+            <button type="button" class="btn-chat-icon" onclick="document.getElementById('fileInputEquipe').click()" title="Anexar foto ou arquivo" aria-label="Anexar arquivo">📎</button>
+            <input class="j-input" id="chatInput" placeholder="Escreva uma mensagem..." style="flex:1;" autocomplete="off">
             <button class="btn-primary" onclick="enviarMsg()">ENVIAR</button>
           </div>
         </div>
@@ -338,12 +372,28 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   </div>
 
   <div class="tab-pane" id="tp2">
+    <!-- CORREÇÃO #4: GALERIA DE PROVAS AGORA COM BATCH UPLOAD -->
     <div style="background:var(--surf3);border:1px solid var(--border);border-radius:3px;padding:14px;margin-bottom:14px;">
       <div style="font-family:var(--fd);font-weight:700;margin-bottom:10px;color:var(--cyan);">GALERIA DE PROVAS</div>
-      <div style="display:flex;gap:8px;margin-bottom:12px;">
-        <input type="file" class="j-input" id="mediaFile" accept="image/*,video/*" style="flex:1;">
-        <button class="btn-primary" onclick="uploadMedia()" id="btnUpload">UPLOAD</button>
+
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+        <input type="file" class="j-input" id="mediaFile" accept="image/*,video/*" multiple capture="environment" style="flex:1;min-width:0;" onchange="previewFotosOS(this)">
+        <button class="btn-primary" id="btnUpload" onclick="enviarFotosBatch()" type="button">ENVIAR TODAS</button>
       </div>
+
+      <!-- Preview local — aparece só quando há fotos selecionadas antes de enviar -->
+      <div id="mediaPreviewLocal" style="display:none;background:rgba(0,212,255,0.04);border:1px dashed var(--border2);border-radius:3px;padding:10px;margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px;flex-wrap:wrap;">
+          <span style="font-family:var(--fm);font-size:0.62rem;color:var(--cyan);letter-spacing:1px;">PRÉVIA — <span id="mediaPreviewCount">0</span> ARQUIVO(S) SELECIONADO(S)</span>
+          <div style="display:flex;gap:6px;">
+            <span id="mediaProgress" style="font-family:var(--fm);font-size:0.6rem;color:var(--muted);display:none;"></span>
+            <button class="btn-ghost" type="button" onclick="limparPreviewOS()" style="font-size:0.6rem;padding:4px 10px;">✕ LIMPAR</button>
+          </div>
+        </div>
+        <div class="media-grid" id="mediaPreviewGrid"></div>
+      </div>
+
+      <!-- Galeria final (arquivos já enviados) -->
       <div class="media-grid" id="mediaGrid"></div>
       <input type="hidden" id="mediaArray" value="[]">
     </div>
@@ -439,6 +489,307 @@ function irTab(id,el){
 const moeda = v=>'R$ '+parseFloat(v||0).toFixed(2).replace('.',',');
 const dtBr = iso=>iso?new Date(iso).toLocaleDateString('pt-BR'):'-';
 const dtHrBr = iso=>iso?new Date(iso).toLocaleString('pt-BR'):'-';
+
+// ═══════════════════════════════════════════════════════════════
+// MOTOR DE MÍDIA DO CHAT — CORREÇÕES #1, #2, #3, #4
+// Powered by thIAguinho Soluções Digitais
+// ═══════════════════════════════════════════════════════════════
+
+// ── Utilitários de escape seguro contra XSS ────────────────
+function _escapeHtml(s){
+  return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function _escapeAttr(s){
+  return String(s==null?'':s).replace(/["<>]/g,c=>({'"':'&quot;','<':'&lt;','>':'&gt;'}[c]));
+}
+
+// ── CORREÇÃO #1: PARSING DE MÍDIA ROBUSTO ──────────────────
+// Tolera BOM, zero-width-space, NBSP, quebras de linha e maiúsculas
+// inseridas pelos teclados mobile (Gboard/iOS).
+function formatarMidiaChat(texto){
+  if(texto==null) return '';
+  const limpo = String(texto)
+    .replace(/\uFEFF/g,'')
+    .replace(/\u200B/g,'')
+    .replace(/\u200C/g,'')
+    .replace(/\u200D/g,'')
+    .replace(/\u00A0/g,' ')
+    .trim();
+  if(!limpo) return '';
+
+  const match = limpo.match(/^\s*\[\s*(AUDIO|IMAGEM|ARQUIVO)\s*\]\s*([\s\S]+)$/i);
+  if(!match) return _escapeHtml(limpo).replace(/\n/g,'<br>');
+
+  const tipo = match[1].toUpperCase();
+  const url = match[2].trim().split(/\s+/)[0];
+  if(!/^https?:\/\/\S+/i.test(url)) return _escapeHtml(limpo).replace(/\n/g,'<br>');
+
+  const u = _escapeAttr(url);
+  if(tipo==='AUDIO')   return `<audio src="${u}" controls preload="metadata" style="height:34px;max-width:220px;outline:none;display:block;"></audio>`;
+  if(tipo==='IMAGEM')  return `<img src="${u}" loading="lazy" alt="imagem" style="max-width:220px;max-height:220px;border-radius:6px;cursor:zoom-in;display:block;" onclick="window.open('${u}','_blank','noopener')">`;
+  if(tipo==='ARQUIVO') return `<a href="${u}" target="_blank" rel="noopener" style="color:var(--cyan);text-decoration:underline;display:inline-block;padding:4px 0">📎 Ver Anexo</a>`;
+  return _escapeHtml(limpo).replace(/\n/g,'<br>');
+}
+
+// ── CORREÇÃO #3: CLICK-TO-RECORD ROBUSTO ───────────────────
+// Clique 1× → inicia gravação (botão fica vermelho com ⏹)
+// Clique 2× → para, sobe ao Cloudinary e envia automaticamente
+let _pttState = { recorder:null, stream:null, chunks:[], btnId:null, mime:'' };
+
+async function togglePTT(btnId){
+  btnId = btnId || 'btnPTTEquipe';
+  const btn = $(btnId); if(!btn) return;
+
+  // Se já está gravando, PARA e envia
+  if(_pttState.recorder && _pttState.recorder.state==='recording'){
+    try{ _pttState.recorder.stop(); }catch(e){}
+    return;
+  }
+
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || typeof window.MediaRecorder==='undefined'){
+    toast('Este navegador não suporta gravação de áudio.','err'); return;
+  }
+
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+    let mime='';
+    if(typeof MediaRecorder.isTypeSupported==='function'){
+      if(MediaRecorder.isTypeSupported('audio/webm;codecs=opus'))     mime='audio/webm;codecs=opus';
+      else if(MediaRecorder.isTypeSupported('audio/webm'))            mime='audio/webm';
+      else if(MediaRecorder.isTypeSupported('audio/mp4'))             mime='audio/mp4';
+      else if(MediaRecorder.isTypeSupported('audio/ogg;codecs=opus')) mime='audio/ogg;codecs=opus';
+    }
+    const recorder = mime ? new MediaRecorder(stream,{mimeType:mime}) : new MediaRecorder(stream);
+
+    _pttState = { recorder, stream, chunks:[], btnId, mime: mime||'audio/webm' };
+
+    recorder.ondataavailable = ev => { if(ev.data && ev.data.size>0) _pttState.chunks.push(ev.data); };
+
+    recorder.onerror = ev => {
+      toast('Erro na gravação: '+(ev?.error?.message||'desconhecido'),'err');
+      _pttLimpar();
+    };
+
+    recorder.onstop = async ()=>{
+      // 1) Libera o microfone IMEDIATAMENTE (crítico no mobile)
+      if(_pttState.stream){
+        try{ _pttState.stream.getTracks().forEach(t=>{try{t.stop();}catch(e){}}); }catch(e){}
+        _pttState.stream = null;
+      }
+
+      const btnEl = $(_pttState.btnId || btnId);
+      if(btnEl){
+        btnEl.style.color=''; btnEl.style.background='';
+        btnEl.disabled = true;
+        btnEl.innerHTML='<span class="j-spinner"></span>';
+      }
+
+      try{
+        if(!_pttState.chunks.length){
+          toast('Gravação vazia — fale algo antes de parar.','err');
+          _pttLimpar(); return;
+        }
+        const blob = new Blob(_pttState.chunks,{type:_pttState.mime||'audio/webm'});
+        if(blob.size < 500){
+          toast('Áudio muito curto.','err');
+          _pttLimpar(); return;
+        }
+        const fd = new FormData();
+        fd.append('file', blob, 'ptt.' + (_pttState.mime.includes('mp4')?'m4a':'webm'));
+        fd.append('upload_preset', J.cloudPreset);
+
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${J.cloudName}/auto/upload`,{method:'POST',body:fd});
+        const data = await res.json();
+        if(!data.secure_url) throw new Error(data?.error?.message||'Falha no upload do áudio.');
+
+        // Despacha direto para o chat da equipe
+        $('chatInput').value = '[AUDIO]' + data.secure_url;
+        await enviarMsg();
+
+      }catch(e){
+        toast('Erro ao enviar áudio: '+(e.message||e),'err');
+      }finally{
+        _pttLimpar();
+      }
+    };
+
+    recorder.start();
+    btn.style.color='#fff';
+    btn.style.background='var(--danger)';
+    btn.innerHTML='⏹';
+    btn.title='Clique para parar e enviar';
+    btn.setAttribute('aria-pressed','true');
+    toast('🔴 Gravando... Clique ⏹ para enviar.','ok');
+
+  }catch(err){
+    toast('⚠ Permissão de microfone negada ou indisponível.','err');
+    _pttLimpar();
+  }
+}
+
+function _pttLimpar(){
+  const st = _pttState;
+  if(st.stream){
+    try{ st.stream.getTracks().forEach(t=>{try{t.stop();}catch(e){}}); }catch(e){}
+  }
+  const btnEl = $(st.btnId || 'btnPTTEquipe');
+  if(btnEl){
+    btnEl.style.color=''; btnEl.style.background='';
+    btnEl.innerHTML='🎤';
+    btnEl.disabled = false;
+    btnEl.title='Gravar áudio';
+    btnEl.removeAttribute('aria-pressed');
+  }
+  _pttState = { recorder:null, stream:null, chunks:[], btnId:null, mime:'' };
+}
+
+// ── CORREÇÃO #2: ENVIO DE ANEXO PELO CHAT DA EQUIPE ────────
+async function enviarArquivoChat(input){
+  if(!input || !input.files || !input.files.length) return;
+  const file = input.files[0];
+  if(!file) return;
+
+  toast('Enviando arquivo...','ok');
+  try{
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('upload_preset', J.cloudPreset);
+
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${J.cloudName}/auto/upload`,{method:'POST',body:fd});
+    const data = await res.json();
+    if(!data.secure_url) throw new Error(data?.error?.message||'Falha no upload.');
+
+    const isImg = (data.resource_type==='image') || /^image\//.test(file.type||'');
+    const prefixo = isImg ? '[IMAGEM]' : '[ARQUIVO]';
+    $('chatInput').value = prefixo + data.secure_url;
+    await enviarMsg();
+
+  }catch(e){
+    toast('Erro no anexo: '+(e.message||e),'err');
+  }finally{
+    try{ input.value=''; }catch(e){}
+  }
+}
+
+// ── CORREÇÃO #4: BATCH UPLOAD DE FOTOS DA O.S. ─────────────
+// Estado local do preview antes de enviar
+let _batchOSFiles = [];  // Array de File ainda não enviados
+
+function previewFotosOS(input){
+  if(!input || !input.files || !input.files.length){ limparPreviewOS(); return; }
+
+  // Acumula (permite bater foto, bater outra, e outra, sem perder as anteriores)
+  const novos = Array.from(input.files);
+  _batchOSFiles = _batchOSFiles.concat(novos);
+
+  // Libera o input para que possa selecionar/tirar mais fotos em seguida
+  try{ input.value=''; }catch(e){}
+
+  _renderPreviewOS();
+}
+
+function _renderPreviewOS(){
+  const wrap = $('mediaPreviewLocal');
+  const grid = $('mediaPreviewGrid');
+  const count = $('mediaPreviewCount');
+  if(!wrap || !grid || !count) return;
+
+  if(!_batchOSFiles.length){
+    wrap.style.display='none';
+    grid.innerHTML='';
+    count.innerText='0';
+    return;
+  }
+
+  wrap.style.display='block';
+  count.innerText = _batchOSFiles.length;
+
+  grid.innerHTML = _batchOSFiles.map((f,i)=>{
+    const isVideo = /^video\//.test(f.type||'');
+    const url = URL.createObjectURL(f);
+    const mediaEl = isVideo
+      ? `<video src="${url}" muted></video>`
+      : `<img src="${url}" alt="prévia">`;
+    return `<div class="media-item" data-idx="${i}">
+      ${mediaEl}
+      <button class="media-del" type="button" onclick="removerFotoPreview(${i})" title="Remover">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function removerFotoPreview(idx){
+  if(idx<0 || idx>=_batchOSFiles.length) return;
+  _batchOSFiles.splice(idx,1);
+  _renderPreviewOS();
+}
+
+function limparPreviewOS(){
+  _batchOSFiles = [];
+  try{ const f=$('mediaFile'); if(f) f.value=''; }catch(e){}
+  _renderPreviewOS();
+  const prog = $('mediaProgress'); if(prog){ prog.style.display='none'; prog.innerText=''; }
+}
+
+async function enviarFotosBatch(){
+  // Se o input ainda tiver seleção não capturada (caso raro), incorpora
+  const fInput = $('mediaFile');
+  if(fInput && fInput.files && fInput.files.length){
+    _batchOSFiles = _batchOSFiles.concat(Array.from(fInput.files));
+    try{ fInput.value=''; }catch(e){}
+    _renderPreviewOS();
+  }
+
+  if(!_batchOSFiles.length){
+    toast('Selecione ao menos uma foto.','warn');
+    return;
+  }
+
+  const btn = $('btnUpload');
+  const prog = $('mediaProgress');
+  if(btn){ btn.disabled=true; btn.innerText='ENVIANDO...'; }
+  if(prog){ prog.style.display='inline'; prog.innerText='0/'+_batchOSFiles.length; }
+
+  const total = _batchOSFiles.length;
+  const novasUrls = [];
+  let sucesso=0, falhas=0;
+
+  for(let i=0; i<total; i++){
+    const f = _batchOSFiles[i];
+    const fd = new FormData();
+    fd.append('file', f);
+    fd.append('upload_preset', J.cloudPreset);
+    try{
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${J.cloudName}/auto/upload`,{method:'POST',body:fd});
+      const data = await res.json();
+      if(data && data.secure_url){
+        novasUrls.push({ url:data.secure_url, type:data.resource_type||'image' });
+        sucesso++;
+      }else{
+        falhas++;
+      }
+    }catch(e){
+      falhas++;
+    }
+    if(prog){ prog.innerText = (i+1)+'/'+total; }
+  }
+
+  // Concatena com os já gravados (persistidos na O.S.)
+  const jaSalvo = JSON.parse($('mediaArray').value||'[]');
+  const final = jaSalvo.concat(novasUrls);
+  $('mediaArray').value = JSON.stringify(final);
+  renderMediaGrid();
+
+  // Limpa preview local
+  _batchOSFiles = [];
+  _renderPreviewOS();
+
+  if(btn){ btn.disabled=false; btn.innerText='ENVIAR TODAS'; }
+  if(prog){ prog.style.display='none'; prog.innerText=''; }
+
+  if(sucesso && !falhas) toast(`✓ ${sucesso} arquivo(s) enviado(s). Lembre de SALVAR a O.S.`,'ok');
+  else if(sucesso && falhas) toast(`⚠ ${sucesso} ok, ${falhas} falhou. Lembre de SALVAR a O.S.`,'warn');
+  else toast('✕ Nenhum arquivo enviado.','err');
+}
 
 // ============================================================
 // LISTENERS
@@ -567,6 +918,8 @@ function prepOS(mode,id=null){
   $('osTimeline').innerHTML=''; $('tlData').value='[]';
   $('osIdBadge').innerText='NOVA O.S.';
   ['chkPainel','chkPressao','chkCar','chkDoc'].forEach(f=>{if($(f))$(f).checked=false;});
+  // Limpa também o preview local do batch
+  limparPreviewOS();
   popularSelects();
   if(mode==='edit'&&id){
     const os=dbOS.find(x=>x.id===id); if(!os) return;
@@ -666,7 +1019,9 @@ async function salvarOS(){
 }
 
 // ============================================================
-// UPLOAD CLOUDINARY
+// UPLOAD CLOUDINARY — LEGADO MANTIDO POR COMPATIBILIDADE
+// (A UI agora usa enviarFotosBatch; esta função permanece como fallback
+// caso algum código legado ainda chame uploadMedia.)
 // ============================================================
 async function uploadMedia(){
   const f=$('mediaFile')?.files[0]; if(!f) return;
@@ -682,7 +1037,7 @@ async function uploadMedia(){
       renderMediaGrid(); toast('✓ UPLOAD OK');
     }
   }catch(e){toast('✕ ERRO: '+e.message,'err');}
-  btn.innerText='UPLOAD'; btn.disabled=false;
+  btn.innerText='ENVIAR TODAS'; btn.disabled=false;
 }
 function renderMediaGrid(){
   const media=JSON.parse($('mediaArray')?.value||'[]');
@@ -709,6 +1064,8 @@ function renderTimeline(){
 // ============================================================
 // CHAT EQUIPE ↔ ADMIN
 // ============================================================
+// CORREÇÃO #1: renderChat agora usa formatarMidiaChat() para reconhecer
+// [IMAGEM] / [AUDIO] / [ARQUIVO] com tolerância a ruído de teclado mobile.
 function renderChat(){
   const msgs=$('chatMsgs');
   if(!dbMsgs.length){msgs.innerHTML='<div style="text-align:center;color:var(--muted);font-family:var(--fm);font-size:0.72rem;padding:30px;">Sem mensagens ainda</div>';return;}
@@ -718,7 +1075,8 @@ function renderChat(){
     const t=m.ts?new Date(m.ts).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'';
     const side=m.sender==='equipe'?'admin':'cliente';
     const nome=m.sender==='equipe'?J.nome:'Admin';
-    return `<div class="chat-msg ${side}"><strong style="font-size:0.65rem;color:${side==='admin'?'var(--cyan)':'var(--muted2)'}">${nome}</strong><br>${m.msg}<div class="ts">${t}</div></div>`;
+    const conteudo = formatarMidiaChat(m.msg);
+    return `<div class="chat-msg ${side}"><strong style="font-size:0.65rem;color:${side==='admin'?'var(--cyan)':'var(--muted2)'}">${_escapeHtml(nome)}</strong><br>${conteudo}<div class="ts">${t}</div></div>`;
   }).join('');
   msgs.scrollTop=msgs.scrollHeight;
 }
@@ -730,7 +1088,9 @@ async function enviarMsg(){
   });
   $('chatInput').value='';
 }
-$('chatInput')?.addEventListener('keydown',e=>{if(e.key==='Enter')enviarMsg();});
+$('chatInput')?.addEventListener('keydown',e=>{
+  if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); enviarMsg(); }
+});
 
 // ============================================================
 // COMISSÕES
@@ -764,6 +1124,8 @@ function renderComissoes(fins){
       </div>`).join('')||'<div style="text-align:center;color:var(--muted);font-family:var(--fm);font-size:0.75rem;padding:20px;">Nenhuma comissão registrada</div>'}
   `;
 }
+
+/* Powered by thIAguinho Soluções Digitais */
 </script>
 </body>
 </html>

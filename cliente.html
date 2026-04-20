@@ -42,6 +42,7 @@ body { overflow-y: auto; background: #060A14; color: #E8F4FF; font-family: 'Exo 
 .tab-content { display: none; animation: fadeIn 0.3s ease; }
 .tab-content.active { display: block; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes spin { to { transform: rotate(360deg); } }
 
 .input { width: 100%; padding: 14px 16px; background: var(--surf-2); border: 1px solid var(--border); border-radius: var(--r-md); color: #fff; font-family: var(--ff-mono); font-size: 0.9rem; transition: 0.2s; margin-bottom: 16px; }
 .input:focus { border-color: var(--brand); outline: none; background: rgba(0,212,255,0.05); }
@@ -100,7 +101,7 @@ body { overflow-y: auto; background: #060A14; color: #E8F4FF; font-family: 'Exo 
 
 .chat-container { display: flex; flex-direction: column; height: calc(100vh - 150px); background: var(--surf-1); border: 1px solid var(--border); border-radius: var(--r-xl); overflow: hidden; }
 .chat-msgs { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; background: var(--surf-0); }
-.chat-msg { padding: 12px 16px; border-radius: var(--r-lg); max-width: 85%; font-size: 0.9rem; line-height: 1.4; position: relative; }
+.chat-msg { padding: 12px 16px; border-radius: var(--r-lg); max-width: 85%; font-size: 0.9rem; line-height: 1.4; position: relative; word-break: break-word; }
 .chat-msg.outgoing { background: var(--brand-dim); border: 1px solid var(--border); color: #fff; align-self: flex-end; border-bottom-right-radius: 0; }
 .chat-msg.incoming { background: var(--surf-2); border: 1px solid var(--border); color: #fff; align-self: flex-start; border-bottom-left-radius: 0; }
 .chat-author { font-family: var(--ff-mono); font-size: 0.6rem; color: var(--brand); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px; }
@@ -119,11 +120,14 @@ body { overflow-y: auto; background: #060A14; color: #E8F4FF; font-family: 'Exo 
 .extrato-item.Pendente { border-left-color: var(--danger); }
 .extrato-item.Pago { border-left-color: var(--success); }
 
-#toastBox { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+#toastBox { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; max-width: calc(100vw - 40px); }
 .toast-j { padding: 14px 20px; border-radius: var(--r-md); font-family: var(--ff-mono); font-size: 0.8rem; border-left: 4px solid; background: #111; box-shadow: 0 4px 15px rgba(0,0,0,0.5); display: flex; align-items: center; gap: 10px; transition: 0.4s; }
 .toast-j.ok { border-color: var(--success); color: var(--success); }
 .toast-j.err { border-color: var(--danger); color: var(--danger); }
 .toast-j.warn { border-color: var(--warn); color: var(--warn); }
+
+.j-spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--brand); border-right-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite; }
+.spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; margin-right: 6px; }
 </style>
 </head>
 <body>
@@ -166,6 +170,8 @@ body { overflow-y: auto; background: #060A14; color: #E8F4FF; font-family: 'Exo 
       <button class="tab-btn" onclick="switchCliTab('tabChat', this)">💬 CHAT <span class="tab-badge" id="cliChatBadge">0</span></button>
       <button class="tab-btn" onclick="switchCliTab('tabFin', this)">💳 EXTRATO</button>
       <button class="tab-btn" onclick="switchCliTab('tabAgd', this)">📅 AGENDAR</button>
+      <button class="tab-btn" onclick="switchCliTab('tabIA', this)" style="color:var(--text-muted)">🤖 IA</button>
+      <button class="tab-btn" onclick="switchCliTab('tabOBD', this)" style="color:var(--text-muted)">🔌 OBD</button>
     </div>
   </div>
 
@@ -180,11 +186,11 @@ body { overflow-y: auto; background: #060A14; color: #E8F4FF; font-family: 'Exo 
         </div>
         <div class="chat-msgs" id="renderChatArea"><div style="text-align:center;color:var(--text-muted);font-size:0.85rem;padding:20px;">Envie uma mensagem, foto ou áudio para o mecânico.</div></div>
         <div class="chat-input-area">
-          <button id="btnPttCli" title="Gravar Áudio" onclick="_togglePttCli()" style="background:var(--surf-3);border:1px solid var(--border);color:white;font-size:1.2rem;cursor:pointer;width:44px;height:44px;border-radius:50%;transition:0.2s;display:flex;align-items:center;justify-content:center;">🎤</button>
-          <button title="Anexar Arquivo" onclick="document.getElementById('portalFile').click()" style="background:var(--surf-3);border:1px solid var(--border);color:var(--brand);font-size:1.2rem;cursor:pointer;width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;">📎</button>
-          <input type="file" id="portalFile" style="display:none" accept="image/*,video/*,audio/*,.pdf" onchange="_enviarArquivoPortal(this)">
-          <input class="input" id="portalChatInput" placeholder="Mensagem..." style="margin:0;border-radius:24px;padding:12px 20px;">
-          <button class="btn-brand" style="border:none;border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.2rem;" onclick="_enviarPortalMsg()">➤</button>
+          <button id="btnPttCli" title="Gravar Áudio" aria-label="Gravar áudio" onclick="_togglePttCli()" style="background:var(--surf-3);border:1px solid var(--border);color:white;font-size:1.2rem;cursor:pointer;width:44px;height:44px;min-width:44px;border-radius:50%;transition:0.2s;display:flex;align-items:center;justify-content:center;touch-action:manipulation;user-select:none;-webkit-tap-highlight-color:transparent;">🎤</button>
+          <button title="Anexar Arquivo" aria-label="Anexar arquivo" onclick="document.getElementById('portalFile').click()" style="background:var(--surf-3);border:1px solid var(--border);color:var(--brand);font-size:1.2rem;cursor:pointer;width:44px;height:44px;min-width:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;touch-action:manipulation;user-select:none;-webkit-tap-highlight-color:transparent;">📎</button>
+          <input type="file" id="portalFile" style="display:none" accept="image/*,video/*,audio/*,application/pdf,.doc,.docx" onchange="_enviarArquivoPortal(this)">
+          <input class="input" id="portalChatInput" placeholder="Mensagem..." style="margin:0;border-radius:24px;padding:12px 20px;" autocomplete="off">
+          <button class="btn-brand" style="border:none;border-radius:50%;width:44px;height:44px;min-width:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.2rem;touch-action:manipulation;user-select:none;-webkit-tap-highlight-color:transparent;" onclick="_enviarPortalMsg()" aria-label="Enviar mensagem">➤</button>
         </div>
       </div>
     </div>
@@ -201,6 +207,70 @@ body { overflow-y: auto; background: #060A14; color: #E8F4FF; font-family: 'Exo 
       </div>
       <div id="renderAgdArea"></div>
     </div>
+
+    <!-- ABA IA -->
+    <div id="tabIA" class="tab-content">
+      <div style="background:var(--surf-1);border:1px solid rgba(167,139,250,0.25);border-radius:var(--r-xl);overflow:hidden;">
+        <div style="padding:16px 20px;background:linear-gradient(135deg,rgba(167,139,250,0.1),transparent);border-bottom:1px solid rgba(167,139,250,0.2);display:flex;align-items:center;gap:12px;">
+          <div style="font-size:1.5rem;">🤖</div>
+          <div>
+            <div style="font-family:var(--ff-display);font-size:1.1rem;font-weight:700;color:white;">thIAguinho</div>
+            <div style="font-family:var(--ff-mono);font-size:0.6rem;color:#A78BFA;letter-spacing:1px;">ASSISTENTE AUTOMOTIVO IA</div>
+          </div>
+        </div>
+        <div style="padding:10px 14px;border-bottom:1px solid rgba(167,139,250,0.1);display:flex;gap:8px;flex-wrap:wrap;background:rgba(0,0,0,0.1);">
+          <span onclick="iaChip('Qual o status das minhas OS?')" style="padding:6px 12px;background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.2);border-radius:20px;font-family:var(--ff-mono);font-size:0.7rem;color:#A78BFA;cursor:pointer;">📋 Status OS</span>
+          <span onclick="iaChip('Tenho manutenções pendentes?')" style="padding:6px 12px;background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.2);border-radius:20px;font-family:var(--ff-mono);font-size:0.7rem;color:#A78BFA;cursor:pointer;">🔧 Manutenções</span>
+          <span onclick="iaChip('Explique os erros do meu veículo')" style="padding:6px 12px;background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.2);border-radius:20px;font-family:var(--ff-mono);font-size:0.7rem;color:#A78BFA;cursor:pointer;">⚠️ Erros OBD</span>
+        </div>
+        <div id="iaMsgs" style="min-height:300px;max-height:55vh;overflow-y:auto;padding:20px;background:var(--surf-0);display:flex;flex-direction:column;gap:12px;">
+          <div style="text-align:center;color:var(--text-muted);font-size:0.85rem;padding:20px;">Faça uma pergunta sobre seu veículo.</div>
+        </div>
+        <div style="padding:14px;background:var(--surf-2);border-top:1px solid rgba(167,139,250,0.2);display:flex;gap:10px;align-items:center;">
+          <input id="iaInput" class="input" placeholder="Pergunte sobre seu veículo..." style="margin:0;border-radius:24px;padding:12px 18px;border-color:rgba(167,139,250,0.25);">
+          <button onclick="iaEnviar()" style="background:#A78BFA;border:none;border-radius:50%;width:44px;height:44px;min-width:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.1rem;color:#000;flex-shrink:0;">➤</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ABA OBD -->
+    <div id="tabOBD" class="tab-content">
+      <!-- Status bar -->
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:var(--surf-1);border:1px solid var(--border);border-radius:var(--r-xl);margin-bottom:16px;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div id="obdLed" style="width:12px;height:12px;border-radius:50%;background:var(--text-muted);transition:0.4s;"></div>
+          <div>
+            <div id="obdLabel" style="font-family:var(--ff-display);font-weight:700;color:white;">Desconectado</div>
+            <div id="obdDevice" style="font-family:var(--ff-mono);font-size:0.6rem;color:var(--text-muted);">Nenhum dispositivo</div>
+          </div>
+        </div>
+        <button id="btnObd" onclick="obdConectar()" class="btn btn-brand" style="width:auto;padding:10px 20px;font-size:0.8rem;">🔌 CONECTAR</button>
+      </div>
+      <div id="obdWarnIOS" style="display:none;padding:12px;background:var(--warn-dim);border:1px solid var(--warn);border-radius:var(--r-md);margin-bottom:12px;font-family:var(--ff-mono);font-size:0.75rem;color:var(--warn);">⚠ iOS não suporta Web Bluetooth. Use Chrome no Android ou Desktop.</div>
+      <!-- Ações -->
+      <div id="obdAcoes" style="display:none;margin-bottom:16px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+          <button class="btn btn-outline" style="font-size:0.8rem;padding:12px;" onclick="obdLerDTCs()">🔍 LER ERROS</button>
+          <button class="btn btn-danger" style="font-size:0.8rem;padding:12px;" onclick="obdLimparDTCs()">🧹 LIMPAR ERROS</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <button id="btnLive" class="btn btn-outline" style="font-size:0.8rem;padding:12px;" onclick="obdToggleLive()">📡 DADOS AO VIVO</button>
+          <button class="btn btn-outline" style="font-size:0.8rem;padding:12px;" onclick="obdVarredura()">📋 VARREDURA COMPLETA</button>
+        </div>
+      </div>
+      <!-- DTCs -->
+      <div id="obdDTCs" style="margin-bottom:16px;"></div>
+      <!-- Gauges ao vivo -->
+      <div id="obdLive" style="display:none;margin-bottom:16px;">
+        <div style="font-family:var(--ff-display);font-size:1rem;font-weight:700;color:white;margin-bottom:10px;">📡 Ao Vivo <span style="font-family:var(--ff-mono);font-size:0.6rem;background:var(--danger);color:white;padding:2px 8px;border-radius:10px;">● LIVE</span></div>
+        <div id="obdGauges" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"></div>
+      </div>
+      <!-- Log terminal -->
+      <div style="background:var(--surf-1);border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;">
+        <div style="padding:10px 16px;background:var(--surf-2);font-family:var(--ff-mono);font-size:0.65rem;color:var(--brand);letter-spacing:2px;">TERMINAL OBD</div>
+        <div id="obdLog" style="padding:12px 16px;font-family:var(--ff-mono);font-size:0.72rem;color:var(--text-muted);max-height:160px;overflow-y:auto;line-height:1.8;"></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -210,6 +280,7 @@ body { overflow-y: auto; background: #060A14; color: #E8F4FF; font-family: 'Exo 
 <script>
 // ============================================================
 // CORE LÓGICA E FIREBASE
+// Powered by thIAguinho Soluções Digitais
 // ============================================================
 const db = window.initFirebase();
 let P = { clienteId: null, tenantId: null, cliente: null, oficina: null, veiculos: [] };
@@ -329,6 +400,7 @@ function _iniciarPortalListeners() {
             const pLimpa = (d.placa || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
             return (P.clienteId !== 'avulso' && d.clienteId === P.clienteId) || (pLimpa && pLimpa === loginUpper) || (d.pin && d.pin === document.getElementById('pPin').value.trim()); 
         }).sort((a, b) => (b.updatedAt || '') > (a.updatedAt || '') ? 1 : -1);
+      _osDoCliente = osList; // contexto para IA e OBD
       _renderPortalOS(osList);
     });
 
@@ -336,8 +408,22 @@ function _iniciarPortalListeners() {
       db.collection('mensagens').where('tenantId', '==', P.tenantId).where('clienteId', '==', P.clienteId).onSnapshot(snap => {
           const msgs = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b)=>(a.ts||0)-(b.ts||0)); _renderChat(msgs);
         });
-      db.collection('financeiro').where('tenantId', '==', P.tenantId).where('clienteId', '==', P.clienteId).onSnapshot(snap => {
-          const finList = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b)=>(b.venc||'') > (a.venc||'') ? 1 : -1); _renderFinanceiro(finList);
+      // Financeiro: busca por tenant e filtra localmente pelas placas/nome do cliente
+      // (registros não têm clienteId — vínculo está na desc da OS)
+      db.collection('financeiro').where('tenantId', '==', P.tenantId).onSnapshot(snap => {
+          const todos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+          const placas = new Set(_osDoCliente.map(o=>(o.placa||'').toUpperCase().replace(/[^A-Z0-9]/g,'')).filter(Boolean));
+          const nomeCliente = (P.cliente?.nome||'').toLowerCase();
+          const finList = todos.filter(f => {
+            if (f.tipo==='Saída'||f.tipo==='Saida'||f.isComissao) return false;
+            if (f.vinculo && (f.vinculo.startsWith('F_')||f.vinculo.startsWith('E_'))) return false;
+            if (f.clienteId === P.clienteId) return true;
+            const desc = (f.desc||'').toLowerCase();
+            for (const p of placas) { if (p && desc.includes(p.toLowerCase())) return true; }
+            if (nomeCliente.length > 2 && desc.includes(nomeCliente.split(' ')[0])) return true;
+            return false;
+          }).sort((a,b)=>((b.venc||'')>(a.venc||''))?1:-1);
+          _renderFinanceiro(finList);
         });
       db.collection('agendamentos').where('tenantId', '==', P.tenantId).where('clienteId', '==', P.clienteId).onSnapshot(snap => {
           const agdList = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b)=>(b.data||'') > (a.data||'') ? 1 : -1); _renderAgendamento(agdList);
@@ -439,67 +525,237 @@ async function _salvarAgendamentoCli() {
   } catch(e) { toast('Erro ao solicitar agendamento', 'err'); }
 }
 
-// 💬 CHAT CRM E NEGOCIAÇÃO
+// ═══════════════════════════════════════════════════════════════
+// 💬 CHAT CRM E NEGOCIAÇÃO — CORREÇÕES #1 e #3
+// ═══════════════════════════════════════════════════════════════
+
 let isRecordingCli = false;
 let _mediaRecorderCli;
 let _audioChunksCli = [];
+// Estado auxiliar para a correção #3 (liberação limpa do stream)
+let _pttCliState = { stream: null, mime: '' };
 
+// ── Utilitários de escape seguro contra XSS (entradas vindas do admin) ──
+function _escapeHtmlCli(s){
+  return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function _escapeAttrCli(s){
+  return String(s==null?'':s).replace(/["<>]/g,c=>({'"':'&quot;','<':'&lt;','>':'&gt;'}[c]));
+}
+
+// ── CORREÇÃO #3: CLICK-TO-RECORD ROBUSTO ──────────────────
+// Clique 1× inicia gravação, clique 2× para e envia.
+// Libera o MediaStream imediatamente no onstop (crítico mobile).
 async function _togglePttCli() {
   const btn = document.getElementById('btnPttCli');
-  
+  if (!btn) return;
+
+  // Se já está gravando, PARA e envia
   if (isRecordingCli && _mediaRecorderCli && _mediaRecorderCli.state === 'recording') {
-    _mediaRecorderCli.stop(); isRecordingCli = false;
-    btn.style.color = 'white'; btn.style.background = 'var(--surf-3)'; btn.style.borderColor = 'var(--border)'; btn.innerHTML = '🎤';
+    try { _mediaRecorderCli.stop(); } catch(e) {}
     return;
   }
+
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || typeof window.MediaRecorder === 'undefined') {
+    toast('Este navegador não suporta gravação de áudio.', 'err');
+    return;
+  }
+
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    _mediaRecorderCli = new MediaRecorder(stream); _audioChunksCli = [];
-    _mediaRecorderCli.ondataavailable = e => { if (e.data.size > 0) _audioChunksCli.push(e.data); };
-    _mediaRecorderCli.onstop = async () => {
-      const audioBlob = new Blob(_audioChunksCli, { type: 'audio/webm' });
-      const fd = new FormData();
-      fd.append('file', audioBlob); fd.append('upload_preset', P.oficina?.cloudPreset || 'evolution');
-      btn.innerHTML = '<span style="font-size:0.6rem">⏳</span>';
-      try {
-        const res = await fetch(`https://api.cloudinary.com/v1_1/${P.oficina?.cloudName || 'dmuvm1o6m'}/auto/upload`, {method:'POST',body:fd});
-        const data = await res.json();
-        if (data.secure_url) {
-          await db.collection('mensagens').add({ tenantId: P.tenantId, clienteId: P.clienteId, sender: 'cliente', msg: `[AUDIO]${data.secure_url}`, lidaAdmin: false, lidaCliente: true, ts: Date.now() });
-          toast('Áudio enviado com sucesso!', 'ok');
-        }
-      } catch (e) { toast('Erro ao enviar áudio', 'err'); } 
-      finally { btn.innerHTML = '🎤'; stream.getTracks().forEach(t => t.stop()); }
+
+    // Detecta o mimetype suportado (Safari iOS precisa de mp4)
+    let mime = '';
+    if (typeof MediaRecorder.isTypeSupported === 'function') {
+      if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus'))     mime = 'audio/webm;codecs=opus';
+      else if (MediaRecorder.isTypeSupported('audio/webm'))            mime = 'audio/webm';
+      else if (MediaRecorder.isTypeSupported('audio/mp4'))             mime = 'audio/mp4';
+      else if (MediaRecorder.isTypeSupported('audio/ogg;codecs=opus')) mime = 'audio/ogg;codecs=opus';
+    }
+    _mediaRecorderCli = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
+    _audioChunksCli = [];
+    _pttCliState = { stream, mime: mime || 'audio/webm' };
+    isRecordingCli = true;
+
+    _mediaRecorderCli.ondataavailable = e => { if (e.data && e.data.size > 0) _audioChunksCli.push(e.data); };
+
+    _mediaRecorderCli.onerror = ev => {
+      toast('Erro na gravação: ' + (ev?.error?.message || 'desconhecido'), 'err');
+      _pttCliLimpar();
     };
-    _mediaRecorderCli.start(); isRecordingCli = true;
-    btn.style.color = 'white'; btn.style.background = 'var(--danger)'; btn.style.borderColor = 'var(--danger)'; btn.innerHTML = '⏹️';
-    toast('Gravando... Clique no botão vermelho para enviar.', 'warn');
-  } catch (err) { toast('⚠ Permissão de microfone negada.', 'err'); }
+
+    _mediaRecorderCli.onstop = async () => {
+      // 1) Libera o microfone IMEDIATAMENTE
+      if (_pttCliState.stream) {
+        try { _pttCliState.stream.getTracks().forEach(t => { try { t.stop(); } catch(e){} }); } catch(e){}
+        _pttCliState.stream = null;
+      }
+
+      isRecordingCli = false;
+      btn.style.color = 'white';
+      btn.style.background = 'var(--surf-3)';
+      btn.style.borderColor = 'var(--border)';
+      btn.disabled = true;
+      btn.innerHTML = '<span class="j-spinner"></span>';
+
+      try {
+        if (!_audioChunksCli.length) {
+          toast('Gravação vazia — fale algo antes de parar.', 'err');
+          _pttCliLimpar();
+          return;
+        }
+
+        const audioBlob = new Blob(_audioChunksCli, { type: _pttCliState.mime || 'audio/webm' });
+        if (audioBlob.size < 500) {
+          toast('Áudio muito curto.', 'err');
+          _pttCliLimpar();
+          return;
+        }
+
+        const fd = new FormData();
+        fd.append('file', audioBlob, 'ptt.' + (_pttCliState.mime.includes('mp4') ? 'm4a' : 'webm'));
+        fd.append('upload_preset', P.oficina?.cloudPreset || 'evolution');
+
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${P.oficina?.cloudName || 'dmuvm1o6m'}/auto/upload`, { method:'POST', body:fd });
+        const data = await res.json();
+
+        if (!data.secure_url) {
+          throw new Error(data?.error?.message || 'Falha no upload do áudio.');
+        }
+
+        await db.collection('mensagens').add({
+          tenantId: P.tenantId,
+          clienteId: P.clienteId,
+          sender: 'cliente',
+          msg: '[AUDIO]' + data.secure_url,
+          lidaAdmin: false,
+          lidaCliente: true,
+          ts: Date.now()
+        });
+        toast('Áudio enviado com sucesso!', 'ok');
+
+      } catch (e) {
+        toast('Erro ao enviar áudio: ' + (e.message || e), 'err');
+      } finally {
+        _pttCliLimpar();
+      }
+    };
+
+    _mediaRecorderCli.start();
+    btn.style.color = 'white';
+    btn.style.background = 'var(--danger)';
+    btn.style.borderColor = 'var(--danger)';
+    btn.innerHTML = '⏹';
+    btn.setAttribute('aria-pressed', 'true');
+    toast('🔴 Gravando... Clique ⏹ para enviar.', 'warn');
+
+  } catch (err) {
+    toast('⚠ Permissão de microfone negada ou indisponível.', 'err');
+    _pttCliLimpar();
+  }
 }
 
+function _pttCliLimpar() {
+  if (_pttCliState.stream) {
+    try { _pttCliState.stream.getTracks().forEach(t => { try { t.stop(); } catch(e){} }); } catch(e){}
+  }
+  _pttCliState = { stream: null, mime: '' };
+  _audioChunksCli = [];
+  _mediaRecorderCli = null;
+  isRecordingCli = false;
+  const btn = document.getElementById('btnPttCli');
+  if (btn) {
+    btn.style.color = 'white';
+    btn.style.background = 'var(--surf-3)';
+    btn.style.borderColor = 'var(--border)';
+    btn.innerHTML = '🎤';
+    btn.disabled = false;
+    btn.removeAttribute('aria-pressed');
+  }
+}
+
+// ── ENVIO DE ANEXO (FOTO / DOCUMENTO) — endurecido ────────
 async function _enviarArquivoPortal(input) {
-  const file = input.files[0]; if (!file) return;
+  if (!input || !input.files || !input.files.length) return;
+  const file = input.files[0];
+  if (!file) return;
+
   toast('Enviando anexo...', 'warn');
   try {
-    const fd = new FormData(); fd.append('file', file); fd.append('upload_preset', P.oficina?.cloudPreset || 'evolution');
-    const res = await fetch(`https://api.cloudinary.com/v1_1/${P.oficina?.cloudName || 'dmuvm1o6m'}/auto/upload`, {method:'POST',body:fd});
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('upload_preset', P.oficina?.cloudPreset || 'evolution');
+
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${P.oficina?.cloudName || 'dmuvm1o6m'}/auto/upload`, { method:'POST', body:fd });
     const data = await res.json();
-    if (data.secure_url) {
-      const prefixo = data.resource_type === 'image' ? '[IMAGEM]' : '[ARQUIVO]';
-      await db.collection('mensagens').add({ tenantId: P.tenantId, clienteId: P.clienteId, sender: 'cliente', msg: `${prefixo}${data.secure_url}`, lidaAdmin: false, lidaCliente: true, ts: Date.now() });
-      toast('Anexo enviado com sucesso!', 'ok');
+
+    if (!data.secure_url) {
+      throw new Error(data?.error?.message || 'Falha no upload.');
     }
-  } catch(e) { toast('Erro no envio do anexo: ' + e.message, 'err'); } 
-  finally { input.value = ''; }
+
+    const isImg = (data.resource_type === 'image') || /^image\//.test(file.type || '');
+    const prefixo = isImg ? '[IMAGEM]' : '[ARQUIVO]';
+
+    await db.collection('mensagens').add({
+      tenantId: P.tenantId,
+      clienteId: P.clienteId,
+      sender: 'cliente',
+      msg: prefixo + data.secure_url,
+      lidaAdmin: false,
+      lidaCliente: true,
+      ts: Date.now()
+    });
+    toast('Anexo enviado com sucesso!', 'ok');
+
+  } catch(e) {
+    toast('Erro no envio do anexo: ' + (e.message || e), 'err');
+  } finally {
+    try { input.value = ''; } catch(e){}
+  }
 }
 
+// ── CORREÇÃO #1: PARSING DE MÍDIA ROBUSTO ──────────────────
+// Tolera BOM, zero-width-space, NBSP, quebras de linha e case
+// inconsistente. Valida URL e escapa contra XSS.
 function _formatarMidiaChat(texto) {
-  if (!texto) return '';
-  const t = String(texto).trim();
-  if (t.includes('[AUDIO]')) return `<audio src="${t.split('[AUDIO]')[1].trim()}" controls style="height:40px; max-width:100%; outline:none; border-radius:20px;"></audio>`;
-  if (t.includes('[IMAGEM]')) return `<img src="${t.split('[IMAGEM]')[1].trim()}" style="max-width:100%; max-height: 250px; border-radius:var(--r-md); cursor:zoom-in; border:1px solid var(--border);" onclick="window.open('${t.split('[IMAGEM]')[1].trim()}')">`;
-  if (t.includes('[ARQUIVO]')) return `<a href="${t.split('[ARQUIVO]')[1].trim()}" target="_blank" style="color:var(--brand);text-decoration:underline;font-weight:700;">📎 Abrir Anexo de Documento</a>`;
-  return texto;
+  if (texto == null) return '';
+
+  // 1) Normalização (remove invisíveis que o teclado mobile insere)
+  const limpo = String(texto)
+    .replace(/\uFEFF/g, '')
+    .replace(/\u200B/g, '')
+    .replace(/\u200C/g, '')
+    .replace(/\u200D/g, '')
+    .replace(/\u00A0/g, ' ')
+    .trim();
+  if (!limpo) return '';
+
+  // 2) Regex robusta: aceita [TAG] com espaços em volta, case-insensitive
+  const match = limpo.match(/^\s*\[\s*(AUDIO|IMAGEM|ARQUIVO)\s*\]\s*([\s\S]+)$/i);
+  if (!match) {
+    return _escapeHtmlCli(limpo).replace(/\n/g, '<br>');
+  }
+
+  const tipo = match[1].toUpperCase();
+  const url = match[2].trim().split(/\s+/)[0];
+
+  // 3) Valida URL real
+  if (!/^https?:\/\/\S+/i.test(url)) {
+    return _escapeHtmlCli(limpo).replace(/\n/g, '<br>');
+  }
+
+  const u = _escapeAttrCli(url);
+  if (tipo === 'AUDIO') {
+    return `<audio src="${u}" controls preload="metadata" style="height:40px; max-width:100%; outline:none; border-radius:20px;"></audio>`;
+  }
+  if (tipo === 'IMAGEM') {
+    return `<img src="${u}" loading="lazy" alt="imagem" style="max-width:100%; max-height: 250px; border-radius:var(--r-md); cursor:zoom-in; border:1px solid var(--border);" onclick="window.open('${u}','_blank','noopener')">`;
+  }
+  if (tipo === 'ARQUIVO') {
+    return `<a href="${u}" target="_blank" rel="noopener" style="color:var(--brand);text-decoration:underline;font-weight:700;">📎 Abrir Anexo de Documento</a>`;
+  }
+
+  return _escapeHtmlCli(limpo).replace(/\n/g, '<br>');
 }
 
 function _renderChat(msgs) {
@@ -510,7 +766,7 @@ function _renderChat(msgs) {
     const t = m.ts ? new Date(m.ts).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' }) : '';
     const dir = m.sender === 'cliente' ? 'outgoing' : 'incoming';
     const author = m.sender === 'cliente' ? 'Você' : (P.oficina?.nomeFantasia || 'Oficina');
-    return `<div class="chat-msg ${dir}"><div class="chat-author">${author}</div>${_formatarMidiaChat(m.msg)}<div class="chat-time">${t}</div></div>`;
+    return `<div class="chat-msg ${dir}"><div class="chat-author">${_escapeHtmlCli(author)}</div>${_formatarMidiaChat(m.msg)}<div class="chat-time">${t}</div></div>`;
   }).join('');
   container.scrollTop = container.scrollHeight;
   const nLidas = msgs.filter(m => m.sender === 'admin' && !m.lidaCliente).length;
@@ -520,7 +776,9 @@ function _renderChat(msgs) {
   }
 }
 
-document.getElementById('portalChatInput')?.addEventListener('keydown', e => { if (e.key === 'Enter') _enviarPortalMsg(); });
+document.getElementById('portalChatInput')?.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); _enviarPortalMsg(); }
+});
 
 async function _enviarPortalMsg() {
   const inp = document.getElementById('portalChatInput'); const msg = inp?.value?.trim();
@@ -557,6 +815,252 @@ async function _recusarOrcamento(osId) {
     toast('Orçamento recusado. Serviço cancelado.', 'warn');
   } catch(e) { toast('Erro ao recusar: ' + e.message, 'err'); }
 }
+
+/* Powered by thIAguinho Soluções Digitais */
 </script>
-</body>
-</html>
+
+<!-- IA + OBD — thIAguinho -->
+<script src="elm327-service.js"></script>
+<script>
+// ── IA thIAguinho ──────────────────────────────────────────
+let _iaHist = [];
+let _osDoCliente = [];
+
+// Captura as OS quando o listener as carrega
+const _origRenderOS = window._renderPortalOS || function(){};
+document.addEventListener('osCarregadas', e => { _osDoCliente = e.detail || []; });
+
+function iaChip(txt) {
+  const el = document.getElementById('iaInput');
+  if (el) el.value = txt;
+  iaEnviar();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('iaInput')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') iaEnviar();
+  });
+});
+
+async function iaEnviar() {
+  const inp = document.getElementById('iaInput');
+  const msg = inp?.value?.trim();
+  if (!msg) return;
+  inp.value = '';
+
+  _iaMsgUser(msg);
+  const lid = _iaMsgBot('<span class="j-spinner"></span> Processando...');
+
+  const key = P?.oficina?.apiKeys?.gemini || P?.oficina?.geminiKey || null;
+  _iaHist.push({ role: 'user', text: msg });
+
+  if (!key) {
+    _iaReplace(lid, _iaFallback(msg));
+    return;
+  }
+
+  // Contexto real das OS
+  let ctx = `Cliente: ${P?.cliente?.nome || '—'} | Oficina: ${P?.oficina?.nomeFantasia || '—'}\n`;
+  (_osDoCliente.length ? _osDoCliente : (P?.osDoCliente || [])).forEach(o => {
+    ctx += `OS #${o.id?.slice(-6)} | ${o.placa||''} ${o.veiculo||''} | Status: ${o.status||'—'} | Total: R$${o.total||0}\n`;
+    if (o.dtcsCliente?.length) ctx += `  DTCs OBD: ${o.dtcsCliente.map(d=>d.code).join(', ')}\n`;
+  });
+
+  try {
+    const contents = _iaHist.map(h => ({ role: h.role==='user'?'user':'model', parts:[{text:h.text}] }));
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(key)}`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        contents,
+        systemInstruction: { parts: [{ text: `Você é o thIAguinho, assistente automotivo. Responda em português, de forma clara e amigável.\n\nCONTEXTO REAL:\n${ctx}\n\nNão invente dados. Se não souber, diga para contatar a oficina.` }] }
+      })
+    });
+    const data = await res.json();
+    const resp = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sem resposta';
+    _iaHist.push({ role: 'model', text: resp });
+    _iaReplace(lid, resp.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>'));
+  } catch(e) {
+    _iaReplace(lid, _iaFallback(msg));
+  }
+}
+
+function _iaFallback(msg) {
+  const m = msg.toLowerCase();
+  const os = _osDoCliente.length ? _osDoCliente : (P?.osDoCliente || []);
+  if (m.includes('status') || m.includes('os') || m.includes('ordem')) {
+    if (!os.length) return 'Nenhuma OS encontrada no momento.';
+    return os.map(o => `🚘 <strong>${o.placa||o.veiculo||'Veículo'}</strong> — ${o.status||'—'}${o.total?` | R$ ${Number(o.total).toLocaleString('pt-BR',{minimumFractionDigits:2})}`:''}`)
+      .join('<br>');
+  }
+  if (m.includes('manutenção') || m.includes('revisão')) return '🔧 Mantenha troca de óleo a cada 10.000 km, filtro de ar a cada 15.000 km e pastilhas a cada 30.000 km. Quer agendar? Use a aba 📅 AGENDAR.';
+  return 'Para uma resposta mais precisa, peça ao atendente para configurar a IA no painel da oficina. Por enquanto, use a aba 💬 CHAT para falar diretamente.';
+}
+
+let _iaCnt = 0;
+function _iaMsgUser(txt) {
+  const c = document.getElementById('iaMsgs'); if(!c) return;
+  if (c.children.length === 1 && c.children[0].style.textAlign === 'center') c.innerHTML = '';
+  const d = document.createElement('div');
+  d.style.cssText = 'padding:12px 16px;border-radius:12px 12px 0 12px;max-width:85%;background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.2);color:#fff;align-self:flex-end;font-size:0.9rem;word-break:break-word;margin-left:auto;';
+  d.textContent = txt; c.appendChild(d); c.scrollTop = c.scrollHeight;
+}
+function _iaMsgBot(html) {
+  const c = document.getElementById('iaMsgs'); if(!c) return null;
+  const id = 'ia-' + (_iaCnt++);
+  const d = document.createElement('div'); d.id = id;
+  d.style.cssText = 'padding:12px 16px;border-radius:12px 12px 12px 0;max-width:90%;background:var(--surf-2);border:1px solid rgba(167,139,250,0.15);color:var(--text-primary);font-size:0.88rem;line-height:1.6;word-break:break-word;';
+  d.innerHTML = `<div style="font-family:var(--ff-mono);font-size:0.6rem;color:#A78BFA;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">thIAguinho</div>${html}`;
+  c.appendChild(d); c.scrollTop = c.scrollHeight; return id;
+}
+function _iaReplace(id, html) {
+  const el = document.getElementById(id); if(!el) return;
+  el.innerHTML = `<div style="font-family:var(--ff-mono);font-size:0.6rem;color:#A78BFA;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">thIAguinho</div>${html}`;
+  document.getElementById('iaMsgs').scrollTop = 99999;
+}
+
+// ── OBD / ELM327 ──────────────────────────────────────────
+function _obdLog(msg, cor) {
+  const el = document.getElementById('obdLog'); if(!el) return;
+  const ts = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  el.innerHTML += `<div style="color:${cor||'var(--text-muted)'}">[${ts}] ${msg}</div>`;
+  el.scrollTop = el.scrollHeight;
+}
+
+if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+  document.getElementById('obdWarnIOS').style.display = 'block';
+}
+
+if (typeof elm327 !== 'undefined') {
+  elm327.onLog((msg, type) => {
+    const cor = type==='ok'?'var(--success)':type==='warn'?'var(--warn)':type==='err'?'var(--danger)':'var(--text-muted)';
+    _obdLog(msg, cor);
+  });
+  elm327.onConnect(({ device }) => {
+    document.getElementById('obdLed').style.cssText = 'width:12px;height:12px;border-radius:50%;background:var(--success);box-shadow:0 0 8px var(--success);transition:0.4s;';
+    document.getElementById('obdLabel').textContent = 'Conectado';
+    document.getElementById('obdDevice').textContent = device || 'ELM327';
+    document.getElementById('btnObd').textContent = '🔌 DESCONECTAR';
+    document.getElementById('btnObd').style.background = 'var(--danger-dim)';
+    document.getElementById('obdAcoes').style.display = 'block';
+    toast('ELM327 conectado!', 'ok');
+  });
+  elm327.onDisconnect(() => {
+    document.getElementById('obdLed').style.cssText = 'width:12px;height:12px;border-radius:50%;background:var(--text-muted);transition:0.4s;';
+    document.getElementById('obdLabel').textContent = 'Desconectado';
+    document.getElementById('obdDevice').textContent = 'Nenhum dispositivo';
+    document.getElementById('btnObd').textContent = '🔌 CONECTAR';
+    document.getElementById('btnObd').style.background = '';
+    document.getElementById('btnObd').className = 'btn btn-brand';
+    document.getElementById('obdAcoes').style.display = 'none';
+    document.getElementById('obdLive').style.display = 'none';
+    toast('ELM327 desconectado', 'warn');
+  });
+  elm327.onLiveData(data => _obdRenderGauges(data));
+}
+
+async function obdConectar() {
+  if (typeof elm327 === 'undefined') { toast('elm327-service.js não carregado', 'err'); return; }
+  if (elm327.isConnected) { await elm327.disconnect(); return; }
+  if (!navigator.bluetooth) { toast('Web Bluetooth indisponível. Use Chrome/Edge.', 'err'); return; }
+  try { await elm327.connect(); } catch(e) { toast('Erro: ' + e.message, 'err'); }
+}
+
+async function obdLerDTCs() {
+  if (!elm327?.isConnected) { toast('Conecte o ELM327 primeiro.', 'warn'); return; }
+  toast('Lendo erros…', 'warn');
+  try {
+    const [conf, pend] = await Promise.all([elm327.readDTCs(), elm327.readPendingDTCs()]);
+    const todos = [...conf, ...pend.map(d=>({...d, status:'Pendente'}))];
+    _obdRenderDTCs(todos);
+    _obdSalvarFirebase(todos);
+    toast(todos.length === 0 ? '✅ Sem erros!' : `⚠ ${todos.length} código(s) encontrado(s)`, todos.length===0?'ok':'warn');
+  } catch(e) { toast('Erro: ' + e.message, 'err'); }
+}
+
+async function obdLimparDTCs() {
+  if (!elm327?.isConnected) { toast('Conecte o ELM327 primeiro.', 'warn'); return; }
+  if (!confirm('Apagar os códigos de erro da ECU?')) return;
+  try {
+    const r = await elm327.clearDTCs();
+    toast(r.success ? '✅ DTCs apagados!' : '⚠ Falha ao apagar', r.success?'ok':'warn');
+    if (r.success) document.getElementById('obdDTCs').innerHTML = '';
+  } catch(e) { toast('Erro: ' + e.message, 'err'); }
+}
+
+let _liveOn = false;
+function obdToggleLive() {
+  if (!elm327?.isConnected) { toast('Conecte o ELM327 primeiro.', 'warn'); return; }
+  if (_liveOn) {
+    elm327.stopLiveData(); _liveOn = false;
+    document.getElementById('btnLive').textContent = '📡 DADOS AO VIVO';
+    document.getElementById('obdLive').style.display = 'none';
+  } else {
+    elm327.startLiveData(['rpm','speed','temp','throttle','fuel','voltage'], 1000);
+    _liveOn = true;
+    document.getElementById('btnLive').textContent = '⏹ PARAR';
+    document.getElementById('obdLive').style.display = 'block';
+  }
+}
+
+async function obdVarredura() {
+  if (!elm327?.isConnected) { toast('Conecte o ELM327 primeiro.', 'warn'); return; }
+  toast('Varredura completa…', 'warn');
+  try {
+    const scan = await elm327.fullScan();
+    const todos = [...scan.dtcs, ...scan.pending];
+    _obdRenderDTCs(todos);
+    if (Object.values(scan.live).some(v=>v!==null)) {
+      _obdRenderGauges(scan.live);
+      document.getElementById('obdLive').style.display = 'block';
+    }
+    _obdSalvarFirebase(todos, scan);
+    // Injeta no contexto da IA
+    if (todos.length) _iaHist.push({ role:'user', text:`[OBD] DTCs: ${todos.map(d=>d.code+' — '+d.description).join(' | ')}` });
+    toast('Varredura concluída!', 'ok');
+  } catch(e) { toast('Erro: ' + e.message, 'err'); }
+}
+
+function _obdRenderDTCs(dtcs) {
+  const el = document.getElementById('obdDTCs');
+  if (!dtcs.length) {
+    el.innerHTML = '<div style="text-align:center;padding:24px;background:var(--surf-1);border-radius:var(--r-xl);border:1px dashed var(--border);"><div style="font-size:2rem">✅</div><div style="font-family:var(--ff-display);font-size:1.1rem;font-weight:700;color:var(--success);margin-top:8px;">Sem erros detectados</div></div>';
+    return;
+  }
+  const SEV = {Alto:'var(--danger)',Médio:'var(--warn)',Baixo:'var(--brand)'};
+  el.innerHTML = `<div style="font-family:var(--ff-display);font-size:1rem;font-weight:700;color:white;margin-bottom:12px;">⚠ ${dtcs.length} código(s)</div>` +
+    dtcs.map(d=>`<div style="background:var(--surf-1);border:1px solid var(--border);border-left:4px solid ${SEV[d.severity]||'var(--danger)'};border-radius:var(--r-md);padding:14px;margin-bottom:8px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+        <span style="font-family:var(--ff-mono);font-size:1rem;font-weight:700;color:${SEV[d.severity]||'var(--danger)'};">${d.code}</span>
+        <span style="font-family:var(--ff-mono);font-size:0.6rem;padding:3px 8px;border-radius:10px;background:${SEV[d.severity]||'var(--danger)'};color:#000;">${d.severity}</span>
+      </div>
+      <div style="font-size:0.85rem;color:var(--text-primary);margin-bottom:10px;">${d.description}</div>
+      <button onclick="switchCliTab('tabIA',document.querySelectorAll('.tab-btn')[4]);document.getElementById('iaInput').value='Me explique o código ${d.code} e como resolver';iaEnviar();" style="background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.2);color:#A78BFA;font-family:var(--ff-mono);font-size:0.65rem;padding:6px 12px;border-radius:var(--r-md);cursor:pointer;">🤖 Perguntar ao thIAguinho</button>
+    </div>`).join('');
+}
+
+function _obdRenderGauges(data) {
+  const el = document.getElementById('obdGauges'); if(!el) return;
+  const L = { rpm:{l:'RPM',u:'rpm',c:'var(--brand)'}, speed:{l:'VELOCIDADE',u:'km/h',c:'var(--success)'}, temp:{l:'TEMP.MOTOR',u:'°C',c:'var(--danger)'}, throttle:{l:'ACELERADOR',u:'%',c:'var(--warn)'}, fuel:{l:'COMBUSTÍVEL',u:'%',c:'var(--success)'}, voltage:{l:'BATERIA',u:'V',c:'var(--brand)'} };
+  el.innerHTML = Object.entries(data).filter(([k,v])=>k!=='timestamp'&&v!==null&&L[k]).map(([k,v])=>{
+    const i=L[k]; const val=typeof v==='number'?v.toFixed(v>100?0:1):'--';
+    return `<div style="background:var(--surf-2);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px;text-align:center;">
+      <div style="font-family:var(--ff-mono);font-size:0.55rem;color:${i.c};letter-spacing:1px;margin-bottom:6px;">${i.l}</div>
+      <div style="font-family:var(--ff-display);font-size:1.8rem;font-weight:800;color:${i.c};line-height:1;">${val}</div>
+      <div style="font-family:var(--ff-mono);font-size:0.6rem;color:var(--text-muted);margin-top:4px;">${i.u}</div>
+    </div>`;
+  }).join('');
+}
+
+async function _obdSalvarFirebase(dtcs, scan) {
+  if (!P?.tenantId) return;
+  const osAtiva = (P.osDoCliente||_osDoCliente).find(o=>!['Entregue','Cancelado','entregue','cancelado'].includes(o.status));
+  if (!osAtiva) return;
+  try {
+    const tl = [...(osAtiva.timeline||[])];
+    tl.push({ dt:new Date().toISOString(), user:P.cliente?.nome||'Cliente', acao: dtcs.length===0 ? 'Scanner OBD: sem erros' : `Scanner OBD: ${dtcs.map(d=>d.code).join(', ')}` });
+    const upd = { dtcsCliente:dtcs, dtcsTs:new Date().toISOString(), timeline:tl, updatedAt:new Date().toISOString() };
+    if (scan) upd.obdScan = scan;
+    await db.collection('ordens_servico').doc(osAtiva.id).update(upd);
+  } catch(e) { console.warn('Firebase OBD save:', e); }
+}
+</script>
