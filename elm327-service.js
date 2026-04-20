@@ -150,7 +150,7 @@ class ELM327Service {
   // ─────────────────────────────────────────────────────────
   // CONEXÃO
   // ─────────────────────────────────────────────────────────
-  async connect(opts = {}) {
+  async connect() {
     if (!navigator.bluetooth) {
       throw new Error('Web Bluetooth não suportado. Use Chrome/Edge no Android ou Desktop.');
     }
@@ -160,49 +160,20 @@ class ELM327Service {
     // Tenta com todos os UUIDs de serviço conhecidos
     const allServiceUUIDs = this.PROFILES.map(p => p.service);
 
-    // ═══════════════════════════════════════════════════════
-    // FIX CRÍTICO: muitos ELM327 clones NÃO têm nome com
-    // prefixo "ELM327/OBD". Aparecem como "V-LINK", "BT-OBD",
-    // "iCar", "BLE-ELM327", "IOS-Vlink", "Android-Vlink", ou
-    // só com endereço MAC. Por isso usamos acceptAllDevices
-    // por padrão (mostra TUDO no Bluetooth) e oferecemos modo
-    // estrito como opção.
-    //
-    // Modo padrão (default): acceptAllDevices = true → cliente
-    //   vê todos os dispositivos Bluetooth próximos e escolhe
-    //   manualmente (mais inclusivo, padrão correto).
-    // Modo estrito (opts.strict = true): só os com prefixo
-    //   conhecido (filtra mais, mas pode esconder o ELM clone).
-    // ═══════════════════════════════════════════════════════
-    const requestOpts = opts.strict ? {
+    this.device = await navigator.bluetooth.requestDevice({
       filters: [
-        { namePrefix: 'ELM327'   },
-        { namePrefix: 'OBDII'    },
-        { namePrefix: 'OBD'      },
-        { namePrefix: 'Vgate'    },
-        { namePrefix: 'OBDLINK'  },
-        { namePrefix: 'LELink'   },
-        { namePrefix: 'Kiwi'     },
-        { namePrefix: 'V-LINK'   },
-        { namePrefix: 'VLink'    },
-        { namePrefix: 'Vlink'    },
-        { namePrefix: 'BT-OBD'   },
-        { namePrefix: 'OBDBT'    },
-        { namePrefix: 'iCar'     },
-        { namePrefix: 'BLE-'     },
-        { namePrefix: 'CarLinkit'},
-        { namePrefix: 'IOS-'     },
-        { namePrefix: 'Android-' },
+        { namePrefix: 'ELM327' },
+        { namePrefix: 'OBDII'  },
+        { namePrefix: 'OBD'    },
+        { namePrefix: 'Vgate'  },
+        { namePrefix: 'OBDLINK'},
+        { namePrefix: 'LELink' },
+        { namePrefix: 'Kiwi'   },
       ],
       optionalServices: allServiceUUIDs,
-    } : {
-      acceptAllDevices: true,
-      optionalServices: allServiceUUIDs,
-    };
+    });
 
-    this.device = await navigator.bluetooth.requestDevice(requestOpts);
-
-    this._log(`Dispositivo selecionado: ${this.device.name || '(sem nome)'} [${this.device.id || '?'}]`);
+    this._log(`Dispositivo selecionado: ${this.device.name}`);
 
     this.device.addEventListener('gattserverdisconnected', () => this._onGattDisconnect());
 
@@ -221,15 +192,7 @@ class ELM327Service {
       } catch (_) { /* tenta o próximo */ }
     }
 
-    if (!found) {
-      // Tenta listar TODOS os serviços do device (debug pra clones esquisitos)
-      try {
-        const services = await server.getPrimaryServices();
-        const uuids = services.map(s => s.uuid).join(', ');
-        this._log(`Serviços disponíveis no dispositivo: ${uuids}`, 'warn');
-      } catch (e) {}
-      throw new Error('Este dispositivo não é um ELM327 compatível (perfil BLE não reconhecido). Garanta que está pareado e ligado, e que é mesmo um adaptador OBD-II BLE.');
-    }
+    if (!found) throw new Error('Perfil BLE do ELM327 não reconhecido. Tente desemparelhar e reconectar.');
 
     // Inicia notificações — respostas chegam aqui
     await this.characteristic.startNotifications();
