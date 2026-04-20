@@ -1,6 +1,8 @@
 /**
  * JARVIS ERP — os.js
  * Motor de Ordens de Serviço, Kanban Chevron 7 Etapas, WhatsApp B2C, Laudos PDF
+ *
+ * Powered by thIAguinho Soluções Digitais
  */
 
 'use strict';
@@ -120,7 +122,7 @@ window.enviarWppB2C = function(id) {
     const pin = cli?.pin || os.pin || '';
 
     // ✅ Link correto para GitHub Pages
-    const link = 'https://tsvalencio-ia.github.io/oficina1/cliente.html';
+    const link = 'https://tsvalencio-ia.github.io/ts-oficinas/cliente.html';
 
     const totalFmt = (os.total || 0).toFixed(2).replace('.', ',');
 
@@ -165,6 +167,9 @@ window.prepOS = function(mode, id = null) {
   
   window.osPecas = [];
   window.osFotos = [];
+
+  // Limpa também o preview local do batch upload (correção #4)
+  if (typeof window.limparOsMediaPreview === 'function') window.limparOsMediaPreview();
 
   if (typeof window.popularSelects === 'function') window.popularSelects();
 
@@ -219,7 +224,7 @@ window.prepOS = function(mode, id = null) {
     
     if (o.chkPainel && $('chkPainel')) $('chkPainel').checked = true; 
     if (o.chkPressao && $('chkPressao')) $('chkPressao').checked = true;
-    if (o.chkCarroceria && $('chkCarroceria')) $('chkCarroceria').checked = true; 
+    if (o.chkCarroceria && $('chkCarroceria')) $('chkCarroceria').checked = true;
     if (o.chkDocumentos && $('chkDocumentos')) $('chkDocumentos').checked = true;
 
     if($('osTimelineData') && o.timeline) {
@@ -492,6 +497,9 @@ window.salvarOS = async function() {
   if(typeof window.fecharModal === 'function') window.fecharModal('modalOS');
 };
 
+// ═══════════════════════════════════════════════════════════════
+// GALERIA DE PROVAS — UPLOAD LEGADO (1 por vez) — MANTIDO COMO FALLBACK
+// ═══════════════════════════════════════════════════════════════
 window.uploadOsMedia = async function() {
   const f = $('osFileInput')?.files[0]; if (!f) return;
   const btn = $('btnUploadMedia'); btn.innerText = 'ENVIANDO...'; btn.disabled = true;
@@ -505,7 +513,134 @@ window.uploadOsMedia = async function() {
       $('osMediaArray').value = JSON.stringify(media); window.renderMediaOS(); window.toast('✓ UPLOAD CONCLUÍDO');
     }
   } catch (e) { window.toast('✕ ERRO UPLOAD', 'err'); }
-  btn.innerText = 'UPLOAD'; btn.disabled = false;
+  btn.innerText = 'ENVIAR TODAS'; btn.disabled = false;
+};
+
+// ═══════════════════════════════════════════════════════════════
+// CORREÇÃO #4: GALERIA DE PROVAS — BATCH UPLOAD
+// Powered by thIAguinho Soluções Digitais
+// ═══════════════════════════════════════════════════════════════
+
+// Estado local do preview (arquivos ainda não enviados).
+// Acumulativo: o mecânico pode bater foto, bater outra, abrir novamente
+// sem perder as anteriores.
+window._osBatchFiles = [];
+
+// Dispara quando o mecânico seleciona 1+ arquivos no input.
+// Acumula em _osBatchFiles e renderiza grid de prévia.
+window.previewOsMediaBatch = function(input) {
+  if (!input || !input.files || !input.files.length) { window.renderOsMediaPreview(); return; }
+  const novos = Array.from(input.files);
+  window._osBatchFiles = window._osBatchFiles.concat(novos);
+  // Libera o input para que o usuário possa selecionar/tirar mais fotos
+  try { input.value = ''; } catch(e){}
+  window.renderOsMediaPreview();
+};
+
+window.renderOsMediaPreview = function() {
+  const wrap = $('osMediaPreviewLocal');
+  const grid = $('osMediaPreviewGrid');
+  const count = $('osMediaPreviewCount');
+  if (!wrap || !grid) return;
+
+  if (!window._osBatchFiles || !window._osBatchFiles.length) {
+    wrap.style.display = 'none';
+    grid.innerHTML = '';
+    if (count) count.innerText = '0';
+    return;
+  }
+
+  wrap.style.display = 'block';
+  if (count) count.innerText = window._osBatchFiles.length;
+
+  grid.innerHTML = window._osBatchFiles.map((f, i) => {
+    const isVideo = /^video\//.test(f.type || '');
+    const url = URL.createObjectURL(f);
+    const mediaEl = isVideo
+      ? `<video src="${url}" muted></video>`
+      : `<img src="${url}" alt="prévia">`;
+    return `<div class="media-item" data-idx="${i}">
+      ${mediaEl}
+      <button class="media-del" type="button" onclick="window.removerOsMediaPreview(${i})" title="Remover">✕</button>
+    </div>`;
+  }).join('');
+};
+
+window.removerOsMediaPreview = function(idx) {
+  if (!window._osBatchFiles || idx < 0 || idx >= window._osBatchFiles.length) return;
+  window._osBatchFiles.splice(idx, 1);
+  window.renderOsMediaPreview();
+};
+
+window.limparOsMediaPreview = function() {
+  window._osBatchFiles = [];
+  try { const f = $('osFileInput'); if (f) f.value = ''; } catch(e){}
+  window.renderOsMediaPreview();
+  const prog = $('osMediaProgress'); if (prog) { prog.style.display = 'none'; prog.innerText = ''; }
+};
+
+// Sobe todos os arquivos do preview em lote, concatena com os já gravados,
+// atualiza o hidden array e re-renderiza a galeria. Grava no Firestore
+// somente quando o usuário clicar "SALVAR O.S." (via salvarOS).
+window.uploadOsMediaBatch = async function() {
+  // Se o input ainda tem seleção não absorvida, incorpora agora
+  const fInput = $('osFileInput');
+  if (fInput && fInput.files && fInput.files.length) {
+    window._osBatchFiles = (window._osBatchFiles || []).concat(Array.from(fInput.files));
+    try { fInput.value = ''; } catch(e){}
+    window.renderOsMediaPreview();
+  }
+
+  if (!window._osBatchFiles || !window._osBatchFiles.length) {
+    window.toast('⚠ Selecione ao menos um arquivo.', 'warn');
+    return;
+  }
+
+  const btn = $('btnUploadMedia');
+  const prog = $('osMediaProgress');
+  if (btn) { btn.disabled = true; btn.innerText = 'ENVIANDO...'; }
+  if (prog) { prog.style.display = 'inline'; prog.innerText = '0/' + window._osBatchFiles.length; }
+
+  const total = window._osBatchFiles.length;
+  const novasUrls = [];
+  let sucesso = 0, falhas = 0;
+
+  for (let i = 0; i < total; i++) {
+    const f = window._osBatchFiles[i];
+    const fd = new FormData();
+    fd.append('file', f);
+    fd.append('upload_preset', J.cloudPreset);
+    try {
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${J.cloudName}/auto/upload`, { method: 'POST', body: fd });
+      const data = await res.json();
+      if (data && data.secure_url) {
+        novasUrls.push({ url: data.secure_url, type: data.resource_type || 'image' });
+        sucesso++;
+      } else {
+        falhas++;
+      }
+    } catch (e) {
+      falhas++;
+    }
+    if (prog) prog.innerText = (i + 1) + '/' + total;
+  }
+
+  // Concatena com o que já estava gravado no hidden (em caso de edição de O.S.)
+  const jaSalvo = JSON.parse($('osMediaArray').value || '[]');
+  const final = jaSalvo.concat(novasUrls);
+  $('osMediaArray').value = JSON.stringify(final);
+  window.renderMediaOS();
+
+  // Limpa o preview local (as prévias já viraram itens reais da galeria)
+  window._osBatchFiles = [];
+  window.renderOsMediaPreview();
+
+  if (btn) { btn.disabled = false; btn.innerText = 'ENVIAR TODAS'; }
+  if (prog) { prog.style.display = 'none'; prog.innerText = ''; }
+
+  if (sucesso && !falhas) window.toast(`✓ ${sucesso} arquivo(s) enviado(s). Salve a O.S. para persistir.`);
+  else if (sucesso && falhas) window.toast(`⚠ ${sucesso} ok, ${falhas} falhou. Salve a O.S. para persistir o que deu certo.`, 'warn');
+  else window.toast('✕ Nenhum arquivo enviado.', 'err');
 };
 
 window.renderMediaOS = function() {
@@ -584,3 +719,5 @@ window.gerarPDFOS = async function() {
   doc.save(`Laudo_${v?.placa || $v('osPlaca') || 'OS'}_${new Date().getTime()}.pdf`);
   window.toast('✓ PDF GERADO');
 };
+
+/* Powered by thIAguinho Soluções Digitais */
