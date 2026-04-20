@@ -121,11 +121,8 @@ window.enviarWppB2C = function(id) {
     const loginUser = cli?.login || os.placa || cliNome.split(' ')[0].toLowerCase();
     const pin = cli?.pin || os.pin || '';
 
-    // ✅ Link do portal do cliente — detecta automaticamente o domínio atual.
-    // Funciona em GitHub Pages, Vercel, domínio próprio etc.
-    const origin = window.location.origin;
-    const pathDir = window.location.pathname.replace(/\/[^\/]*$/, '/');
-    const link = origin + pathDir + 'cliente.html';
+    // ✅ Link correto para GitHub Pages
+    const link = 'https://tsvalencio-ia.github.io/ts-oficinas/cliente.html';
 
     const totalFmt = (os.total || 0).toFixed(2).replace('.', ',');
 
@@ -244,13 +241,6 @@ window.prepOS = function(mode, id = null) {
     window.verificarStatusOS();
     
     if ($('btnGerarPDFOS')) $('btnGerarPDFOS').style.display = 'block';
-
-    // Renderiza a aba OBD (dados do ELM327 enviados pelo cliente)
-    if (typeof window._renderObdOS === 'function') window._renderObdOS(o);
-  } else {
-    // Modo 'add': limpa a aba OBD
-    if ($('osObdArea')) $('osObdArea').innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--muted);font-family:var(--fm);font-size:0.75rem;">Aguardando dados do scanner do cliente...</div>';
-    if ($('mtabObdBadge')) $('mtabObdBadge').style.display = 'none';
   }
 };
 
