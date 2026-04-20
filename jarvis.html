@@ -507,20 +507,6 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
           </div>
         </div>
       </div>
-
-      <!-- Card OBD — dados do scanner ELM327 dos clientes em tempo real -->
-      <div class="j-card" style="margin-top:16px;">
-        <div class="j-card-header">
-          <div class="j-card-title">
-            🔌 SCANNER OBD — CLIENTES
-            <span id="obdDashBadge" class="pill pill-danger" style="font-size:0.58rem;padding:2px 8px;margin-left:8px;display:none;">0 NOVOS</span>
-            <span id="obdDashLive" class="pill pill-green" style="font-size:0.58rem;padding:2px 8px;margin-left:4px;display:none;">0 AO VIVO</span>
-          </div>
-        </div>
-        <div class="j-card-body" style="padding:0;" id="obdDashList">
-          <div style="padding:14px;text-align:center;color:var(--muted);font-family:var(--fm);font-size:0.68rem;">Nenhum dado OBD recebido ainda</div>
-        </div>
-      </div>
     </section>
 
     <section class="section" id="s-agenda">
@@ -712,23 +698,14 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
       <div class="j-card">
         <div class="j-card-header">
           <div class="j-card-title" style="color:var(--warn)">thIAguinho — DIAGNÓSTICO INTELIGENTE</div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <div style="display:flex;gap:8px;">
             <button class="btn-warn" onclick="iaAnalisarDRE()">📊 ANALISAR DRE</button>
             <button class="btn-warn" onclick="iaAnalisarEstoque()">📦 ANALISAR ESTOQUE</button>
           </div>
         </div>
-        <!-- Chips de sugestões rápidas (busca contextual) -->
-        <div style="padding:12px 18px;border-bottom:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;">
-          <span style="font-family:var(--fm);font-size:0.6rem;color:var(--muted);align-self:center;margin-right:4px;">SUGESTÕES:</span>
-          <button class="btn-ghost" style="font-size:0.7rem;padding:4px 10px;" onclick="$('iaInput').value='Liste todas as O.S. em andamento com status, cliente e mecânico responsável.';iaPerguntar();">📋 O.S. em andamento</button>
-          <button class="btn-ghost" style="font-size:0.7rem;padding:4px 10px;" onclick="$('iaInput').value='Quais clientes retornaram mais de uma vez com o mesmo defeito? Identifique padrões.';iaPerguntar();">🔁 Retrabalhos</button>
-          <button class="btn-ghost" style="font-size:0.7rem;padding:4px 10px;" onclick="$('iaInput').value='Qual o ticket médio de O.S. entregues nos últimos 30 dias? Quem é o mecânico mais produtivo?';iaPerguntar();">💰 Produtividade</button>
-          <button class="btn-ghost" style="font-size:0.7rem;padding:4px 10px;" onclick="$('iaInput').value='Liste os clientes cadastrados. Mostre quais têm veículos mas nunca abriram uma O.S. (oportunidade de contato).';iaPerguntar();">👥 Clientes inativos</button>
-          <button class="btn-ghost" style="font-size:0.7rem;padding:4px 10px;" onclick="$('iaInput').value='Quais veículos tiveram DTCs (códigos OBD) reportados recentemente pelos clientes via scanner?';iaPerguntar();">🔌 Scanner OBD</button>
-        </div>
         <div class="ia-box">
           <div class="ia-messages" id="iaMsgs">
-            <div class="ia-msg bot"><strong>thIAguinho:</strong> Olá! Sou seu consultor de diagnóstico automotivo. Tenho acesso completo à base da oficina — histórico de O.S., diagnósticos técnicos, peças trocadas, dados do scanner OBD dos clientes e financeiro. <br><br>Exemplos de perguntas que sei responder:<br>• "Qual o histórico da placa ABC1234?"<br>• "Quais defeitos o cliente João Silva já teve?"<br>• "O que significa o código P0420?"<br>• "Liste O.S. com problemas de motor nos últimos meses"<br>• "Quanto o cliente Maria já gastou conosco?"</div>
+            <div class="ia-msg bot"><strong>thIAguinho:</strong> Sistema operacional. Tenho acesso à base de dados da oficina. Posso analisar histórico de O.S., estoque crítico, fluxo de caixa e sugerir diagnósticos. O que deseja?</div>
           </div>
           <div class="ia-input-area">
             <input class="j-input" id="iaInput" placeholder="Ex: A placa ABC-1234 trocou óleo há menos de 3000km?" style="flex:1;">
@@ -762,10 +739,9 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     </div>
   </div>
   <div class="modal-tabs">
-    <div class="mtab active" onclick="switchTab(this,'tabOS1','tabOS2','tabOS3','tabOS4')">1. ORÇAMENTO & SERVIÇOS</div>
-    <div class="mtab" onclick="switchTab(this,'tabOS2','tabOS1','tabOS3','tabOS4')">2. PROVAS & CHECKLIST</div>
-    <div class="mtab" onclick="switchTab(this,'tabOS3','tabOS1','tabOS2','tabOS4')">3. AUDITORIA (TIMELINE)</div>
-    <div class="mtab" onclick="switchTab(this,'tabOS4','tabOS1','tabOS2','tabOS3')" id="mtabObd">🔍 OBD <span id="mtabObdBadge" style="display:none;background:var(--danger);color:#fff;font-family:var(--fm);font-size:0.55rem;padding:1px 6px;border-radius:8px;margin-left:4px;">•</span></div>
+    <div class="mtab active" onclick="switchTab(this,'tabOS1','tabOS2','tabOS3')">1. ORÇAMENTO & SERVIÇOS</div>
+    <div class="mtab" onclick="switchTab(this,'tabOS2','tabOS1','tabOS3')">2. PROVAS & CHECKLIST</div>
+    <div class="mtab" onclick="switchTab(this,'tabOS3','tabOS1','tabOS2')">3. AUDITORIA (TIMELINE)</div>
   </div>
   <div class="tab-pane active" id="tabOS1">
     
@@ -936,15 +912,6 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 
   <div class="tab-pane" id="tabOS3">
     <div class="timeline" id="osTimeline"></div>
-  </div>
-
-  <!-- Aba 4: OBD — dados do scanner ELM327 do cliente (renderizado por _renderObdOS) -->
-  <div class="tab-pane" id="tabOS4">
-    <div id="osObdArea">
-      <div style="text-align:center;padding:40px 20px;color:var(--muted);font-family:var(--fm);font-size:0.75rem;">
-        Aguardando dados do scanner do cliente...
-      </div>
-    </div>
   </div>
 
   <div class="modal-foot">
@@ -1279,12 +1246,7 @@ document.addEventListener('keydown', function(ev){
 // ============================================================
 // BOOTSTRAP DO SISTEMA E IA
 // ============================================================
-// ═══════════════════════════════════════════════════════════════════
-// J — estado global da oficina. Exposto em window.J para js/ia.js
-// e outros scripts externos conseguirem ler (busca contextual etc).
-// ═══════════════════════════════════════════════════════════════════
-window.J = window.J || {};
-const J = window.J;
+const J = {}; 
 const $ = id => document.getElementById(id);
 const $v = id => $(id) ? $(id).value.trim() : '';
 
@@ -1294,7 +1256,6 @@ J.role = sessionStorage.getItem('j_role');
 J.nome = sessionStorage.getItem('j_nome');
 J.tnome = sessionStorage.getItem('j_tnome');
 J.gemini = sessionStorage.getItem('j_gemini');
-J.claude = sessionStorage.getItem('j_claude');
 J.nicho = sessionStorage.getItem('j_nicho') || 'carros';
 J.cloudName = sessionStorage.getItem('j_cloud_name') || 'dmuvm1o6m';
 J.cloudPreset = sessionStorage.getItem('j_cloud_preset') || 'evolution';
@@ -1515,242 +1476,6 @@ window.escutarAuditoria = function() {
   });
 }
 
-// ═══════════════════════════════════════════════════════════════════════
-// MÓDULO OBD — Recebe dados do scanner ELM327 dos clientes em tempo real.
-// Powered by thIAguinho Soluções Digitais
-// ═══════════════════════════════════════════════════════════════════════
-
-window._obdSeveridadeCor = function(sev) {
-  if (sev === 'Alto')  return 'var(--danger)';
-  if (sev === 'Médio') return 'var(--warn)';
-  return 'var(--cyan)';
-};
-
-window._obdHeartbeatVivo = function(hbIso) {
-  if (!hbIso) return false;
-  try {
-    const diff = Date.now() - new Date(hbIso).getTime();
-    return diff < 30000; // 30s
-  } catch(e) { return false; }
-};
-
-// Renderiza a aba OBD dentro do modal da O.S.
-window._renderObdOS = function(os) {
-  const area = $('osObdArea');
-  if (!area) return;
-
-  if ($('mtabObdBadge')) $('mtabObdBadge').style.display = 'none';
-
-  // Marca DTCs como visualizados pelo admin (apaga badge)
-  if (os.dtcsCliente?.length && !os.obdVistoAdmin) {
-    db.collection('ordens_servico').doc(os.id).update({
-      obdVistoAdmin: true,
-      obdVistoAdminEm: new Date().toISOString()
-    }).catch(()=>{});
-  }
-
-  const dtcs = os.dtcsCliente || [];
-  const snap = os.obdUltimoSnapshot || null;
-  const transmitindo = !!os.obdTransmitindo && window._obdHeartbeatVivo(os.obdHeartbeat);
-  const scanCompleto = os.obdScan || null;
-
-  let html = '';
-
-  // Status de transmissão
-  if (transmitindo) {
-    html += `<div style="background:rgba(0,255,136,0.08);border:1px solid var(--success);border-radius:4px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px;">
-      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--success);box-shadow:0 0 10px var(--success);animation:blink 1s infinite;"></span>
-      <div style="flex:1;">
-        <div style="font-family:var(--fd);font-size:0.95rem;font-weight:700;color:var(--success);letter-spacing:1px;">🔴 AO VIVO — CLIENTE TRANSMITINDO</div>
-        <div style="font-family:var(--fm);font-size:0.65rem;color:var(--muted2);margin-top:2px;">Dados atualizam automaticamente a cada 5 segundos</div>
-      </div>
-    </div>`;
-  } else if (os.obdTransmitInicio) {
-    html += `<div style="background:rgba(255,184,0,0.06);border:1px solid rgba(255,184,0,0.3);border-radius:4px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px;">
-      <span style="font-size:1.2rem;">⏸</span>
-      <div style="flex:1;">
-        <div style="font-family:var(--fd);font-size:0.85rem;font-weight:700;color:var(--warn);letter-spacing:1px;">Transmissão encerrada</div>
-        <div style="font-family:var(--fm);font-size:0.6rem;color:var(--muted2);margin-top:2px;">Última atividade: ${os.obdHeartbeat ? new Date(os.obdHeartbeat).toLocaleString('pt-BR') : '-'}</div>
-      </div>
-    </div>`;
-  }
-
-  // Gauges
-  if (snap) {
-    const cards = [
-      { k:'rpm',      l:'RPM',          u:'rpm',  c:'var(--cyan)' },
-      { k:'speed',    l:'VELOCIDADE',   u:'km/h', c:'var(--success)' },
-      { k:'temp',     l:'TEMP. MOTOR',  u:'°C',   c:'var(--danger)' },
-      { k:'throttle', l:'ACELERADOR',   u:'%',    c:'var(--warn)' },
-      { k:'fuel',     l:'COMBUSTÍVEL',  u:'%',    c:'var(--success)' },
-      { k:'voltage',  l:'BATERIA',      u:'V',    c:'var(--cyan)' }
-    ];
-    html += `<div style="margin-bottom:16px;">
-      <div style="font-family:var(--fd);font-size:0.85rem;font-weight:700;letter-spacing:1px;margin-bottom:10px;color:white;">📊 DADOS DO MOTOR</div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
-        ${cards.map(c => {
-          const v = snap[c.k];
-          const val = (v!==null && v!==undefined && !isNaN(v)) ? (typeof v==='number' ? v.toFixed(v>100?0:1) : v) : '--';
-          return `<div style="background:var(--surf2);border:1px solid var(--border);border-radius:4px;padding:12px;text-align:center;">
-            <div style="font-family:var(--fm);font-size:0.55rem;color:${c.c};letter-spacing:1.5px;margin-bottom:4px;">${c.l}</div>
-            <div style="font-family:var(--fd);font-size:1.6rem;font-weight:800;color:${c.c};line-height:1;">${val}</div>
-            <div style="font-family:var(--fm);font-size:0.58rem;color:var(--muted);margin-top:3px;">${c.u}</div>
-          </div>`;
-        }).join('')}
-      </div>
-      <div style="font-family:var(--fm);font-size:0.58rem;color:var(--muted);margin-top:6px;text-align:right;">Último update: ${snap.ts ? new Date(snap.ts).toLocaleTimeString('pt-BR') : '-'}</div>
-    </div>`;
-  }
-
-  // DTCs
-  if (dtcs.length) {
-    html += `<div style="margin-bottom:16px;">
-      <div style="font-family:var(--fd);font-size:0.85rem;font-weight:700;letter-spacing:1px;margin-bottom:10px;color:white;">⚠️ CÓDIGOS DE FALHA DETECTADOS (${dtcs.length})</div>
-      <div style="font-family:var(--fm);font-size:0.62rem;color:var(--muted);margin-bottom:8px;">Escaneado em: ${os.dtcsTs ? new Date(os.dtcsTs).toLocaleString('pt-BR') : '-'}</div>`;
-
-    dtcs.forEach(d => {
-      const cor = window._obdSeveridadeCor(d.severity);
-      const codeEsc = (d.code||'?').replace(/'/g,"\\'");
-      const descEsc = (d.description||'Sem descrição').replace(/'/g,"\\'");
-      html += `<div style="background:var(--surf2);border:1px solid var(--border);border-left:4px solid ${cor};border-radius:3px;padding:13px;margin-bottom:8px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-          <span style="font-family:var(--fm);font-size:1rem;font-weight:800;color:${cor};letter-spacing:1px;">${d.code||'?'}</span>
-          <span style="font-family:var(--fm);font-size:0.58rem;padding:3px 10px;border-radius:10px;background:${cor};color:#000;font-weight:700;letter-spacing:1px;">${d.severity||'-'}</span>
-        </div>
-        <div style="font-size:0.82rem;color:var(--text);line-height:1.4;margin-bottom:10px;">${d.description||'Sem descrição'}</div>
-        ${d.status === 'Pendente' ? '<span class="pill pill-warn" style="font-size:0.55rem;">PENDENTE</span>' : '<span class="pill pill-danger" style="font-size:0.55rem;">CONFIRMADO</span>'}
-        <button class="btn-ghost" style="float:right;font-size:0.62rem;padding:4px 10px;" onclick="window._obdPerguntarIA('${codeEsc}','${descEsc}')">🤖 thIAguinho explica</button>
-        <div style="clear:both;"></div>
-      </div>`;
-    });
-    html += `</div>`;
-  } else if (snap || scanCompleto) {
-    html += `<div style="background:rgba(0,255,136,0.06);border:1px dashed var(--success);border-radius:4px;padding:20px;text-align:center;margin-bottom:16px;">
-      <div style="font-size:1.8rem;margin-bottom:6px;">✅</div>
-      <div style="font-family:var(--fd);font-weight:700;color:var(--success);letter-spacing:1px;">Sem códigos de falha</div>
-      <div style="font-family:var(--fm);font-size:0.62rem;color:var(--muted);margin-top:4px;">ECU reporta sistema OK</div>
-    </div>`;
-  }
-
-  // Vazio
-  if (!snap && !dtcs.length && !scanCompleto) {
-    html = `<div style="text-align:center;padding:40px 20px;">
-      <div style="font-size:2.5rem;margin-bottom:10px;opacity:0.4;">🔌</div>
-      <div style="font-family:var(--fd);font-size:0.95rem;color:var(--muted2);margin-bottom:6px;">Aguardando dados do cliente</div>
-      <div style="font-family:var(--fm);font-size:0.68rem;color:var(--muted);line-height:1.6;max-width:380px;margin:0 auto;">O cliente precisa conectar o scanner ELM327 ao veículo e clicar em "TRANSMITIR AO VIVO PARA A OFICINA" no portal dele.</div>
-    </div>`;
-  }
-
-  // Info scan completo
-  if (scanCompleto) {
-    html += `<div style="background:var(--surf);border:1px solid var(--border);border-radius:3px;padding:12px;margin-top:12px;">
-      <div style="font-family:var(--fd);font-size:0.72rem;font-weight:700;color:var(--muted2);letter-spacing:1px;margin-bottom:6px;">🔧 INFO DO SCAN COMPLETO</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-family:var(--fm);font-size:0.68rem;color:var(--text);">
-        ${scanCompleto.vin ? `<div><span style="color:var(--muted);">VIN:</span> ${scanCompleto.vin}</div>` : ''}
-        ${scanCompleto.adapter?.name ? `<div><span style="color:var(--muted);">Adaptador:</span> ${scanCompleto.adapter.name}</div>` : ''}
-        ${scanCompleto.adapter?.voltage ? `<div><span style="color:var(--muted);">Bateria:</span> ${scanCompleto.adapter.voltage}V</div>` : ''}
-        ${scanCompleto.ts ? `<div><span style="color:var(--muted);">Scan em:</span> ${new Date(scanCompleto.ts).toLocaleString('pt-BR')}</div>` : ''}
-      </div>
-    </div>`;
-  }
-
-  area.innerHTML = html;
-};
-
-// Manda admin pra aba IA com prompt pronto sobre o DTC
-window._obdPerguntarIA = function(code, desc) {
-  fecharModal('modalOS');
-  const itemIA = document.querySelector('.nav-item[onclick*="ia"]');
-  if (itemIA) itemIA.click();
-  setTimeout(() => {
-    const inp = $('iaInput');
-    if (inp) {
-      inp.value = `O carro do cliente mostrou o código ${code} (${desc}). Quais são as causas mais prováveis, o que devo inspecionar primeiro, e qual ordem de intervenção recomenda para uma oficina?`;
-      inp.focus();
-    }
-  }, 300);
-};
-
-// Listener em tempo real — re-renderiza modal aberto + atualiza badges do dashboard
-window._obdWireLiveUpdate = function() {
-  if (window._obdWired) return;
-  window._obdWired = true;
-
-  db.collection('ordens_servico').where('tenantId','==',J.tid).onSnapshot(snap => {
-    let pendentes = 0;
-    let emTransmissao = 0;
-    const osAbertaId = $('osId')?.value;
-
-    snap.forEach(docSnap => {
-      const o = { id: docSnap.id, ...docSnap.data() };
-      if (o.dtcsCliente?.length && !o.obdVistoAdmin) pendentes++;
-      if (o.obdTransmitindo && window._obdHeartbeatVivo(o.obdHeartbeat)) emTransmissao++;
-      if (osAbertaId && o.id === osAbertaId) {
-        window._renderObdOS(o);
-      }
-    });
-
-    window._obdAtualizarBadges(pendentes, emTransmissao);
-  });
-};
-
-window._obdAtualizarBadges = function(pendentes, emTransmissao) {
-  const badgeEl = $('obdDashBadge');
-  if (badgeEl) {
-    badgeEl.textContent = pendentes + ' NOVO' + (pendentes===1?'':'S');
-    badgeEl.style.display = pendentes > 0 ? 'inline-block' : 'none';
-  }
-  const emTxEl = $('obdDashLive');
-  if (emTxEl) {
-    emTxEl.textContent = emTransmissao + ' AO VIVO';
-    emTxEl.style.display = emTransmissao > 0 ? 'inline-block' : 'none';
-  }
-
-  const tbl = $('obdDashList');
-  if (tbl) {
-    const rows = (J.os||[])
-      .filter(o => o.dtcsCliente?.length || (o.obdTransmitindo && window._obdHeartbeatVivo(o.obdHeartbeat)))
-      .sort((a,b) => (b.dtcsTs||'').localeCompare(a.dtcsTs||''))
-      .slice(0, 5);
-
-    if (!rows.length) {
-      tbl.innerHTML = '<div style="padding:14px;text-align:center;color:var(--muted);font-family:var(--fm);font-size:0.68rem;">Nenhum dado OBD recebido ainda</div>';
-    } else {
-      tbl.innerHTML = rows.map(o => {
-        const cli = (J.clientes||[]).find(c => c.id === o.clienteId);
-        const cliNome = cli?.nome || o.cliente || '-';
-        const dtcsN = o.dtcsCliente?.length || 0;
-        const ativo = o.obdTransmitindo && window._obdHeartbeatVivo(o.obdHeartbeat);
-        const visto = !!o.obdVistoAdmin;
-        return `<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;" onclick="abrirModal('modalOS');window.prepOS('edit','${o.id}');setTimeout(()=>{document.querySelectorAll('.mtab')[3]?.click();},200);">
-          ${ativo ? '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--success);box-shadow:0 0 6px var(--success);animation:blink 1s infinite;"></span>' : '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--muted);opacity:0.4;"></span>'}
-          <div style="flex:1;">
-            <div style="font-size:0.8rem;font-weight:700;color:var(--text);">${cliNome}</div>
-            <div style="font-family:var(--fm);font-size:0.6rem;color:var(--muted);">${o.placa||'-'} · ${dtcsN} DTC(s) · ${o.dtcsTs ? new Date(o.dtcsTs).toLocaleString('pt-BR') : '-'}</div>
-          </div>
-          ${!visto && dtcsN ? '<span class="pill pill-danger" style="font-size:0.55rem;">NOVO</span>' : ''}
-          ${ativo ? '<span class="pill pill-green" style="font-size:0.55rem;">AO VIVO</span>' : ''}
-        </div>`;
-      }).join('');
-    }
-  }
-};
-
-// Keyframe blink
-(function injectObdKeyframe(){
-  try {
-    const s = document.createElement('style');
-    s.textContent = '@keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.3;} }';
-    document.head.appendChild(s);
-  } catch(e) {}
-})();
-
-// Engata listener após carregar J.os
-setTimeout(() => {
-  if (typeof window._obdWireLiveUpdate === 'function') window._obdWireLiveUpdate();
-}, 1500);
-
-
 window.popularSelects = function() {
   const cOpts = '<option value="">Selecione...</option>' + J.clientes.map(c=>`<option value="${c.id}">${c.nome}</option>`).join('');
   ['osCliente','agdCliente','veicDono'].forEach(id => { if($(id)) $(id).innerHTML = cOpts; });
@@ -1890,15 +1615,12 @@ window.renderClientes = function() {
   }).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:20px;">Nenhum cliente</td></tr>';
 };
 
-// ✅ Envia login e PIN do cliente via WhatsApp (link dinâmico ao domínio atual)
+// ✅ Envia login e PIN do cliente via WhatsApp (link correto)
 window._wppAcessoCliente = function(cid) {
   const c = J.clientes.find(x => x.id === cid);
   if (!c?.wpp) return;
   const fone = c.wpp.replace(/\D/g, '');
-  // Detecta domínio atual — funciona em GitHub Pages, Vercel, domínio próprio.
-  const origin = window.location.origin;
-  const pathDir = window.location.pathname.replace(/\/[^\/]*$/, '/');
-  const link = origin + pathDir + 'cliente.html';
+  const link = 'https://tsvalencio-ia.github.io/of/cliente.html';
   const msg =
     `Olá ${c.nome.split(' ')[0]}! 👋\n\n` +
     `Aqui é a *${J.tnome}*. Seu acesso ao portal do cliente está pronto!\n\n` +
@@ -2421,12 +2143,36 @@ window.renderAuditoria = function() {
   $('tbAuditoria').innerHTML = J.auditoria.slice(0,100).map(a=>`<tr><td style="font-family:var(--fm);font-size:0.72rem;color:var(--muted)">${dtHrBr(a.ts)}</td><td><span class="pill pill-cyan">${a.modulo||'-'}</span></td><td style="font-family:var(--fm);color:var(--cyan)">${a.usuario||'-'}</td><td>${a.acao||'-'}</td></tr>`).join('');
 }
 
-// GEMINI/CLAUDE IA — implementação movida para js/ia.js (com busca contextual)
-// O ia.js define window.iaPerguntar, iaAnalisarDRE, iaAnalisarEstoque, adicionarMsgIA,
-// iaHistoricoPlaca, iaPerfilCliente — todos com RAG sobre toda a base da oficina.
+// GEMINI IA
+let iaHistorico = [];
+window.iaPerguntar = async function() {
+  const inp=$('iaInput'); const msg=$v('iaInput'); if(!msg) return; inp.value='';
+  window.adicionarMsgIA('user',msg); window.adicionarMsgIA('bot','<span style="color:var(--muted)">⏳ Processando...</span>');
+  const key=J.gemini; if(!key){window.adicionarMsgIA('bot','⚠ Configure a API Key Gemini no Superadmin.');return;}
+  const ctx = `Oficina: ${J.tnome}. Mecânicos: ${J.equipe.map(f=>f.nome).join(', ')}. Veículos: ${J.veiculos.length}. O.S. Pátio: ${J.os.filter(o=>!['Cancelado','Pronto','Entregue'].includes(o.status)).length}. Peças críticas: ${J.estoque.filter(p=>(p.qtd||0)<=(p.min||0)).map(p=>p.desc).join(', ')}.`;
+  const histOS = J.os.slice(-10).map(o=>{const v=J.veiculos.find(x=>x.id===o.veiculoId);return `OS: ${v?.placa}, Sts: ${o.status}, Tot: ${moeda(o.total)}`;}).join('\n');
+  const systemPrompt = `Você é o thIAguinho, IA para gestão de oficinas.\n\nCONTEXTO:\n${ctx}\n\nÚLTIMAS O.S.:\n${histOS}\n\nResponda em português de forma técnica e direta. Não alucine dados.`;
+  iaHistorico.push({role:'user',text:msg});
+  try {
+    const contents=iaHistorico.map(h=>({role:h.role==='user'?'user':'model',parts:[{text:h.text}]}));
+    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents,systemInstruction:{parts:[{text:systemPrompt}]}})});
+    const data=await res.json(); if(!res.ok) throw new Error(data.error?.message||'Erro API');
+    const resp=data.candidates?.[0]?.content?.parts?.[0]?.text||'Sem resposta';
+    iaHistorico.push({role:'model',text:resp});
+    $('iaMsgs').lastChild?.remove(); window.adicionarMsgIA('bot',resp.replace(/\n/g,'<br>'));
+  } catch(e){ $('iaMsgs').lastChild?.remove(); window.adicionarMsgIA('bot','⚠ Erro: '+e.message); }
+}
+window.iaAnalisarDRE = async function() { $('iaInput').value='Analise o financeiro atual e sugira melhorias.'; ir('ia',document.querySelector('.nav-item:last-child')); await window.iaPerguntar(); }
+window.iaAnalisarEstoque = async function() { $('iaInput').value='Quais peças estão em nível crítico para reposição?'; ir('ia',document.querySelector('.nav-item:last-child')); await window.iaPerguntar(); }
+window.adicionarMsgIA = function(role, html) {
+  if(!$('iaMsgs')) return;
+  const div=document.createElement('div'); div.className='ia-msg '+role;
+  if(role==='bot') div.innerHTML='<strong>thIAguinho:</strong> '+html; else div.innerHTML=html;
+  $('iaMsgs').appendChild(div); $('iaMsgs').scrollTop=$('iaMsgs').scrollHeight;
+}
+document.getElementById('iaInput')?.addEventListener('keydown',e=>{if(e.key==='Enter')window.iaPerguntar();});
 </script>
 <script src="js/financeiro.js"></script>
 <script src="js/os.js"></script>
-<script src="js/ia.js"></script>
 </body>
 </html>

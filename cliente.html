@@ -43,7 +43,6 @@ body { overflow-y: auto; background: #060A14; color: #E8F4FF; font-family: 'Exo 
 .tab-content.active { display: block; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes spin { to { transform: rotate(360deg); } }
-@keyframes pulseLed { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:0.4;transform:scale(0.85);} }
 
 .input { width: 100%; padding: 14px 16px; background: var(--surf-2); border: 1px solid var(--border); border-radius: var(--r-md); color: #fff; font-family: var(--ff-mono); font-size: 0.9rem; transition: 0.2s; margin-bottom: 16px; }
 .input:focus { border-color: var(--brand); outline: none; background: rgba(0,212,255,0.05); }
@@ -167,8 +166,7 @@ body { overflow-y: auto; background: #060A14; color: #E8F4FF; font-family: 'Exo 
     </div>
     
     <div class="nav-tabs">
-      <button class="tab-btn active" onclick="switchCliTab('tabMeu', this)">🚗 MEU VEÍCULO</button>
-      <button class="tab-btn" onclick="switchCliTab('tabOS', this)">🚘 O.S.</button>
+      <button class="tab-btn active" onclick="switchCliTab('tabOS', this)">🚘 O.S.</button>
       <button class="tab-btn" onclick="switchCliTab('tabChat', this)">💬 CHAT <span class="tab-badge" id="cliChatBadge">0</span></button>
       <button class="tab-btn" onclick="switchCliTab('tabFin', this)">💳 EXTRATO</button>
       <button class="tab-btn" onclick="switchCliTab('tabAgd', this)">📅 AGENDAR</button>
@@ -178,15 +176,7 @@ body { overflow-y: auto; background: #060A14; color: #E8F4FF; font-family: 'Exo 
   </div>
 
   <div class="portal-body">
-    <!-- ABA MEU VEÍCULO — dashboard estilo thIAguinho-assistente
-         Mostra KPIs do veículo, cronograma de manutenção, próximo agendamento -->
-    <div id="tabMeu" class="tab-content active">
-      <div id="renderMeuArea">
-        <div style="text-align:center;padding:40px 20px;color:var(--text-muted);font-family:var(--ff-mono);font-size:0.75rem;">Carregando painel do veículo...</div>
-      </div>
-    </div>
-
-    <div id="tabOS" class="tab-content"><div id="renderOSArea"></div></div>
+    <div id="tabOS" class="tab-content active"><div id="renderOSArea"></div></div>
 
     <div id="tabChat" class="tab-content">
       <div class="chat-container">
@@ -263,17 +253,9 @@ body { overflow-y: auto; background: #060A14; color: #E8F4FF; font-family: 'Exo 
           <button class="btn btn-outline" style="font-size:0.8rem;padding:12px;" onclick="obdLerDTCs()">🔍 LER ERROS</button>
           <button class="btn btn-danger" style="font-size:0.8rem;padding:12px;" onclick="obdLimparDTCs()">🧹 LIMPAR ERROS</button>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
           <button id="btnLive" class="btn btn-outline" style="font-size:0.8rem;padding:12px;" onclick="obdToggleLive()">📡 DADOS AO VIVO</button>
           <button class="btn btn-outline" style="font-size:0.8rem;padding:12px;" onclick="obdVarredura()">📋 VARREDURA COMPLETA</button>
-        </div>
-        <!-- BOTÃO ENVIAR DTCs (aparece após leitura) — cliente escolhe quando compartilhar -->
-        <button id="btnEnviarDTCs" onclick="obdEnviarDTCsOficina()" style="display:none;width:100%;font-size:0.85rem;padding:13px;background:var(--success);color:#000;font-family:var(--ff-display);font-weight:700;letter-spacing:1px;border:none;border-radius:var(--r-md);cursor:pointer;margin-bottom:10px;">📤 ENVIAR CÓDIGOS À OFICINA</button>
-        <!-- BOTÃO TRANSMITIR PARA A OFICINA -->
-        <button id="btnTransmitir" class="btn" style="width:100%;font-size:0.85rem;padding:13px;background:linear-gradient(135deg,#00D4FF,#0080FF);color:#000;font-family:var(--ff-display);font-weight:700;letter-spacing:1px;border:none;border-radius:var(--r-md);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;" onclick="obdToggleTransmissao()">📡 TRANSMITIR AO VIVO PARA A OFICINA</button>
-        <div id="obdTransmitStatus" style="display:none;margin-top:8px;padding:10px 14px;background:rgba(0,255,136,0.08);border:1px solid var(--success);border-radius:var(--r-md);font-family:var(--ff-mono);font-size:0.7rem;color:var(--success);text-align:center;">
-          <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--success);box-shadow:0 0 8px var(--success);margin-right:6px;animation:pulseLed 1s infinite;"></span>
-          <span id="obdTransmitTxt">TRANSMITINDO — a oficina está vendo seus dados</span>
         </div>
       </div>
       <!-- DTCs -->
@@ -420,7 +402,6 @@ function _iniciarPortalListeners() {
         }).sort((a, b) => (b.updatedAt || '') > (a.updatedAt || '') ? 1 : -1);
       _osDoCliente = osList; // contexto para IA e OBD
       _renderPortalOS(osList);
-      _renderMeuVeiculo(); // re-renderiza painel quando OS mudam
     });
 
   if(P.clienteId && P.clienteId !== 'avulso') {
@@ -445,18 +426,12 @@ function _iniciarPortalListeners() {
           _renderFinanceiro(finList);
         });
       db.collection('agendamentos').where('tenantId', '==', P.tenantId).where('clienteId', '==', P.clienteId).onSnapshot(snap => {
-          const agdList = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b)=>(b.data||'') > (a.data||'') ? 1 : -1);
-          _agdDoCliente = agdList;
-          _renderAgendamento(agdList);
-          _renderMeuVeiculo(); // re-renderiza painel quando muda agendamento
+          const agdList = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b)=>(b.data||'') > (a.data||'') ? 1 : -1); _renderAgendamento(agdList);
         });
   } else {
       document.getElementById('renderFinArea').innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-muted);">Área financeira disponível apenas para clientes cadastrados.</div>';
       document.getElementById('renderAgdArea').innerHTML = '';
   }
-
-  // Dispara renderização inicial do painel "Meu Veículo" após tudo montado
-  setTimeout(() => _renderMeuVeiculo(), 800);
 }
 
 // 🚘 RENDERIZAÇÃO DAS O.S.
@@ -514,265 +489,6 @@ function _renderPortalOS(osList) {
         ${detalheHtml}
       </div>`;
   }).join('');
-}
-
-// ═══════════════════════════════════════════════════════════════════════
-// 🚗 PAINEL "MEU VEÍCULO" — dashboard completo do cliente final
-// Mostra: KPIs do motor, modelo, KM, próxima manutenção, DTCs ativos,
-// cronograma (óleo, filtros, pneus, bateria) e agendamentos.
-// Estilo inspirado no protótipo thIAguinho-assistente, com dados reais.
-// Powered by thIAguinho Soluções Digitais
-// ═══════════════════════════════════════════════════════════════════════
-
-let _agdDoCliente = [];
-
-// Cronograma padrão de manutenção preventiva (KM). Pode evoluir no futuro
-// com regras por fabricante/modelo — por enquanto valores genéricos BR.
-const _MANUT_PADRAO_KM = [
-  { nome: 'Troca de óleo + filtro',       cada_km: 10000, cor: 'var(--warn)',    icon: '🛢️' },
-  { nome: 'Filtro de ar',                  cada_km: 15000, cor: 'var(--brand)',   icon: '💨' },
-  { nome: 'Filtro de combustível',         cada_km: 20000, cor: 'var(--ia-color)',icon: '⛽' },
-  { nome: 'Pastilhas de freio',            cada_km: 30000, cor: 'var(--danger)',  icon: '🛑' },
-  { nome: 'Correia dentada (revisar)',     cada_km: 60000, cor: 'var(--warn)',    icon: '⚙️' },
-  { nome: 'Velas de ignição',              cada_km: 30000, cor: 'var(--brand)',   icon: '⚡' },
-  { nome: 'Fluido de freio',               cada_km: 40000, cor: 'var(--danger)',  icon: '💧' },
-  { nome: 'Alinhamento e balanceamento',   cada_km: 10000, cor: 'var(--success)', icon: '🔧' }
-];
-
-function _renderMeuVeiculo() {
-  const container = document.getElementById('renderMeuArea');
-  if (!container) return;
-
-  const cliNome = P?.cliente?.nome || 'Cliente';
-  const veics = (P?.veiculos || []);
-
-  // Caso: cliente avulso (login por placa) — mostra só as OS
-  if (!veics.length && (P?.clienteId === 'avulso' || !P?.clienteId)) {
-    container.innerHTML = `
-      <div style="padding:40px 20px;text-align:center;background:var(--surf-1);border-radius:var(--r-xl);border:1px dashed var(--border);">
-        <div style="font-size:2.5rem;margin-bottom:12px">🚘</div>
-        <div style="font-family:var(--ff-display);font-size:1.2rem;font-weight:700;color:white;margin-bottom:8px;">Bem-vindo!</div>
-        <div style="color:var(--text-muted);font-size:0.85rem;">Peça ao atendente para cadastrar seu veículo e liberar o painel completo.</div>
-      </div>`;
-    return;
-  }
-
-  if (!veics.length) {
-    container.innerHTML = `
-      <div style="padding:40px 20px;text-align:center;background:var(--surf-1);border-radius:var(--r-xl);border:1px dashed var(--border);">
-        <div style="font-size:2.5rem;margin-bottom:12px">🚗</div>
-        <div style="font-family:var(--ff-display);font-size:1.2rem;font-weight:700;color:white;margin-bottom:8px;">Nenhum veículo cadastrado</div>
-        <div style="color:var(--text-muted);font-size:0.85rem;">Peça ao atendente para cadastrar seu veículo no sistema.</div>
-      </div>`;
-    return;
-  }
-
-  // Renderiza cada veículo do cliente
-  const htmlVeics = veics.map(v => _renderCardVeiculo(v)).join('');
-
-  // Próximo agendamento confirmado
-  const hoje = new Date().toISOString().split('T')[0];
-  const prox = _agdDoCliente
-    .filter(a => (a.data || '') >= hoje && ['Solicitado','Confirmado','Agendado'].includes(a.status || 'Solicitado'))
-    .sort((a,b) => (a.data || '').localeCompare(b.data || ''))[0];
-
-  let htmlProxAgd = '';
-  if (prox) {
-    const dtFmt = new Date(prox.data + 'T00:00:00').toLocaleDateString('pt-BR', { weekday:'long', day:'2-digit', month:'long' });
-    const dias = Math.max(0, Math.ceil((new Date(prox.data) - new Date(hoje)) / (1000*60*60*24)));
-    htmlProxAgd = `
-      <div style="background:linear-gradient(135deg,rgba(0,212,255,0.1),rgba(0,128,255,0.05));border:1px solid var(--brand);border-radius:var(--r-xl);padding:18px;margin-bottom:16px;">
-        <div style="display:flex;align-items:center;gap:12px;">
-          <div style="font-size:2.2rem;">📅</div>
-          <div style="flex:1;">
-            <div style="font-family:var(--ff-mono);font-size:0.6rem;color:var(--brand);letter-spacing:2px;">PRÓXIMO AGENDAMENTO</div>
-            <div style="font-family:var(--ff-display);font-size:1.1rem;font-weight:700;color:white;margin-top:2px;text-transform:capitalize;">${dtFmt}</div>
-            <div style="font-size:0.8rem;color:var(--text-muted);margin-top:2px;">${prox.servico || 'Serviço geral'}</div>
-          </div>
-          <div style="text-align:center;">
-            <div style="font-family:var(--ff-display);font-size:1.6rem;font-weight:800;color:var(--brand);line-height:1;">${dias}</div>
-            <div style="font-family:var(--ff-mono);font-size:0.6rem;color:var(--text-muted);letter-spacing:1px;">dia${dias===1?'':'s'}</div>
-          </div>
-        </div>
-      </div>`;
-  }
-
-  container.innerHTML = `
-    <!-- Saudação -->
-    <div style="margin-bottom:16px;">
-      <div style="font-family:var(--ff-mono);font-size:0.6rem;color:var(--text-muted);letter-spacing:2px;">OLÁ,</div>
-      <div style="font-family:var(--ff-display);font-size:1.6rem;font-weight:700;color:white;">${_esc(cliNome.split(' ')[0] || 'Cliente')}</div>
-    </div>
-
-    ${htmlProxAgd}
-
-    <!-- Veículos -->
-    ${htmlVeics}
-
-    <!-- Dica bottom -->
-    <div style="margin-top:16px;padding:12px 14px;background:var(--surf-1);border:1px dashed var(--border);border-radius:var(--r-md);">
-      <div style="font-family:var(--ff-mono);font-size:0.65rem;color:var(--text-muted);line-height:1.5;">
-        💡 <strong style="color:var(--brand);">Dica:</strong> use a aba 🔌 OBD para conectar o scanner ao seu carro e ler em tempo real dados do motor, erros e enviar tudo à oficina.
-      </div>
-    </div>
-  `;
-}
-
-function _renderCardVeiculo(v) {
-  const km = parseInt(v.km || 0);
-  const modelo = v.modelo || 'Veículo';
-  const ano = v.ano ? ` ${v.ano}` : '';
-  const placa = v.placa || '-';
-
-  // Busca OS desse veículo (mais recente e histórico)
-  const osDesteVeic = (_osDoCliente || []).filter(o =>
-    (o.veiculoId === v.id) || ((o.placa||'').toUpperCase().replace(/[^A-Z0-9]/g,'') === (v.placa||'').toUpperCase().replace(/[^A-Z0-9]/g,''))
-  ).sort((a,b) => (b.data||'').localeCompare(a.data||''));
-
-  const ultimaOS = osDesteVeic[0];
-  const dtUltima = ultimaOS?.data || (ultimaOS?.createdAt ? new Date(ultimaOS.createdAt).toLocaleDateString('pt-BR') : null);
-  const totalGasto = osDesteVeic.filter(o => o.status==='Entregue' || o.status==='entregue').reduce((s,o) => s + (parseFloat(o.total)||0), 0);
-
-  // Último DTC lido pelo próprio cliente
-  const osComDtc = osDesteVeic.find(o => (o.dtcsCliente||[]).length > 0);
-  const dtcsAtivos = osComDtc ? (osComDtc.dtcsCliente || []) : [];
-
-  // Último snapshot OBD
-  const osComSnap = osDesteVeic.find(o => o.obdUltimoSnapshot);
-  const snap = osComSnap?.obdUltimoSnapshot;
-
-  // Cronograma de manutenção — calcula quanto falta pra cada item
-  const manutCards = _MANUT_PADRAO_KM.map(m => {
-    // Busca serviço do mesmo tipo no histórico
-    const ultServ = osDesteVeic.find(o =>
-      (o.servicos||[]).some(s => _servicoCasa(s.desc, m.nome)) ||
-      (o.pecas||[]).some(p => _servicoCasa(p.desc, m.nome))
-    );
-    const kmUltServ = ultServ ? parseInt(ultServ.km || 0) : 0;
-    const kmProxServ = kmUltServ > 0 ? (kmUltServ + m.cada_km) : m.cada_km;
-    const kmFaltam = kmProxServ - km;
-    let status, corBg;
-    if (kmFaltam <= 0)        { status = 'VENCIDA';  corBg = 'rgba(255,59,59,0.12)'; }
-    else if (kmFaltam <= 1500){ status = 'PRÓXIMA';  corBg = 'rgba(255,184,0,0.12)'; }
-    else                       { status = 'OK';       corBg = 'rgba(0,255,136,0.08)'; }
-
-    return `<div style="background:${corBg};border:1px solid var(--border);border-radius:var(--r-md);padding:10px 12px;display:flex;align-items:center;gap:10px;">
-      <div style="font-size:1.3rem;">${m.icon}</div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:0.8rem;font-weight:700;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${m.nome}</div>
-        <div style="font-family:var(--ff-mono);font-size:0.6rem;color:var(--text-muted);margin-top:1px;">
-          ${ultServ ? `últ: ${kmUltServ.toLocaleString('pt-BR')} km` : 'não registrada'}
-        </div>
-      </div>
-      <div style="text-align:right;">
-        <div style="font-family:var(--ff-display);font-size:0.9rem;font-weight:800;color:${m.cor};line-height:1;">
-          ${kmFaltam <= 0 ? 'VENCE!' : `${kmFaltam.toLocaleString('pt-BR')}`}
-        </div>
-        <div style="font-family:var(--ff-mono);font-size:0.55rem;color:var(--text-muted);letter-spacing:1px;">${kmFaltam>0?'km':''}</div>
-      </div>
-    </div>`;
-  }).join('');
-
-  // KPIs estilo dashboard
-  const kpiDtcs = dtcsAtivos.length;
-  const kpiStatus = kpiDtcs > 0 ? 'ATENÇÃO' : 'NORMAL';
-  const kpiStatusCor = kpiDtcs > 0 ? 'var(--warn)' : 'var(--success)';
-
-  return `
-    <div style="background:var(--surf-1);border:1px solid var(--border);border-radius:var(--r-xl);padding:18px;margin-bottom:16px;">
-
-      <!-- Cabeçalho do veículo -->
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border);">
-        <div style="width:48px;height:48px;background:var(--brand-dim);border:1px solid var(--brand);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">🚗</div>
-        <div style="flex:1;min-width:0;">
-          <div style="font-family:var(--ff-display);font-size:1.05rem;font-weight:700;color:white;">${_esc(modelo)}${_esc(ano)}</div>
-          <div style="font-family:var(--ff-mono);font-size:0.7rem;color:var(--brand);letter-spacing:2px;">${_esc(placa.toUpperCase())}</div>
-        </div>
-      </div>
-
-      <!-- 4 KPIs topo -->
-      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px;">
-        <div style="background:var(--surf-2);border:1px solid var(--border);border-radius:var(--r-md);padding:10px;">
-          <div style="font-family:var(--ff-mono);font-size:0.55rem;color:var(--text-muted);letter-spacing:1px;">STATUS DO MOTOR</div>
-          <div style="font-family:var(--ff-display);font-size:1.1rem;font-weight:800;color:${kpiStatusCor};margin-top:2px;">${kpiStatus}</div>
-        </div>
-        <div style="background:var(--surf-2);border:1px solid var(--border);border-radius:var(--r-md);padding:10px;">
-          <div style="font-family:var(--ff-mono);font-size:0.55rem;color:var(--text-muted);letter-spacing:1px;">DTCs ATIVOS</div>
-          <div style="font-family:var(--ff-display);font-size:1.1rem;font-weight:800;color:${kpiDtcs>0?'var(--danger)':'var(--success)'};margin-top:2px;">${kpiDtcs}</div>
-        </div>
-        <div style="background:var(--surf-2);border:1px solid var(--border);border-radius:var(--r-md);padding:10px;">
-          <div style="font-family:var(--ff-mono);font-size:0.55rem;color:var(--text-muted);letter-spacing:1px;">KM ATUAL</div>
-          <div style="font-family:var(--ff-display);font-size:1.1rem;font-weight:800;color:white;margin-top:2px;">${km.toLocaleString('pt-BR')}</div>
-        </div>
-        <div style="background:var(--surf-2);border:1px solid var(--border);border-radius:var(--r-md);padding:10px;">
-          <div style="font-family:var(--ff-mono);font-size:0.55rem;color:var(--text-muted);letter-spacing:1px;">TOTAL INVESTIDO</div>
-          <div style="font-family:var(--ff-display);font-size:1.1rem;font-weight:800;color:var(--brand);margin-top:2px;">${formatter.format(totalGasto)}</div>
-        </div>
-      </div>
-
-      <!-- Dados ao vivo (se tiver) -->
-      ${snap ? `
-      <div style="margin-bottom:14px;">
-        <div style="font-family:var(--ff-mono);font-size:0.6rem;color:var(--text-muted);letter-spacing:2px;margin-bottom:8px;">📡 ÚLTIMOS DADOS OBD</div>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;">
-          ${snap.rpm     ? `<div style="background:var(--surf-2);border-radius:6px;padding:8px;text-align:center;"><div style="font-size:0.55rem;color:var(--brand);font-family:var(--ff-mono);">RPM</div><div style="font-family:var(--ff-display);font-size:0.95rem;font-weight:800;color:var(--brand);">${snap.rpm}</div></div>` : ''}
-          ${snap.speed   ? `<div style="background:var(--surf-2);border-radius:6px;padding:8px;text-align:center;"><div style="font-size:0.55rem;color:var(--success);font-family:var(--ff-mono);">VEL</div><div style="font-family:var(--ff-display);font-size:0.95rem;font-weight:800;color:var(--success);">${snap.speed}km/h</div></div>` : ''}
-          ${snap.temp    ? `<div style="background:var(--surf-2);border-radius:6px;padding:8px;text-align:center;"><div style="font-size:0.55rem;color:var(--danger);font-family:var(--ff-mono);">TEMP</div><div style="font-family:var(--ff-display);font-size:0.95rem;font-weight:800;color:var(--danger);">${snap.temp}°C</div></div>` : ''}
-          ${snap.voltage ? `<div style="background:var(--surf-2);border-radius:6px;padding:8px;text-align:center;"><div style="font-size:0.55rem;color:var(--brand);font-family:var(--ff-mono);">BAT</div><div style="font-family:var(--ff-display);font-size:0.95rem;font-weight:800;color:var(--brand);">${snap.voltage}V</div></div>` : ''}
-        </div>
-      </div>` : ''}
-
-      <!-- DTCs Ativos (se tiver) -->
-      ${kpiDtcs > 0 ? `
-      <div style="background:rgba(255,59,59,0.06);border:1px solid var(--danger);border-radius:var(--r-md);padding:12px;margin-bottom:14px;">
-        <div style="font-family:var(--ff-display);font-size:0.8rem;font-weight:700;color:var(--danger);margin-bottom:8px;">⚠️ CÓDIGOS DE FALHA DETECTADOS</div>
-        ${dtcsAtivos.slice(0,3).map(d => `
-          <div style="padding:6px 0;border-top:1px solid rgba(255,59,59,0.15);display:flex;justify-content:space-between;gap:8px;">
-            <div style="flex:1;">
-              <span style="font-family:var(--ff-mono);font-weight:800;color:var(--danger);">${d.code||'?'}</span>
-              <span style="font-size:0.75rem;color:var(--text-primary);margin-left:6px;">${_esc(d.description||'')}</span>
-            </div>
-          </div>
-        `).join('')}
-        <button onclick="switchCliTab('tabIA',document.querySelectorAll('.tab-btn')[5]);document.getElementById('iaInput').value='Me explique os códigos de falha do meu veículo e o que devo fazer.';iaEnviar();" style="margin-top:10px;background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.3);color:#A78BFA;font-family:var(--ff-mono);font-size:0.68rem;padding:8px 14px;border-radius:var(--r-md);cursor:pointer;width:100%;">🤖 Perguntar ao thIAguinho</button>
-      </div>` : ''}
-
-      <!-- Última visita -->
-      ${ultimaOS ? `
-      <div style="background:var(--surf-2);border:1px solid var(--border);border-radius:var(--r-md);padding:12px;margin-bottom:14px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-          <div style="font-family:var(--ff-mono);font-size:0.6rem;color:var(--text-muted);letter-spacing:1px;">ÚLTIMA VISITA</div>
-          <div style="font-family:var(--ff-mono);font-size:0.65rem;color:var(--brand);">${dtUltima || '-'}</div>
-        </div>
-        <div style="font-size:0.82rem;color:white;line-height:1.4;">${_esc(ultimaOS.diagnostico || ultimaOS.relato || ultimaOS.desc || 'Serviço geral')}</div>
-      </div>` : ''}
-
-      <!-- Cronograma de Manutenção -->
-      <div>
-        <div style="font-family:var(--ff-display);font-size:0.9rem;font-weight:700;color:white;margin-bottom:8px;">🔧 Cronograma de Manutenção</div>
-        <div style="display:grid;grid-template-columns:1fr;gap:6px;">
-          ${manutCards}
-        </div>
-        <div style="font-family:var(--ff-mono);font-size:0.58rem;color:var(--text-muted);margin-top:6px;text-align:center;line-height:1.4;">
-          Valores estimados pela média brasileira. Converse com sua oficina para recomendações específicas do seu modelo.
-        </div>
-      </div>
-    </div>`;
-}
-
-// Compara descrição de serviço/peça com nome do item de manutenção padrão
-function _servicoCasa(descServ, nomeManut) {
-  const d = String(descServ||'').toLowerCase();
-  const n = String(nomeManut||'').toLowerCase();
-  if (n.includes('óleo')        && (d.includes('oleo') || d.includes('óleo'))) return true;
-  if (n.includes('filtro de ar')&& d.includes('ar')    && d.includes('filtro')) return true;
-  if (n.includes('combustível') && d.includes('combust')) return true;
-  if (n.includes('pastilha')    && d.includes('pastilha')) return true;
-  if (n.includes('correia')     && d.includes('correia')) return true;
-  if (n.includes('vela')        && d.includes('vela')) return true;
-  if (n.includes('fluido')      && d.includes('fluido') && d.includes('freio')) return true;
-  if (n.includes('alinhamento') && (d.includes('alinhamento') || d.includes('balanceamento'))) return true;
-  return false;
 }
 
 // 💳 RENDERIZAÇÃO FINANCEIRO
@@ -1135,117 +851,36 @@ async function iaEnviar() {
   _iaMsgUser(msg);
   const lid = _iaMsgBot('<span class="j-spinner"></span> Processando...');
 
-  const keyClaude = P?.oficina?.apiKeys?.claude || null;
-  const keyGemini = P?.oficina?.apiKeys?.gemini || P?.oficina?.geminiKey || null;
+  const key = P?.oficina?.apiKeys?.gemini || P?.oficina?.geminiKey || null;
   _iaHist.push({ role: 'user', text: msg });
 
-  if (!keyClaude && !keyGemini) {
+  if (!key) {
     _iaReplace(lid, _iaFallback(msg));
     return;
   }
 
-  // ─── CONTEXTO RICO: inclui todo histórico de O.S. do cliente, DTCs e timeline ───
-  const ossCli = _osDoCliente.length ? _osDoCliente : (P?.osDoCliente || []);
-  let ctx = `═══ DADOS DO CLIENTE ═══
-Nome: ${P?.cliente?.nome || '—'}
-Oficina: ${P?.oficina?.nomeFantasia || '—'}
-WhatsApp da oficina: ${P?.oficina?.wpp || '—'}
-
-═══ VEÍCULO(S) DO CLIENTE ═══
-`;
-  const veicsCli = (P?.veiculosDoCliente || []);
-  if (veicsCli.length) {
-    veicsCli.forEach(v => {
-      ctx += `• Placa: ${v.placa||'—'} | Modelo: ${v.modelo||'—'} | Ano: ${v.ano||'—'} | KM: ${v.km||'—'}\n`;
-    });
-  } else {
-    ctx += '(Nenhum veículo cadastrado)\n';
-  }
-
-  ctx += `\n═══ HISTÓRICO DE O.S. (${ossCli.length}) ═══\n`;
-
-  if (ossCli.length === 0) {
-    ctx += '(Cliente ainda não tem O.S. registrada)\n';
-  } else {
-    ossCli.slice(0, 10).forEach(o => {
-      const dt = o.data || (o.createdAt ? new Date(o.createdAt).toLocaleDateString('pt-BR') : '—');
-      ctx += `\n─── O.S. #${(o.id||'').slice(-6).toUpperCase()} ───
-Data: ${dt} | Status: ${o.status||'—'} | Valor: R$ ${Number(o.total||0).toFixed(2)}
-Veículo: ${o.placa||''} ${o.veiculo||''}\n`;
-      if (o.relato)      ctx += `Queixa: ${o.relato}\n`;
-      if (o.diagnostico) ctx += `Diagnóstico: ${o.diagnostico}\n`;
-
-      if (Array.isArray(o.servicos) && o.servicos.length) {
-        ctx += `Serviços: ${o.servicos.map(s=>s.desc).join(', ')}\n`;
-      }
-      if (Array.isArray(o.pecas) && o.pecas.length) {
-        ctx += `Peças trocadas: ${o.pecas.map(p=>p.desc).join(', ')}\n`;
-      }
-      if (Array.isArray(o.dtcsCliente) && o.dtcsCliente.length) {
-        ctx += `DTCs OBD: ${o.dtcsCliente.map(d=>`${d.code}(${d.description||'—'})`).join('; ')}\n`;
-      }
-      if (o.obdUltimoSnapshot) {
-        const s = o.obdUltimoSnapshot;
-        const d = [];
-        if (s.rpm) d.push(`RPM:${s.rpm}`);
-        if (s.speed) d.push(`vel:${s.speed}`);
-        if (s.temp) d.push(`temp:${s.temp}°C`);
-        if (d.length) ctx += `Último snapshot OBD: ${d.join(' | ')}\n`;
-      }
-    });
-  }
-
-  const systemPrompt = `Você é o thIAguinho — assistente virtual automotivo para o CLIENTE FINAL da oficina.
-
-REGRAS:
-1. Seja amigável, claro e objetivo. Linguagem acessível (o cliente pode não ser técnico).
-2. Use APENAS os dados do contexto abaixo. Não invente. Se não tiver a informação, diga para contatar a oficina pelo chat.
-3. Ao falar de O.S., use datas e valores reais.
-4. Para códigos OBD (DTCs), explique o que significam e quão urgente é.
-5. Sempre que indicar ação técnica, sugira ao cliente conversar com a oficina via aba CHAT.
-6. Responda em português do Brasil. HTML simples permitido (<strong>, <br>).
-
-═══ CONTEXTO ═══
-${ctx}
-═══ FIM ═══`;
+  // Contexto real das OS
+  let ctx = `Cliente: ${P?.cliente?.nome || '—'} | Oficina: ${P?.oficina?.nomeFantasia || '—'}\n`;
+  (_osDoCliente.length ? _osDoCliente : (P?.osDoCliente || [])).forEach(o => {
+    ctx += `OS #${o.id?.slice(-6)} | ${o.placa||''} ${o.veiculo||''} | Status: ${o.status||'—'} | Total: R$${o.total||0}\n`;
+    if (o.dtcsCliente?.length) ctx += `  DTCs OBD: ${o.dtcsCliente.map(d=>d.code).join(', ')}\n`;
+  });
 
   try {
-    let resp;
-    if (keyClaude) {
-      const messages = _iaHist.map(h => ({ role: h.role==='user'?'user':'assistant', content: h.text }));
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': keyClaude,
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-access': 'true'
-        },
-        body: JSON.stringify({
-          model: 'claude-3-5-haiku-20241022',
-          max_tokens: 1500,
-          system: systemPrompt,
-          messages
-        })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error?.message || 'HTTP '+res.status);
-      resp = data.content?.[0]?.text || 'Sem resposta';
-    } else {
-      const contents = _iaHist.map(h => ({ role: h.role==='user'?'user':'model', parts:[{text:h.text}] }));
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(keyGemini)}`, {
-        method: 'POST', headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ contents, systemInstruction: { parts: [{ text: systemPrompt }] } })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error?.message || 'HTTP '+res.status);
-      resp = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sem resposta';
-    }
-
+    const contents = _iaHist.map(h => ({ role: h.role==='user'?'user':'model', parts:[{text:h.text}] }));
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(key)}`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        contents,
+        systemInstruction: { parts: [{ text: `Você é o thIAguinho, assistente automotivo. Responda em português, de forma clara e amigável.\n\nCONTEXTO REAL:\n${ctx}\n\nNão invente dados. Se não souber, diga para contatar a oficina.` }] }
+      })
+    });
+    const data = await res.json();
+    const resp = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sem resposta';
     _iaHist.push({ role: 'model', text: resp });
     _iaReplace(lid, resp.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>'));
   } catch(e) {
-    _iaReplace(lid, '⚠ Erro: ' + (e.message || e) + '<br><br>' + _iaFallback(msg));
+    _iaReplace(lid, _iaFallback(msg));
   }
 }
 
@@ -1318,19 +953,6 @@ if (typeof elm327 !== 'undefined') {
     document.getElementById('btnObd').className = 'btn btn-brand';
     document.getElementById('obdAcoes').style.display = 'none';
     document.getElementById('obdLive').style.display = 'none';
-    // Se estava transmitindo, encerra automaticamente (sem ELM não tem dados).
-    if (typeof _obdTransmitirOn !== 'undefined' && _obdTransmitirOn) {
-      const osAtiva = (P?.osDoCliente||[]).find(o=>!['Entregue','Cancelado','entregue','cancelado'].includes(o.status));
-      if (osAtiva) _obdTransmitirParar(osAtiva.id);
-      const btn = document.getElementById('btnTransmitir');
-      if (btn) {
-        btn.innerHTML = '📤 TRANSMITIR AO VIVO PARA A OFICINA';
-        btn.style.background = 'linear-gradient(135deg,#00D4FF,#0080FF)';
-        btn.style.color = '#000';
-      }
-      const statusEl = document.getElementById('obdTransmitStatus');
-      if (statusEl) statusEl.style.display = 'none';
-    }
     toast('ELM327 desconectado', 'warn');
   });
   elm327.onLiveData(data => _obdRenderGauges(data));
@@ -1343,21 +965,15 @@ async function obdConectar() {
   try { await elm327.connect(); } catch(e) { toast('Erro: ' + e.message, 'err'); }
 }
 
-// Guarda os DTCs lidos localmente na memória. SÓ VÃO pro Firestore
-// quando o cliente clicar em "ENVIAR À OFICINA" (escolha explícita).
-let _obdDtcsLocais = [];
-let _obdScanLocal  = null;
-
 async function obdLerDTCs() {
   if (!elm327?.isConnected) { toast('Conecte o ELM327 primeiro.', 'warn'); return; }
   toast('Lendo erros…', 'warn');
   try {
     const [conf, pend] = await Promise.all([elm327.readDTCs(), elm327.readPendingDTCs()]);
     const todos = [...conf, ...pend.map(d=>({...d, status:'Pendente'}))];
-    _obdDtcsLocais = todos;
     _obdRenderDTCs(todos);
-    _obdAtualizarBotaoEnviar();
-    toast(todos.length === 0 ? '✅ Sem erros!' : `⚠ ${todos.length} código(s) encontrado(s) — clique em ENVIAR À OFICINA se desejar compartilhar`, todos.length===0?'ok':'warn');
+    _obdSalvarFirebase(todos);
+    toast(todos.length === 0 ? '✅ Sem erros!' : `⚠ ${todos.length} código(s) encontrado(s)`, todos.length===0?'ok':'warn');
   } catch(e) { toast('Erro: ' + e.message, 'err'); }
 }
 
@@ -1378,20 +994,6 @@ function obdToggleLive() {
     elm327.stopLiveData(); _liveOn = false;
     document.getElementById('btnLive').textContent = '📡 DADOS AO VIVO';
     document.getElementById('obdLive').style.display = 'none';
-    // Se estava transmitindo, para também (sem live data nada a transmitir)
-    if (typeof _obdTransmitirOn !== 'undefined' && _obdTransmitirOn) {
-      const osAtiva = (P?.osDoCliente||[]).find(o=>!['Entregue','Cancelado','entregue','cancelado'].includes(o.status));
-      if (osAtiva) _obdTransmitirParar(osAtiva.id);
-      const btn = document.getElementById('btnTransmitir');
-      if (btn) {
-        btn.innerHTML = '📤 TRANSMITIR AO VIVO PARA A OFICINA';
-        btn.style.background = 'linear-gradient(135deg,#00D4FF,#0080FF)';
-        btn.style.color = '#000';
-      }
-      const statusEl = document.getElementById('obdTransmitStatus');
-      if (statusEl) statusEl.style.display = 'none';
-      toast('Transmissão ao vivo encerrada.', 'warn');
-    }
   } else {
     elm327.startLiveData(['rpm','speed','temp','throttle','fuel','voltage'], 1000);
     _liveOn = true;
@@ -1406,56 +1008,16 @@ async function obdVarredura() {
   try {
     const scan = await elm327.fullScan();
     const todos = [...scan.dtcs, ...scan.pending];
-    _obdDtcsLocais = todos;
-    _obdScanLocal = scan;
     _obdRenderDTCs(todos);
     if (Object.values(scan.live).some(v=>v!==null)) {
       _obdRenderGauges(scan.live);
       document.getElementById('obdLive').style.display = 'block';
     }
-    _obdAtualizarBotaoEnviar();
-    // Injeta no contexto da IA local (não vai pro Firestore ainda)
+    _obdSalvarFirebase(todos, scan);
+    // Injeta no contexto da IA
     if (todos.length) _iaHist.push({ role:'user', text:`[OBD] DTCs: ${todos.map(d=>d.code+' — '+d.description).join(' | ')}` });
-    toast('Varredura concluída! Revise os códigos e clique em ENVIAR À OFICINA se quiser compartilhar.', 'ok');
+    toast('Varredura concluída!', 'ok');
   } catch(e) { toast('Erro: ' + e.message, 'err'); }
-}
-
-// Mostra/atualiza o botão "📤 ENVIAR À OFICINA" após leitura de DTCs
-function _obdAtualizarBotaoEnviar() {
-  const cnt = _obdDtcsLocais.length;
-  let btn = document.getElementById('btnEnviarDTCs');
-  if (!btn) return;
-  if (cnt > 0 || _obdScanLocal) {
-    btn.style.display = 'block';
-    btn.textContent = `📤 ENVIAR ${cnt} CÓDIGO${cnt===1?'':'S'} À OFICINA`;
-  } else {
-    btn.style.display = 'none';
-  }
-}
-
-async function obdEnviarDTCsOficina() {
-  if (!_obdDtcsLocais.length && !_obdScanLocal) {
-    toast('Faça uma leitura antes de enviar.', 'warn');
-    return;
-  }
-  const btn = document.getElementById('btnEnviarDTCs');
-  if (btn) { btn.disabled = true; btn.textContent = '⏳ Enviando...'; }
-  try {
-    await _obdSalvarFirebase(_obdDtcsLocais, _obdScanLocal);
-    toast('✓ Códigos enviados à oficina. A equipe já consegue ver.', 'ok');
-    if (btn) {
-      btn.style.display = 'none';
-      btn.disabled = false;
-    }
-    _obdDtcsLocais = [];
-    _obdScanLocal = null;
-  } catch(e) {
-    toast('Erro ao enviar: ' + e.message, 'err');
-    if (btn) {
-      btn.disabled = false;
-      _obdAtualizarBotaoEnviar();
-    }
-  }
 }
 
 function _obdRenderDTCs(dtcs) {
@@ -1501,117 +1063,4 @@ async function _obdSalvarFirebase(dtcs, scan) {
     await db.collection('ordens_servico').doc(osAtiva.id).update(upd);
   } catch(e) { console.warn('Firebase OBD save:', e); }
 }
-
-/* ═══════════════════════════════════════════════════════════════════════
- * TRANSMISSÃO AO VIVO PARA A OFICINA (cliente decide quando ativar)
- * Envia snapshot dos gauges a cada 5s + heartbeat a cada 15s.
- * Para automaticamente se: cliente parar Live Mode, ELM cair, aba fechar.
- * Powered by thIAguinho Soluções Digitais
- * ═══════════════════════════════════════════════════════════════════════ */
-let _obdTransmitirOn = false;
-let _obdTransmitirTimer = null;
-let _obdTransmitirHeartbeat = null;
-
-async function obdToggleTransmissao() {
-  const btn = document.getElementById('btnTransmitir');
-  const statusEl = document.getElementById('obdTransmitStatus');
-  if (!btn) return;
-
-  if (!elm327?.isConnected) { toast('Conecte o ELM327 primeiro.', 'warn'); return; }
-  if (!_liveOn)             { toast('Ative DADOS AO VIVO antes de transmitir.', 'warn'); return; }
-  if (!P?.tenantId)         { toast('Sem O.S. ativa para transmitir.', 'warn'); return; }
-
-  const osAtiva = (P.osDoCliente||_osDoCliente).find(o=>!['Entregue','Cancelado','entregue','cancelado'].includes(o.status));
-  if (!osAtiva) { toast('Sem O.S. ativa para transmitir.', 'warn'); return; }
-
-  if (_obdTransmitirOn) {
-    _obdTransmitirParar(osAtiva.id);
-    btn.innerHTML = '📤 TRANSMITIR AO VIVO PARA A OFICINA';
-    btn.style.background = 'linear-gradient(135deg,#00D4FF,#0080FF)';
-    btn.style.color = '#000';
-    statusEl.style.display = 'none';
-    toast('Transmissão encerrada.', 'warn');
-  } else {
-    _obdTransmitirIniciar(osAtiva.id);
-    btn.innerHTML = '⏹ PARAR TRANSMISSÃO';
-    btn.style.background = 'var(--danger)';
-    btn.style.color = '#fff';
-    statusEl.style.display = 'block';
-    toast('✓ A oficina está recebendo os dados.', 'ok');
-  }
-}
-
-function _obdTransmitirIniciar(osId) {
-  _obdTransmitirOn = true;
-  _obdEnviarSnapshot(osId, { start:true }).catch(()=>{});
-  _obdTransmitirTimer = setInterval(() => {
-    if (!_obdTransmitirOn) return;
-    _obdEnviarSnapshot(osId).catch(err => console.warn('tx snapshot:', err));
-  }, 5000);
-  _obdTransmitirHeartbeat = setInterval(() => {
-    if (!_obdTransmitirOn) return;
-    db.collection('ordens_servico').doc(osId).update({
-      obdHeartbeat: new Date().toISOString()
-    }).catch(()=>{});
-  }, 15000);
-}
-
-async function _obdTransmitirParar(osId) {
-  _obdTransmitirOn = false;
-  if (_obdTransmitirTimer) { clearInterval(_obdTransmitirTimer); _obdTransmitirTimer = null; }
-  if (_obdTransmitirHeartbeat) { clearInterval(_obdTransmitirHeartbeat); _obdTransmitirHeartbeat = null; }
-  try {
-    await db.collection('ordens_servico').doc(osId).update({
-      obdTransmitindo: false,
-      obdTransmitFim: new Date().toISOString()
-    });
-  } catch(e) {}
-}
-
-async function _obdEnviarSnapshot(osId, extras = {}) {
-  const gaugesEl = document.getElementById('obdGauges');
-  if (!gaugesEl) return;
-  const snapshot = { ts: new Date().toISOString() };
-  gaugesEl.querySelectorAll('div').forEach(g => {
-    const l = g.querySelector('div:nth-child(1)')?.textContent?.trim();
-    const v = g.querySelector('div:nth-child(2)')?.textContent?.trim();
-    if (l && v && v !== '--') {
-      const key = l.toLowerCase().replace(/[^a-z0-9]/g,'');
-      if (key.includes('rpm')) snapshot.rpm = parseFloat(v);
-      else if (key.includes('velocidade')) snapshot.speed = parseFloat(v);
-      else if (key.includes('temp') && !key.includes('admis')) snapshot.temp = parseFloat(v);
-      else if (key.includes('acelerador')) snapshot.throttle = parseFloat(v);
-      else if (key.includes('combust')) snapshot.fuel = parseFloat(v);
-      else if (key.includes('bateria')) snapshot.voltage = parseFloat(v);
-    }
-  });
-
-  const payload = {
-    obdTransmitindo: true,
-    obdUltimoSnapshot: snapshot,
-    obdHeartbeat: new Date().toISOString()
-  };
-  if (extras.start) {
-    payload.obdTransmitInicio = new Date().toISOString();
-    const osAtiva = (P.osDoCliente||_osDoCliente).find(o => o.id === osId);
-    if (osAtiva) {
-      const tl = [...(osAtiva.timeline||[])];
-      tl.push({
-        dt: new Date().toISOString(),
-        user: P.cliente?.nome || 'Cliente',
-        acao: '📡 Cliente iniciou transmissão ao vivo dos dados do veículo'
-      });
-      payload.timeline = tl;
-    }
-  }
-  await db.collection('ordens_servico').doc(osId).update(payload);
-}
-
-// Se cliente sair da aba OBD ou fechar aba, para automaticamente
-window.addEventListener('beforeunload', () => {
-  if (_obdTransmitirOn) {
-    const osAtiva = (P?.osDoCliente||[]).find(o=>!['Entregue','Cancelado','entregue','cancelado'].includes(o.status));
-    if (osAtiva) { try { _obdTransmitirParar(osAtiva.id); } catch(e){} }
-  }
-});
 </script>
