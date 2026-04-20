@@ -43,6 +43,7 @@ body { overflow-y: auto; background: #060A14; color: #E8F4FF; font-family: 'Exo 
 .tab-content.active { display: block; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes spin { to { transform: rotate(360deg); } }
+@keyframes pulseLed { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:0.4;transform:scale(0.85);} }
 
 .input { width: 100%; padding: 14px 16px; background: var(--surf-2); border: 1px solid var(--border); border-radius: var(--r-md); color: #fff; font-family: var(--ff-mono); font-size: 0.9rem; transition: 0.2s; margin-bottom: 16px; }
 .input:focus { border-color: var(--brand); outline: none; background: rgba(0,212,255,0.05); }
@@ -253,9 +254,15 @@ body { overflow-y: auto; background: #060A14; color: #E8F4FF; font-family: 'Exo 
           <button class="btn btn-outline" style="font-size:0.8rem;padding:12px;" onclick="obdLerDTCs()">🔍 LER ERROS</button>
           <button class="btn btn-danger" style="font-size:0.8rem;padding:12px;" onclick="obdLimparDTCs()">🧹 LIMPAR ERROS</button>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
           <button id="btnLive" class="btn btn-outline" style="font-size:0.8rem;padding:12px;" onclick="obdToggleLive()">📡 DADOS AO VIVO</button>
           <button class="btn btn-outline" style="font-size:0.8rem;padding:12px;" onclick="obdVarredura()">📋 VARREDURA COMPLETA</button>
+        </div>
+        <!-- BOTÃO TRANSMITIR PARA A OFICINA -->
+        <button id="btnTransmitir" class="btn" style="width:100%;font-size:0.85rem;padding:13px;background:linear-gradient(135deg,#00D4FF,#0080FF);color:#000;font-family:var(--ff-display);font-weight:700;letter-spacing:1px;border:none;border-radius:var(--r-md);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;" onclick="obdToggleTransmissao()">📤 TRANSMITIR AO VIVO PARA A OFICINA</button>
+        <div id="obdTransmitStatus" style="display:none;margin-top:8px;padding:10px 14px;background:rgba(0,255,136,0.08);border:1px solid var(--success);border-radius:var(--r-md);font-family:var(--ff-mono);font-size:0.7rem;color:var(--success);text-align:center;">
+          <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--success);box-shadow:0 0 8px var(--success);margin-right:6px;animation:pulseLed 1s infinite;"></span>
+          <span id="obdTransmitTxt">TRANSMITINDO — a oficina está vendo seus dados</span>
         </div>
       </div>
       <!-- DTCs -->
@@ -851,36 +858,117 @@ async function iaEnviar() {
   _iaMsgUser(msg);
   const lid = _iaMsgBot('<span class="j-spinner"></span> Processando...');
 
-  const key = P?.oficina?.apiKeys?.gemini || P?.oficina?.geminiKey || null;
+  const keyClaude = P?.oficina?.apiKeys?.claude || null;
+  const keyGemini = P?.oficina?.apiKeys?.gemini || P?.oficina?.geminiKey || null;
   _iaHist.push({ role: 'user', text: msg });
 
-  if (!key) {
+  if (!keyClaude && !keyGemini) {
     _iaReplace(lid, _iaFallback(msg));
     return;
   }
 
-  // Contexto real das OS
-  let ctx = `Cliente: ${P?.cliente?.nome || '—'} | Oficina: ${P?.oficina?.nomeFantasia || '—'}\n`;
-  (_osDoCliente.length ? _osDoCliente : (P?.osDoCliente || [])).forEach(o => {
-    ctx += `OS #${o.id?.slice(-6)} | ${o.placa||''} ${o.veiculo||''} | Status: ${o.status||'—'} | Total: R$${o.total||0}\n`;
-    if (o.dtcsCliente?.length) ctx += `  DTCs OBD: ${o.dtcsCliente.map(d=>d.code).join(', ')}\n`;
-  });
+  // ─── CONTEXTO RICO: inclui todo histórico de O.S. do cliente, DTCs e timeline ───
+  const ossCli = _osDoCliente.length ? _osDoCliente : (P?.osDoCliente || []);
+  let ctx = `═══ DADOS DO CLIENTE ═══
+Nome: ${P?.cliente?.nome || '—'}
+Oficina: ${P?.oficina?.nomeFantasia || '—'}
+WhatsApp da oficina: ${P?.oficina?.wpp || '—'}
+
+═══ VEÍCULO(S) DO CLIENTE ═══
+`;
+  const veicsCli = (P?.veiculosDoCliente || []);
+  if (veicsCli.length) {
+    veicsCli.forEach(v => {
+      ctx += `• Placa: ${v.placa||'—'} | Modelo: ${v.modelo||'—'} | Ano: ${v.ano||'—'} | KM: ${v.km||'—'}\n`;
+    });
+  } else {
+    ctx += '(Nenhum veículo cadastrado)\n';
+  }
+
+  ctx += `\n═══ HISTÓRICO DE O.S. (${ossCli.length}) ═══\n`;
+
+  if (ossCli.length === 0) {
+    ctx += '(Cliente ainda não tem O.S. registrada)\n';
+  } else {
+    ossCli.slice(0, 10).forEach(o => {
+      const dt = o.data || (o.createdAt ? new Date(o.createdAt).toLocaleDateString('pt-BR') : '—');
+      ctx += `\n─── O.S. #${(o.id||'').slice(-6).toUpperCase()} ───
+Data: ${dt} | Status: ${o.status||'—'} | Valor: R$ ${Number(o.total||0).toFixed(2)}
+Veículo: ${o.placa||''} ${o.veiculo||''}\n`;
+      if (o.relato)      ctx += `Queixa: ${o.relato}\n`;
+      if (o.diagnostico) ctx += `Diagnóstico: ${o.diagnostico}\n`;
+
+      if (Array.isArray(o.servicos) && o.servicos.length) {
+        ctx += `Serviços: ${o.servicos.map(s=>s.desc).join(', ')}\n`;
+      }
+      if (Array.isArray(o.pecas) && o.pecas.length) {
+        ctx += `Peças trocadas: ${o.pecas.map(p=>p.desc).join(', ')}\n`;
+      }
+      if (Array.isArray(o.dtcsCliente) && o.dtcsCliente.length) {
+        ctx += `DTCs OBD: ${o.dtcsCliente.map(d=>`${d.code}(${d.description||'—'})`).join('; ')}\n`;
+      }
+      if (o.obdUltimoSnapshot) {
+        const s = o.obdUltimoSnapshot;
+        const d = [];
+        if (s.rpm) d.push(`RPM:${s.rpm}`);
+        if (s.speed) d.push(`vel:${s.speed}`);
+        if (s.temp) d.push(`temp:${s.temp}°C`);
+        if (d.length) ctx += `Último snapshot OBD: ${d.join(' | ')}\n`;
+      }
+    });
+  }
+
+  const systemPrompt = `Você é o thIAguinho — assistente virtual automotivo para o CLIENTE FINAL da oficina.
+
+REGRAS:
+1. Seja amigável, claro e objetivo. Linguagem acessível (o cliente pode não ser técnico).
+2. Use APENAS os dados do contexto abaixo. Não invente. Se não tiver a informação, diga para contatar a oficina pelo chat.
+3. Ao falar de O.S., use datas e valores reais.
+4. Para códigos OBD (DTCs), explique o que significam e quão urgente é.
+5. Sempre que indicar ação técnica, sugira ao cliente conversar com a oficina via aba CHAT.
+6. Responda em português do Brasil. HTML simples permitido (<strong>, <br>).
+
+═══ CONTEXTO ═══
+${ctx}
+═══ FIM ═══`;
 
   try {
-    const contents = _iaHist.map(h => ({ role: h.role==='user'?'user':'model', parts:[{text:h.text}] }));
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(key)}`, {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({
-        contents,
-        systemInstruction: { parts: [{ text: `Você é o thIAguinho, assistente automotivo. Responda em português, de forma clara e amigável.\n\nCONTEXTO REAL:\n${ctx}\n\nNão invente dados. Se não souber, diga para contatar a oficina.` }] }
-      })
-    });
-    const data = await res.json();
-    const resp = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sem resposta';
+    let resp;
+    if (keyClaude) {
+      const messages = _iaHist.map(h => ({ role: h.role==='user'?'user':'assistant', content: h.text }));
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': keyClaude,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: 'claude-3-5-haiku-20241022',
+          max_tokens: 1500,
+          system: systemPrompt,
+          messages
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error?.message || 'HTTP '+res.status);
+      resp = data.content?.[0]?.text || 'Sem resposta';
+    } else {
+      const contents = _iaHist.map(h => ({ role: h.role==='user'?'user':'model', parts:[{text:h.text}] }));
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(keyGemini)}`, {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ contents, systemInstruction: { parts: [{ text: systemPrompt }] } })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error?.message || 'HTTP '+res.status);
+      resp = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sem resposta';
+    }
+
     _iaHist.push({ role: 'model', text: resp });
     _iaReplace(lid, resp.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>'));
   } catch(e) {
-    _iaReplace(lid, _iaFallback(msg));
+    _iaReplace(lid, '⚠ Erro: ' + (e.message || e) + '<br><br>' + _iaFallback(msg));
   }
 }
 
@@ -953,6 +1041,19 @@ if (typeof elm327 !== 'undefined') {
     document.getElementById('btnObd').className = 'btn btn-brand';
     document.getElementById('obdAcoes').style.display = 'none';
     document.getElementById('obdLive').style.display = 'none';
+    // Se estava transmitindo, encerra automaticamente (sem ELM não tem dados).
+    if (typeof _obdTransmitirOn !== 'undefined' && _obdTransmitirOn) {
+      const osAtiva = (P?.osDoCliente||[]).find(o=>!['Entregue','Cancelado','entregue','cancelado'].includes(o.status));
+      if (osAtiva) _obdTransmitirParar(osAtiva.id);
+      const btn = document.getElementById('btnTransmitir');
+      if (btn) {
+        btn.innerHTML = '📤 TRANSMITIR AO VIVO PARA A OFICINA';
+        btn.style.background = 'linear-gradient(135deg,#00D4FF,#0080FF)';
+        btn.style.color = '#000';
+      }
+      const statusEl = document.getElementById('obdTransmitStatus');
+      if (statusEl) statusEl.style.display = 'none';
+    }
     toast('ELM327 desconectado', 'warn');
   });
   elm327.onLiveData(data => _obdRenderGauges(data));
@@ -994,6 +1095,20 @@ function obdToggleLive() {
     elm327.stopLiveData(); _liveOn = false;
     document.getElementById('btnLive').textContent = '📡 DADOS AO VIVO';
     document.getElementById('obdLive').style.display = 'none';
+    // Se estava transmitindo, para também (sem live data nada a transmitir)
+    if (typeof _obdTransmitirOn !== 'undefined' && _obdTransmitirOn) {
+      const osAtiva = (P?.osDoCliente||[]).find(o=>!['Entregue','Cancelado','entregue','cancelado'].includes(o.status));
+      if (osAtiva) _obdTransmitirParar(osAtiva.id);
+      const btn = document.getElementById('btnTransmitir');
+      if (btn) {
+        btn.innerHTML = '📤 TRANSMITIR AO VIVO PARA A OFICINA';
+        btn.style.background = 'linear-gradient(135deg,#00D4FF,#0080FF)';
+        btn.style.color = '#000';
+      }
+      const statusEl = document.getElementById('obdTransmitStatus');
+      if (statusEl) statusEl.style.display = 'none';
+      toast('Transmissão ao vivo encerrada.', 'warn');
+    }
   } else {
     elm327.startLiveData(['rpm','speed','temp','throttle','fuel','voltage'], 1000);
     _liveOn = true;
@@ -1063,4 +1178,117 @@ async function _obdSalvarFirebase(dtcs, scan) {
     await db.collection('ordens_servico').doc(osAtiva.id).update(upd);
   } catch(e) { console.warn('Firebase OBD save:', e); }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * TRANSMISSÃO AO VIVO PARA A OFICINA (cliente decide quando ativar)
+ * Envia snapshot dos gauges a cada 5s + heartbeat a cada 15s.
+ * Para automaticamente se: cliente parar Live Mode, ELM cair, aba fechar.
+ * Powered by thIAguinho Soluções Digitais
+ * ═══════════════════════════════════════════════════════════════════════ */
+let _obdTransmitirOn = false;
+let _obdTransmitirTimer = null;
+let _obdTransmitirHeartbeat = null;
+
+async function obdToggleTransmissao() {
+  const btn = document.getElementById('btnTransmitir');
+  const statusEl = document.getElementById('obdTransmitStatus');
+  if (!btn) return;
+
+  if (!elm327?.isConnected) { toast('Conecte o ELM327 primeiro.', 'warn'); return; }
+  if (!_liveOn)             { toast('Ative DADOS AO VIVO antes de transmitir.', 'warn'); return; }
+  if (!P?.tenantId)         { toast('Sem O.S. ativa para transmitir.', 'warn'); return; }
+
+  const osAtiva = (P.osDoCliente||_osDoCliente).find(o=>!['Entregue','Cancelado','entregue','cancelado'].includes(o.status));
+  if (!osAtiva) { toast('Sem O.S. ativa para transmitir.', 'warn'); return; }
+
+  if (_obdTransmitirOn) {
+    _obdTransmitirParar(osAtiva.id);
+    btn.innerHTML = '📤 TRANSMITIR AO VIVO PARA A OFICINA';
+    btn.style.background = 'linear-gradient(135deg,#00D4FF,#0080FF)';
+    btn.style.color = '#000';
+    statusEl.style.display = 'none';
+    toast('Transmissão encerrada.', 'warn');
+  } else {
+    _obdTransmitirIniciar(osAtiva.id);
+    btn.innerHTML = '⏹ PARAR TRANSMISSÃO';
+    btn.style.background = 'var(--danger)';
+    btn.style.color = '#fff';
+    statusEl.style.display = 'block';
+    toast('✓ A oficina está recebendo os dados.', 'ok');
+  }
+}
+
+function _obdTransmitirIniciar(osId) {
+  _obdTransmitirOn = true;
+  _obdEnviarSnapshot(osId, { start:true }).catch(()=>{});
+  _obdTransmitirTimer = setInterval(() => {
+    if (!_obdTransmitirOn) return;
+    _obdEnviarSnapshot(osId).catch(err => console.warn('tx snapshot:', err));
+  }, 5000);
+  _obdTransmitirHeartbeat = setInterval(() => {
+    if (!_obdTransmitirOn) return;
+    db.collection('ordens_servico').doc(osId).update({
+      obdHeartbeat: new Date().toISOString()
+    }).catch(()=>{});
+  }, 15000);
+}
+
+async function _obdTransmitirParar(osId) {
+  _obdTransmitirOn = false;
+  if (_obdTransmitirTimer) { clearInterval(_obdTransmitirTimer); _obdTransmitirTimer = null; }
+  if (_obdTransmitirHeartbeat) { clearInterval(_obdTransmitirHeartbeat); _obdTransmitirHeartbeat = null; }
+  try {
+    await db.collection('ordens_servico').doc(osId).update({
+      obdTransmitindo: false,
+      obdTransmitFim: new Date().toISOString()
+    });
+  } catch(e) {}
+}
+
+async function _obdEnviarSnapshot(osId, extras = {}) {
+  const gaugesEl = document.getElementById('obdGauges');
+  if (!gaugesEl) return;
+  const snapshot = { ts: new Date().toISOString() };
+  gaugesEl.querySelectorAll('div').forEach(g => {
+    const l = g.querySelector('div:nth-child(1)')?.textContent?.trim();
+    const v = g.querySelector('div:nth-child(2)')?.textContent?.trim();
+    if (l && v && v !== '--') {
+      const key = l.toLowerCase().replace(/[^a-z0-9]/g,'');
+      if (key.includes('rpm')) snapshot.rpm = parseFloat(v);
+      else if (key.includes('velocidade')) snapshot.speed = parseFloat(v);
+      else if (key.includes('temp') && !key.includes('admis')) snapshot.temp = parseFloat(v);
+      else if (key.includes('acelerador')) snapshot.throttle = parseFloat(v);
+      else if (key.includes('combust')) snapshot.fuel = parseFloat(v);
+      else if (key.includes('bateria')) snapshot.voltage = parseFloat(v);
+    }
+  });
+
+  const payload = {
+    obdTransmitindo: true,
+    obdUltimoSnapshot: snapshot,
+    obdHeartbeat: new Date().toISOString()
+  };
+  if (extras.start) {
+    payload.obdTransmitInicio = new Date().toISOString();
+    const osAtiva = (P.osDoCliente||_osDoCliente).find(o => o.id === osId);
+    if (osAtiva) {
+      const tl = [...(osAtiva.timeline||[])];
+      tl.push({
+        dt: new Date().toISOString(),
+        user: P.cliente?.nome || 'Cliente',
+        acao: '📡 Cliente iniciou transmissão ao vivo dos dados do veículo'
+      });
+      payload.timeline = tl;
+    }
+  }
+  await db.collection('ordens_servico').doc(osId).update(payload);
+}
+
+// Se cliente sair da aba OBD ou fechar aba, para automaticamente
+window.addEventListener('beforeunload', () => {
+  if (_obdTransmitirOn) {
+    const osAtiva = (P?.osDoCliente||[]).find(o=>!['Entregue','Cancelado','entregue','cancelado'].includes(o.status));
+    if (osAtiva) { try { _obdTransmitirParar(osAtiva.id); } catch(e){} }
+  }
+});
 </script>
