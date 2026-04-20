@@ -1279,7 +1279,12 @@ document.addEventListener('keydown', function(ev){
 // ============================================================
 // BOOTSTRAP DO SISTEMA E IA
 // ============================================================
-const J = {}; 
+// ═══════════════════════════════════════════════════════════════════
+// J — estado global da oficina. Exposto em window.J para js/ia.js
+// e outros scripts externos conseguirem ler (busca contextual etc).
+// ═══════════════════════════════════════════════════════════════════
+window.J = window.J || {};
+const J = window.J;
 const $ = id => document.getElementById(id);
 const $v = id => $(id) ? $(id).value.trim() : '';
 
