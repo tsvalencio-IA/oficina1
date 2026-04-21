@@ -208,7 +208,6 @@ body { overflow-y: auto; background: #060A14; color: #E8F4FF; font-family: 'Exo 
       <div id="renderAgdArea"></div>
     </div>
 
-    <!-- ABA IA -->
     <div id="tabIA" class="tab-content">
       <div style="background:var(--surf-1);border:1px solid rgba(167,139,250,0.25);border-radius:var(--r-xl);overflow:hidden;">
         <div style="padding:16px 20px;background:linear-gradient(135deg,rgba(167,139,250,0.1),transparent);border-bottom:1px solid rgba(167,139,250,0.2);display:flex;align-items:center;gap:12px;">
@@ -233,9 +232,7 @@ body { overflow-y: auto; background: #060A14; color: #E8F4FF; font-family: 'Exo 
       </div>
     </div>
 
-    <!-- ABA OBD -->
     <div id="tabOBD" class="tab-content">
-      <!-- Status bar -->
       <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:var(--surf-1);border:1px solid var(--border);border-radius:var(--r-xl);margin-bottom:16px;">
         <div style="display:flex;align-items:center;gap:12px;">
           <div id="obdLed" style="width:12px;height:12px;border-radius:50%;background:var(--text-muted);transition:0.4s;"></div>
@@ -247,7 +244,6 @@ body { overflow-y: auto; background: #060A14; color: #E8F4FF; font-family: 'Exo 
         <button id="btnObd" onclick="obdConectar()" class="btn btn-brand" style="width:auto;padding:10px 20px;font-size:0.8rem;">🔌 CONECTAR</button>
       </div>
       <div id="obdWarnIOS" style="display:none;padding:12px;background:var(--warn-dim);border:1px solid var(--warn);border-radius:var(--r-md);margin-bottom:12px;font-family:var(--ff-mono);font-size:0.75rem;color:var(--warn);">⚠ iOS não suporta Web Bluetooth. Use Chrome no Android ou Desktop.</div>
-      <!-- Ações -->
       <div id="obdAcoes" style="display:none;margin-bottom:16px;">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
           <button class="btn btn-outline" style="font-size:0.8rem;padding:12px;" onclick="obdLerDTCs()">🔍 LER ERROS</button>
@@ -258,14 +254,11 @@ body { overflow-y: auto; background: #060A14; color: #E8F4FF; font-family: 'Exo 
           <button class="btn btn-outline" style="font-size:0.8rem;padding:12px;" onclick="obdVarredura()">📋 VARREDURA COMPLETA</button>
         </div>
       </div>
-      <!-- DTCs -->
       <div id="obdDTCs" style="margin-bottom:16px;"></div>
-      <!-- Gauges ao vivo -->
       <div id="obdLive" style="display:none;margin-bottom:16px;">
         <div style="font-family:var(--ff-display);font-size:1rem;font-weight:700;color:white;margin-bottom:10px;">📡 Ao Vivo <span style="font-family:var(--ff-mono);font-size:0.6rem;background:var(--danger);color:white;padding:2px 8px;border-radius:10px;">● LIVE</span></div>
         <div id="obdGauges" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"></div>
       </div>
-      <!-- Log terminal -->
       <div style="background:var(--surf-1);border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;">
         <div style="padding:10px 16px;background:var(--surf-2);font-family:var(--ff-mono);font-size:0.65rem;color:var(--brand);letter-spacing:2px;">TERMINAL OBD</div>
         <div id="obdLog" style="padding:12px 16px;font-family:var(--ff-mono);font-size:0.72rem;color:var(--text-muted);max-height:160px;overflow-y:auto;line-height:1.8;"></div>
@@ -387,11 +380,17 @@ function portalLogout() {
 
 function _iniciarPortalListeners() {
   const loginUpper = document.getElementById('pLogin').value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+  
   if(P.clienteId && P.clienteId !== 'avulso') {
     db.collection('veiculos').where('tenantId', '==', P.tenantId).where('clienteId', '==', P.clienteId).onSnapshot(snap => {
         P.veiculos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         const el = document.getElementById('agdVeiculoCli');
         if (el) el.innerHTML = '<option value="">Selecione o Veículo...</option>' + P.veiculos.map(v => `<option value="${v.id}">${v.placa} - ${v.modelo}</option>`).join('');
+        
+        // CORREÇÃO: Renderiza novamente as OS para garantir que a placa apareça agora que o veículo carregou
+        if (typeof _osDoCliente !== 'undefined' && _osDoCliente.length > 0) {
+            _renderPortalOS(_osDoCliente);
+        }
       });
   }
 
@@ -400,7 +399,7 @@ function _iniciarPortalListeners() {
             const pLimpa = (d.placa || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
             return (P.clienteId !== 'avulso' && d.clienteId === P.clienteId) || (pLimpa && pLimpa === loginUpper) || (d.pin && d.pin === document.getElementById('pPin').value.trim()); 
         }).sort((a, b) => (b.updatedAt || '') > (a.updatedAt || '') ? 1 : -1);
-      _osDoCliente = osList; // contexto para IA e OBD
+      _osDoCliente = osList; 
       _renderPortalOS(osList);
     });
 
@@ -408,8 +407,6 @@ function _iniciarPortalListeners() {
       db.collection('mensagens').where('tenantId', '==', P.tenantId).where('clienteId', '==', P.clienteId).onSnapshot(snap => {
           const msgs = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b)=>(a.ts||0)-(b.ts||0)); _renderChat(msgs);
         });
-      // Financeiro: busca por tenant e filtra localmente pelas placas/nome do cliente
-      // (registros não têm clienteId — vínculo está na desc da OS)
       db.collection('financeiro').where('tenantId', '==', P.tenantId).onSnapshot(snap => {
           const todos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
           const placas = new Set(_osDoCliente.map(o=>(o.placa||'').toUpperCase().replace(/[^A-Z0-9]/g,'')).filter(Boolean));
@@ -434,19 +431,33 @@ function _iniciarPortalListeners() {
   }
 }
 
-// 🚘 RENDERIZAÇÃO DAS O.S.
+// 🚘 RENDERIZAÇÃO DAS O.S. (ATUALIZADO: FICHA REAL, FOTOS, REVISÕES E CORREÇÃO DA PLACA)
 function _renderPortalOS(osList) {
   const content = document.getElementById('renderOSArea');
   const STEPS = ['patio', 'orcamento', 'aprovacao', 'box', 'pronto', 'faturado', 'entregue'];
   const STEP_LABELS = { patio: 'Pátio', orcamento: 'Orç.', aprovacao: 'Aguard.', box: 'Serviço', pronto: 'Pronto', faturado: 'Faturado', entregue: 'Entreg.' };
   const STATUS_MAP_LEGACY = { 'Aguardando': 'patio', 'Concluido': 'entregue', 'Triagem': 'patio', 'Orcamento': 'orcamento', 'Orcamento_Enviado': 'aprovacao', 'Aprovado': 'box', 'Andamento': 'box', 'Pronto': 'pronto', 'Entregue': 'entregue', 'Cancelado': 'cancelado' };
 
-  if (!osList.length) { content.innerHTML = `<div style="text-align:center;padding:48px 20px;background:var(--surf-1);border-radius:var(--r-xl);border:1px dashed var(--border);"><div style="font-size:3rem;margin-bottom:16px">🚘</div><div style="font-family:var(--ff-display);font-size:1.3rem;font-weight:700;color:white">Nenhum veículo no pátio</div><div style="font-size:0.9rem;color:var(--text-muted);margin-top:8px">Assim que o serviço iniciar, o acompanhamento aparecerá aqui.</div></div>`; return; }
+  if (!osList.length) { content.innerHTML = `<div style="text-align:center;padding:48px 20px;background:var(--surf-1);border-radius:var(--r-xl);border:1px dashed var(--border);"><div style="font-size:3rem;margin-bottom:16px">🚘</div><div style="font-family:var(--ff-display);font-size:1.3rem;font-weight:700;color:white">Nenhum veículo no pátio</div></div>`; return; }
 
   content.innerHTML = osList.map(os => {
     let statusLimpo = STATUS_MAP_LEGACY[os.status] || (os.status||'patio').toLowerCase();
     if(!STEPS.includes(statusLimpo) && statusLimpo !== 'cancelado') statusLimpo = 'patio';
     const statusIdx = STEPS.indexOf(statusLimpo); const isConcluida = (statusLimpo === 'pronto' || statusLimpo === 'entregue' || statusLimpo === 'faturado'); const isOrcamento = (statusLimpo === 'aprovacao'); const isCancelada = (statusLimpo === 'cancelado');
+
+    // BUSCA FICHA REAL DO VEÍCULO
+    const v = P.veiculos.find(x => x.id === os.veiculoId) || {};
+
+    // ALERTA DE PRÓXIMA REVISÃO
+    const revisaoHTML = (os.proxRev || os.proxKm) ? `
+      <div style="margin: 20px; padding: 16px; background: var(--success-dim); border: 1px solid var(--success); border-radius: var(--r-md); display: flex; align-items: center; gap: 12px;">
+        <div style="font-size:1.5rem">📅</div>
+        <div style="font-size: 0.8rem; line-height: 1.4; color: var(--success);">
+            <strong>Próxima Revisão Sugerida:</strong><br>
+            ${os.proxRev ? 'Data: ' + new Date(os.proxRev).toLocaleDateString('pt-BR') : ''} 
+            ${os.proxKm ? ' | KM: ' + Number(os.proxKm).toLocaleString('pt-BR') : ''}
+        </div>
+      </div>` : '';
 
     let badgeHistorico = '';
     if (isConcluida && (os.updatedAt || os.data)) {
@@ -456,36 +467,36 @@ function _renderPortalOS(osList) {
         else { const meses = Math.floor(diasDiff / 30); badgeHistorico = `<div class="badge-historico">⏱️ Serviço realizado há <strong>${meses} ${meses>1?'meses':'mês'}</strong>. Considere revisar.</div>`; }
     }
 
-    const placaExibicao = (os.placa || 'S/PLACA').toUpperCase().replace(/[^A-Z0-9]/g, ''); const placaFormatada = placaExibicao.length === 7 ? `${placaExibicao.slice(0,3)}-${placaExibicao.slice(3)}` : placaExibicao; const kmExibicao = os.km ? Number(os.km).toLocaleString('pt-BR') : '--';
-    const stepperHTML = isCancelada ? `<div style="text-align:center;padding:24px;color:var(--danger);font-weight:700;font-family:var(--ff-display);font-size:1.4rem;letter-spacing:2px;">🚫 ORDEM CANCELADA</div>` : `<div class="stepper-wrap"><div class="stepper"><div class="step-line"></div><div class="step-line-fill" style="width:${Math.max(0, (statusIdx / (STEPS.length-1)) * 90)}%"></div>${STEPS.map((s, i) => { const cls = i < statusIdx ? 'done' : i === statusIdx ? 'active' : 'pending'; const icon = i < statusIdx ? '✓' : (i + 1).toString(); return `<div class="step ${cls}"><div class="step-dot">${icon}</div><div class="step-lbl">${STEP_LABELS[s]}</div></div>`; }).join('')}</div></div>`;
-    const orcAlerta = isOrcamento ? `<div class="alerta-orcamento"><div style="font-family:var(--ff-display);font-size:1.2rem;font-weight:700;color:var(--warn);margin-bottom:6px">Orçamento Disponível</div><div style="font-size:0.9rem;color:white;margin-bottom:16px">Valor estimado: <strong style="font-size:1.3rem;">${formatter.format(os.total || 0)}</strong></div><div style="display:flex;gap:10px;flex-wrap:wrap;"><button class="btn btn-success" style="flex:1;" onclick="_aprovarOrcamento('${os.id}')">✓ APROVAR</button><button class="btn btn-outline" style="flex:1;" onclick="_negociarOrcamento('${placaFormatada}')">💬 NEGOCIAR</button><button class="btn btn-danger" style="flex:1;" onclick="_recusarOrcamento('${os.id}')">✕ RECUSAR</button></div></div>` : '';
+    // CORREÇÃO: FORMATANDO A PLACA CORRETAMENTE
+    const placaBruta = os.placa || v.placa || 'S/PLACA';
+    const placaLimpa = placaBruta.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    const placaFormatada = placaLimpa.length === 7 ? `${placaLimpa.slice(0,3)}-${placaLimpa.slice(3)}` : (placaLimpa || 'S/PLACA');
 
-    let detalheHtml = `<div class="os-details">`;
-    if (os.servicos?.length > 0 || os.pecas?.length > 0 || os.maoObra > 0) {
-      detalheHtml += `<div style="font-family:var(--ff-mono);font-size:0.65rem;color:var(--brand);letter-spacing:2px;margin-bottom:12px;">DETALHAMENTO TÉCNICO</div>`;
-      if(os.servicos) os.servicos.forEach(s => { detalheHtml += `<div class="detalhe-row"><div>🔧 ${s.desc || 'Serviço'}</div><div class="detalhe-valor">${formatter.format(s.valor || 0)}</div></div>`; });
-      else if (os.maoObra) detalheHtml += `<div class="detalhe-row"><div>🔧 Mão de Obra Geral</div><div class="detalhe-valor">${formatter.format(os.maoObra || 0)}</div></div>`;
-      if(os.pecas) os.pecas.forEach(p => { detalheHtml += `<div class="detalhe-row"><div>📦 ${p.desc || 'Peça'} (x${p.qtd||p.q||1})</div><div class="detalhe-valor" style="color:var(--success)">${formatter.format((p.qtd||p.q||1) * (p.venda||p.v||0))}</div></div>`; });
-      detalheHtml += `${os.total ? `<div style="display:flex;justify-content:space-between;align-items:center;padding-top:16px;margin-top:8px;border-top:1px dashed var(--border);"><span style="font-family:var(--ff-mono);font-size:0.75rem;color:var(--success)">VALOR FINAL APROVADO</span><span style="font-family:var(--ff-display);font-size:1.6rem;font-weight:800;color:var(--success)">${formatter.format(os.total)}</span></div>` : ''}`;
-    }
+    const kmExibicao = os.km ? Number(os.km).toLocaleString('pt-BR') : (v.km ? Number(v.km).toLocaleString('pt-BR') : '--');
+    const stepperHTML = isCancelada ? `<div style="text-align:center;padding:24px;color:var(--danger);font-weight:700;font-family:var(--ff-display);font-size:1.4rem;">🚫 CANCELADA</div>` : `<div class="stepper-wrap"><div class="stepper"><div class="step-line"></div><div class="step-line-fill" style="width:${Math.max(0, (statusIdx / (STEPS.length-1)) * 90)}%"></div>${STEPS.map((s, i) => `<div class="step ${i < statusIdx ? 'done' : i === statusIdx ? 'active' : ''}"><div class="step-dot">${i < statusIdx ? '✓' : i+1}</div><div class="step-lbl">${STEP_LABELS[s]}</div></div>`).join('')}</div></div>`;
+    const orcAlerta = isOrcamento ? `<div class="alerta-orcamento"><div style="font-family:var(--ff-display);font-size:1.2rem;font-weight:700;color:var(--warn);margin-bottom:6px">Orçamento Disponível</div><div style="font-size:0.9rem;color:white;margin-bottom:16px">Valor estimado: <strong style="font-size:1.3rem;">${formatter.format(os.total || 0)}</strong></div><div style="display:flex;gap:10px;flex-wrap:wrap;"><button class="btn btn-success" style="flex:1;" onclick="_aprovarOrcamento('${os.id}')">✓ APROVAR</button><button class="btn btn-outline" style="flex:1;" onclick="_negociarOrcamento('${placaFormatada}')">💬 NEGOCIAR</button></div></div>` : '';
 
-    const fotoHTML = (os.media?.length || os.fotos?.length) ? `<div style="margin-top:24px"><div style="font-family:var(--ff-mono);font-size:0.65rem;color:var(--brand);letter-spacing:2px;margin-bottom:8px;">GALERIA / EVIDÊNCIAS</div><div class="media-grid">${(os.media || os.fotos).map(m => (m.type !== 'video' && !m.url?.endsWith('.mp4')) ? `<div class="media-item"><img src="${m.url || m}" onclick="window.open('${m.url || m}','_blank')"></div>` : `<div class="media-item" onclick="window.open('${m.url || m}','_blank')"><div class="media-video-icon">▶️</div></div>`).join('')}</div></div>` : '';
-    const timelineHTML = (os.timeline?.length) ? `<div class="timeline-box"><div style="font-family:var(--ff-mono);font-size:0.65rem;color:var(--brand);letter-spacing:2px;margin-bottom:16px;">LINHA DO TEMPO (AUDITORIA)</div><div class="timeline">${[...os.timeline].reverse().map(tl => `<div class="tl-item"><div class="tl-date">${new Date(tl.dt).toLocaleString('pt-BR')} — ${tl.user||'Sistema'}</div><div class="tl-action">${tl.acao}</div></div>`).join('')}</div></div>` : '';
-    detalheHtml += fotoHTML + timelineHTML + `</div>`;
+    let detalheHtml = `<div class="os-details">
+        <div style="margin-bottom:15px; border-bottom: 1px solid var(--border); padding-bottom:15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div><span class="ficha-lbl">Veículo</span><span class="ficha-val">${v.modelo || os.veiculo || '—'}</span></div>
+            <div><span class="ficha-lbl">Ano / Cor</span><span class="ficha-val">${v.ano || '—'} / ${v.cor || '—'}</span></div>
+        </div>
+        <div style="margin-bottom:15px;"><span class="ficha-lbl">Diagnóstico Técnico</span><div style="font-size:0.85rem">${os.diagnostico || 'Avaliação técnica...'}</div></div>
+        <div class="media-grid">${(os.media || os.fotos || []).map(m => `<div class="media-item"><img src="${m.url || m}" onclick="window.open('${m.url || m}')"></div>`).join('')}</div>
+        <div class="timeline-box"><div class="timeline">${(os.timeline || []).reverse().map(tl => `<div class="tl-item"><div class="tl-date">${new Date(tl.dt).toLocaleString('pt-BR')}</div><div class="tl-action">${tl.acao}</div></div>`).join('')}</div></div>
+    </div>`;
 
     return `
       <div class="os-card">
         <div class="os-header-premium">
           <div class="placa-mercosul"><div class="placa-mercosul-top">BRASIL</div><div class="placa-mercosul-txt">${placaFormatada}</div></div>
-          <div class="os-km-box"><div class="os-km-val">${kmExibicao} <small style="font-size:0.7rem">KM</small></div><div class="os-km-lbl">Registrado na O.S.</div></div>
+          <div class="os-km-box"><div class="os-km-val">${kmExibicao} <small>KM</small></div><div class="os-km-lbl">Entrada</div></div>
         </div>
         <div style="padding:14px 20px; background:var(--surf-2); border-bottom:1px solid var(--border); font-size:0.85rem; color:var(--text-primary); display:flex; justify-content:space-between; align-items:center;">
-          <div><strong style="color:white">${os.veiculo || 'Veículo'}</strong></div><div style="font-family:var(--ff-mono);font-size:0.6rem;color:var(--text-muted)">OS #${os.id.slice(-6).toUpperCase()}</div>
+          <div><strong style="color:white">${v.modelo || os.veiculo || 'Veículo'}</strong></div><div style="font-family:var(--ff-mono);font-size:0.6rem;color:var(--text-muted)">OS #${os.id.slice(-6).toUpperCase()}</div>
         </div>
-        ${stepperHTML}${orcAlerta}
-        ${isConcluida ? `<div style="margin:20px;padding:20px;background:var(--success-dim);border:1px solid rgba(0,255,136,0.3);border-radius:var(--r-md);display:flex;align-items:center;gap:16px;"><div style="font-size:2rem">🎉</div><div><div style="font-family:var(--ff-display);font-size:1.3rem;font-weight:700;color:var(--success)">Pronto para Retirada!</div><div style="font-size:0.85rem;line-height:1.4;margin-top:4px;">Seu veículo foi finalizado e aguarda você.</div></div></div>` : ''}
-        ${badgeHistorico}
-        <button class="btn-toggle-detalhes" onclick="this.closest('.os-card').classList.toggle('expanded'); this.innerHTML = this.closest('.os-card').classList.contains('expanded') ? '▲ ESCONDER DETALHAMENTO' : '▼ VER DETALHAMENTO TÉCNICO'">▼ VER DETALHAMENTO TÉCNICO</button>
+        ${stepperHTML}${orcAlerta}${revisaoHTML}${badgeHistorico}
+        <button class="btn-toggle-detalhes" onclick="this.closest('.os-card').classList.toggle('expanded')">▼ VER DETALHAMENTO E FOTOS</button>
         ${detalheHtml}
       </div>`;
   }).join('');
@@ -526,16 +537,14 @@ async function _salvarAgendamentoCli() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 💬 CHAT CRM E NEGOCIAÇÃO — CORREÇÕES #1 e #3
+// 💬 CHAT CRM E NEGOCIAÇÃO
 // ═══════════════════════════════════════════════════════════════
 
 let isRecordingCli = false;
 let _mediaRecorderCli;
 let _audioChunksCli = [];
-// Estado auxiliar para a correção #3 (liberação limpa do stream)
 let _pttCliState = { stream: null, mime: '' };
 
-// ── Utilitários de escape seguro contra XSS (entradas vindas do admin) ──
 function _escapeHtmlCli(s){
   return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
@@ -543,14 +552,10 @@ function _escapeAttrCli(s){
   return String(s==null?'':s).replace(/["<>]/g,c=>({'"':'&quot;','<':'&lt;','>':'&gt;'}[c]));
 }
 
-// ── CORREÇÃO #3: CLICK-TO-RECORD ROBUSTO ──────────────────
-// Clique 1× inicia gravação, clique 2× para e envia.
-// Libera o MediaStream imediatamente no onstop (crítico mobile).
 async function _togglePttCli() {
   const btn = document.getElementById('btnPttCli');
   if (!btn) return;
 
-  // Se já está gravando, PARA e envia
   if (isRecordingCli && _mediaRecorderCli && _mediaRecorderCli.state === 'recording') {
     try { _mediaRecorderCli.stop(); } catch(e) {}
     return;
@@ -563,8 +568,6 @@ async function _togglePttCli() {
 
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
-    // Detecta o mimetype suportado (Safari iOS precisa de mp4)
     let mime = '';
     if (typeof MediaRecorder.isTypeSupported === 'function') {
       if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus'))     mime = 'audio/webm;codecs=opus';
@@ -585,7 +588,6 @@ async function _togglePttCli() {
     };
 
     _mediaRecorderCli.onstop = async () => {
-      // 1) Libera o microfone IMEDIATAMENTE
       if (_pttCliState.stream) {
         try { _pttCliState.stream.getTracks().forEach(t => { try { t.stop(); } catch(e){} }); } catch(e){}
         _pttCliState.stream = null;
@@ -674,7 +676,6 @@ function _pttCliLimpar() {
   }
 }
 
-// ── ENVIO DE ANEXO (FOTO / DOCUMENTO) — endurecido ────────
 async function _enviarArquivoPortal(input) {
   if (!input || !input.files || !input.files.length) return;
   const file = input.files[0];
@@ -714,23 +715,11 @@ async function _enviarArquivoPortal(input) {
   }
 }
 
-// ── CORREÇÃO #1: PARSING DE MÍDIA ROBUSTO ──────────────────
-// Tolera BOM, zero-width-space, NBSP, quebras de linha e case
-// inconsistente. Valida URL e escapa contra XSS.
 function _formatarMidiaChat(texto) {
   if (texto == null) return '';
-
-  // 1) Normalização (remove invisíveis que o teclado mobile insere)
-  const limpo = String(texto)
-    .replace(/\uFEFF/g, '')
-    .replace(/\u200B/g, '')
-    .replace(/\u200C/g, '')
-    .replace(/\u200D/g, '')
-    .replace(/\u00A0/g, ' ')
-    .trim();
+  const limpo = String(texto).replace(/\uFEFF/g, '').replace(/\u200B/g, '').replace(/\u200C/g, '').replace(/\u200D/g, '').replace(/\u00A0/g, ' ').trim();
   if (!limpo) return '';
 
-  // 2) Regex robusta: aceita [TAG] com espaços em volta, case-insensitive
   const match = limpo.match(/^\s*\[\s*(AUDIO|IMAGEM|ARQUIVO)\s*\]\s*([\s\S]+)$/i);
   if (!match) {
     return _escapeHtmlCli(limpo).replace(/\n/g, '<br>');
@@ -739,7 +728,6 @@ function _formatarMidiaChat(texto) {
   const tipo = match[1].toUpperCase();
   const url = match[2].trim().split(/\s+/)[0];
 
-  // 3) Valida URL real
   if (!/^https?:\/\/\S+/i.test(url)) {
     return _escapeHtmlCli(limpo).replace(/\n/g, '<br>');
   }
@@ -819,7 +807,6 @@ async function _recusarOrcamento(osId) {
 /* Powered by thIAguinho Soluções Digitais */
 </script>
 
-<!-- IA + OBD — thIAguinho -->
 <script src="elm327-service.js"></script>
 <script>
 // ── IA thIAguinho ──────────────────────────────────────────
@@ -1014,7 +1001,6 @@ async function obdVarredura() {
       document.getElementById('obdLive').style.display = 'block';
     }
     _obdSalvarFirebase(todos, scan);
-    // Injeta no contexto da IA
     if (todos.length) _iaHist.push({ role:'user', text:`[OBD] DTCs: ${todos.map(d=>d.code+' — '+d.description).join(' | ')}` });
     toast('Varredura concluída!', 'ok');
   } catch(e) { toast('Erro: ' + e.message, 'err'); }
@@ -1064,3 +1050,5 @@ async function _obdSalvarFirebase(dtcs, scan) {
   } catch(e) { console.warn('Firebase OBD save:', e); }
 }
 </script>
+</body>
+</html>
