@@ -1,6 +1,6 @@
 /**
  * JARVIS ERP — ia.js
- * Gemini AI Integration
+ * Gemini AI Integration with Advanced Auditory & History (24 months)
  *
  * Powered by thIAguinho Soluções Digitais
  */
@@ -14,12 +14,14 @@ window.iaPerguntar = async function() {
   if(window._sv) window._sv('iaInput',''); else { const el=document.getElementById('iaInput'); if(el) el.value=''; }
 
   window.adicionarMsgIA('user', msg);
-  window.adicionarMsgIA('bot', '<span class="spinner" style="display:inline-block;width:14px;height:14px;border:2px solid var(--cyan);border-right-color:transparent;border-radius:50%;animation:jspin 0.8s linear infinite;vertical-align:middle;margin-right:6px;"></span> Processando...');
+  window.adicionarMsgIA('bot', '<span class="spinner" style="display:inline-block;width:14px;height:14px;border:2px solid var(--cyan);border-right-color:transparent;border-radius:50%;animation:jspin 0.8s linear infinite;vertical-align:middle;margin-right:6px;"></span> Acessando base de dados...');
 
   const key = window.J && window.J.gemini;
   if(!key || !String(key).trim()){
     // Mensagem honesta: explica exatamente O QUE ESTÁ FALTANDO e COMO RESOLVER
-    document.getElementById('iaMsgs').lastChild?.remove();
+    const lastBotMsg = document.getElementById('iaMsgs').lastChild;
+    if(lastBotMsg) lastBotMsg.remove();
+    
     const role = (window.J && window.J.role) || '';
     let instr = '';
     if(role === 'admin' || role === 'superadmin'){
@@ -38,22 +40,65 @@ window.iaPerguntar = async function() {
   }
 
   if(!window.J || !Array.isArray(window.J.os)){
-    document.getElementById('iaMsgs').lastChild?.remove();
+    const lastBotMsg = document.getElementById('iaMsgs').lastChild;
+    if(lastBotMsg) lastBotMsg.remove();
     window.adicionarMsgIA('bot', '⚠ Base de dados ainda carregando. Aguarde alguns segundos e tente novamente.');
     return;
   }
 
-  const ctx = `Oficina: ${window.J.tnome}. Mecânicos: ${(window.J.equipe||[]).map(f=>f.nome).join(', ') || '—'}. Veículos: ${(window.J.veiculos||[]).length}. O.S. Pátio: ${(window.J.os||[]).filter(o=>!['Cancelado','Pronto','Entregue'].includes(o.status)).length}. Peças críticas: ${(window.J.estoque||[]).filter(p=>(p.qtd||0)<=(p.min||0)).map(p=>p.desc).join(', ') || 'nenhuma'}.`;
-  const histOS = (window.J.os||[]).slice(-10).map(o=>{const v=(window.J.veiculos||[]).find(x=>x.id===o.veiculoId);return `OS: ${v?.placa||o.placa||'?'}, Sts: ${o.status}, Tot: ${window.moeda ? window.moeda(o.total) : o.total}`;}).join('\n');
-  const systemPrompt = `Você é o thIAguinho, IA para gestão de oficinas.\n\nCONTEXTO:\n${ctx}\n\nÚLTIMAS O.S.:\n${histOS}\n\nResponda em português de forma técnica, direta e como um consultor sênior. Não alucine dados. Formate com tags HTML simples se necessário.\n\nPowered by thIAguinho Soluções Digitais.`;
+  // 1. INJEÇÃO DA MEMÓRIA GLOBAL DO GESTOR (Últimos 24 meses + Estoque + Contexto de Auditoria)
+  let historyContext = "BASE DE DADOS DE SERVIÇOS DA OFICINA (Últimos 24 meses):\n";
+  const limiteData = new Date();
+  limiteData.setMonth(limiteData.getMonth() - 24);
+
+  window.J.os.filter(o => {
+      const dataOS = new Date(o.createdAt || o.data || o.updatedAt || Date.now());
+      return dataOS > limiteData;
+  }).forEach(o => {
+      const v = (window.J.veiculos || []).find(x => x.id === o.veiculoId);
+      historyContext += `[OS #${o.id.slice(-5).toUpperCase()} | Placa: ${v?.placa || o.placa || 'S/P'} | Data: ${o.data || 'N/A'} | Status: ${o.status}]\n`;
+      historyContext += `- Relato/Diag: ${o.desc || 'N/A'} | ${o.diagnostico || 'N/A'}\n`;
+      if (o.pecas && o.pecas.length > 0) historyContext += `- Peças Trocadas: ${o.pecas.map(p => p.desc).join(', ')}\n`;
+      if (o.servicos && o.servicos.length > 0) historyContext += `- Serviços Executados: ${o.servicos.map(s => s.desc).join(', ')}\n`;
+      historyContext += `- Valor Total: R$ ${o.total || 0}\n\n`;
+  });
+
+  const infoOficina = `Oficina: ${window.J.tnome}. Mecânicos ativos: ${(window.J.equipe||[]).map(f=>f.nome).join(', ') || '—'}. Veículos cadastrados: ${(window.J.veiculos||[]).length}. Peças críticas (abaixo do mínimo): ${(window.J.estoque||[]).filter(p=>(p.qtd||0)<=(p.min||0)).map(p=>p.desc).join(', ') || 'nenhuma'}.`;
+
+  // 2. O PROMPT MESTRE (AUDITORIA E CONSULTORIA SÊNIOR — PADRÃO DOUTOR-IE / BOSCH PRO)
+  const systemPrompt = `Você é o thIAguinho, o JARVIS Gestor Automotivo de alto nível.
+Seu conhecimento técnico é padrão Doutor-IE e Bosch Mecânico Pro. Seu conhecimento analítico é nível Diretor Operacional SaaS.
+Você ajuda o gestor da oficina a analisar lucratividade, investigar orçamentos e AUDITAR GARANTIAS.
+
+DIRETRIZES DE AUDITORIA (EXTREMAMENTE IMPORTANTE):
+1. Utilize a "BASE DE DADOS DE SERVIÇOS" fornecida abaixo para todas as respostas referentes a veículos e clientes específicos.
+2. Se questionado sobre a quebra de uma peça ou diagnóstico de um carro (placa), VOCÊ É OBRIGADO a varrer a base de dados e verificar se essa placa já esteve na oficina e se essa peça já foi trocada anteriormente.
+3. REGRAS DE GARANTIA PADRÃO DO MERCADO BRASILEIRO:
+   - Amortecedores: 2 anos ou 50.000 km.
+   - Kits de Amortecedor (batente, coifa, coxim): 3 meses ou 10.000 km.
+   - Pastilhas e Discos de freio: 3 meses ou 5.000 km.
+   - Motor/Injeção/Sensores: 3 meses (garantia legal).
+4. ALERTE O GESTOR IMEDIATAMENTE (em negrito e destaque) caso identifique que um mecânico está pedindo para trocar algo que ainda esteja na garantia com base no histórico.
+5. Explique tecnicamente por que a peça pode ter falhado prematuramente (reincidência) citando causas-raiz prováveis para evitar prejuízos à oficina.
+6. Se for uma análise financeira ou de estoque, forneça insights diretos baseados nos dados do "Cenário Atual".
+
+Cenário Atual da Oficina: ${infoOficina}
+
+${historyContext}
+
+Responda sempre em português do Brasil, de forma clínica, técnica e sem alucinar dados não existentes na base.`;
 
   window.iaHistorico.push({role: 'user', text: msg});
 
   try {
     const contents = window.iaHistorico.map(h => ({role: h.role === 'user' ? 'user' : 'model', parts: [{text: h.text}]}));
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(key)}`, {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({contents, systemInstruction: {parts: [{text: systemPrompt}]}})
+      method: 'POST', 
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+          contents, 
+          systemInstruction: {parts: [{text: systemPrompt}]}
+      })
     });
 
     const data = await res.json();
@@ -69,10 +114,13 @@ window.iaPerguntar = async function() {
     const resp = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sem resposta';
     window.iaHistorico.push({role: 'model', text: resp});
 
-    document.getElementById('iaMsgs').lastChild?.remove();
-    window.adicionarMsgIA('bot', resp.replace(/\n/g, '<br>'));
+    const lastBotMsg = document.getElementById('iaMsgs').lastChild;
+    if(lastBotMsg) lastBotMsg.remove();
+    
+    window.adicionarMsgIA('bot', resp.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>'));
   } catch(e) {
-    document.getElementById('iaMsgs').lastChild?.remove();
+    const lastBotMsg = document.getElementById('iaMsgs').lastChild;
+    if(lastBotMsg) lastBotMsg.remove();
     window.adicionarMsgIA('bot', '⚠ Erro na IA: ' + (e.message || e));
   }
 };
