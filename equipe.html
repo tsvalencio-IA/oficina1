@@ -185,6 +185,70 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 
 /* BANNER HISTÓRICO */
 #bannerHistVeiculo{transition:all 0.2s;}
+.overlay-ia{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,0.92);
+  z-index:9999;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:16px;
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+}
+.overlay-ia.open{display:flex;animation:ia-tv-on 0.25s ease;}
+@keyframes ia-tv-on{
+  0%{opacity:0;transform:scale(0.96);}
+  60%{opacity:1;transform:scale(1.01);}
+  100%{opacity:1;transform:scale(1);}
+}
+.modal-ia{
+  background:var(--surf);
+  border:1px solid rgba(167,139,250,0.4);
+  border-radius:8px;
+  width:100%;
+  max-width:680px;
+  max-height:90vh;
+  display:flex;
+  flex-direction:column;
+  position:relative;
+  overflow:hidden;
+  box-shadow:0 0 60px rgba(167,139,250,0.2),0 0 120px rgba(167,139,250,0.08);
+}
+.modal-ia::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,transparent,#A78BFA,#00D4FF,#A78BFA,transparent);
+  animation:ia-glow 3s ease infinite;
+}
+@keyframes ia-glow{
+  0%,100%{opacity:0.6;}50%{opacity:1;}
+}
+.modal-ia-head{
+  padding:16px 20px;
+  border-bottom:1px solid rgba(167,139,250,0.2);
+  display:flex;align-items:center;justify-content:space-between;
+  background:linear-gradient(135deg,rgba(167,139,250,0.08),transparent);
+  flex-shrink:0;
+}
+.modal-ia-body{
+  flex:1;
+  overflow-y:auto;
+  padding:20px;
+  min-height:200px;
+  max-height:55vh;
+}
+.modal-ia-foot{
+  padding:14px 20px;
+  border-top:1px solid rgba(167,139,250,0.15);
+  display:flex;justify-content:flex-end;gap:8px;
+  flex-shrink:0;
+  background:rgba(0,0,0,0.2);
+}
+@media(max-width:600px){
+  .overlay-ia{padding:0;align-items:flex-end;}
+  .modal-ia{max-width:100%;border-radius:16px 16px 0 0;max-height:85vh;}
+  .modal-ia-body{max-height:50vh;}
+}
 
 @media(max-width:600px){
   .mec-kpis{grid-template-columns:1fr 1fr!important;}
@@ -323,19 +387,25 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   </div>
 </div>
 
-<!-- MODAL IA ASSIST OS -->
-<div class="overlay" id="modalIaOS">
-<div class="modal" style="max-width:600px;">
-  <div class="modal-head">
-    <div class="modal-title" style="color:#A78BFA;">🤖 thIAguinho — ASSISTENTE O.S.</div>
-    <button class="modal-close" onclick="fecharModal('modalIaOS')">✕</button>
+<!-- MODAL IA ASSIST OS — z-index 9999, sempre por cima de tudo -->
+<div class="overlay-ia" id="modalIaOS">
+<div class="modal-ia">
+  <div class="modal-ia-head">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div style="width:38px;height:38px;background:rgba(167,139,250,0.15);border:1px solid rgba(167,139,250,0.3);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">🤖</div>
+      <div>
+        <div style="font-family:var(--fd);font-size:1.1rem;font-weight:700;letter-spacing:2px;color:#A78BFA;">thIAguinho</div>
+        <div style="font-family:var(--fm);font-size:0.58rem;color:rgba(167,139,250,0.6);letter-spacing:1px;" id="iaOSSubtitle">ASSISTENTE DA O.S.</div>
+      </div>
+    </div>
+    <button onclick="fecharModalIA()" style="background:rgba(255,59,59,0.1);border:1px solid rgba(255,59,59,0.25);border-radius:6px;color:var(--danger);font-size:0.9rem;cursor:pointer;padding:6px 12px;font-family:var(--fm);font-size:0.65rem;letter-spacing:1px;">✕ FECHAR</button>
   </div>
-  <div class="modal-body" id="modalIaOSBody" style="min-height:120px;">
-    <div style="text-align:center;color:var(--muted);font-family:var(--fm);font-size:0.78rem;padding:30px 0;">Aguardando análise...</div>
+  <div class="modal-ia-body" id="modalIaOSBody">
+    <div style="text-align:center;color:var(--muted);font-family:var(--fm);font-size:0.78rem;padding:40px 0;">Aguardando análise...</div>
   </div>
-  <div class="modal-foot">
-    <button class="btn-ghost" onclick="fecharModal('modalIaOS')">FECHAR</button>
-    <button class="btn-primary" id="btnAplicarIaOS" style="background:#A78BFA;display:none;" onclick="aplicarSugestaoIA()">✓ APLICAR SUGESTÃO</button>
+  <div class="modal-ia-foot">
+    <button onclick="fecharModalIA()" style="padding:8px 18px;background:transparent;border:1px solid var(--border);border-radius:4px;color:var(--muted2);font-family:var(--fm);font-size:0.7rem;cursor:pointer;">CANCELAR</button>
+    <button id="btnAplicarIaOS" style="padding:8px 20px;background:#A78BFA;border:none;border-radius:4px;color:#000;font-family:var(--fd);font-size:0.9rem;font-weight:700;letter-spacing:1px;cursor:pointer;display:none;" onclick="aplicarSugestaoIA()">✓ APLICAR</button>
   </div>
 </div>
 </div>
@@ -895,8 +965,8 @@ async function iaRapidoOS(osId) {
   _iaOSMode = '';
   _iaOSSugestao = null;
   $('btnAplicarIaOS').style.display = 'none';
-  body.innerHTML = `<div style="display:flex;align-items:center;gap:12px;padding:24px 0;justify-content:center;"><span class="j-spinner" style="border-color:#A78BFA;border-right-color:transparent;width:18px;height:18px;border-width:2px;"></span><span style="font-family:var(--fm);font-size:0.78rem;color:#A78BFA;letter-spacing:1px;">ANALISANDO O.S. ${os.id.slice(-5).toUpperCase()}...</span></div>`;
-  abrirModal('modalIaOS');
+  body.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:40px 0;justify-content:center;"><span class="j-spinner" style="border-color:#A78BFA;border-right-color:transparent;width:28px;height:28px;border-width:3px;"></span><span style="font-family:var(--fm);font-size:0.75rem;color:#A78BFA;letter-spacing:2px;text-transform:uppercase;">ANALISANDO O.S. ${os.id.slice(-5).toUpperCase()}...</span></div>`;
+  abrirModalIA('ANÁLISE RÁPIDA — OS #' + os.id.slice(-5).toUpperCase());
 
   const prompt = `Analise esta Ordem de Serviço de oficina:\n\nVeículo: ${v.modelo||''} ${v.placa||os.placa||'S/P'} | KM: ${os.km||'N/I'}\nProblema: "${os.desc||'não informado'}"\nDiagnóstico atual: "${os.diagnostico||'não preenchido'}"\nStatus: ${os.status||''}\n\nResponda com:\n1. **Avaliação rápida** do diagnóstico atual (correto/incompleto/ausente)\n2. **Próximos passos recomendados** (lista prática)\n3. **Peças ou verificações críticas** para não esquecer\n4. **Alerta de garantia** se houver histórico relevante`;
 
@@ -1214,7 +1284,33 @@ function renderTimeline(){
     </div>`).join('');
 }
 
-function inserirProblema(txt) {
+function fecharModalIA() {
+  const el = document.getElementById('modalIaOS');
+  if (!el) return;
+  el.style.animation = 'none';
+  el.style.opacity = '0';
+  el.style.transform = 'scale(0.96)';
+  el.style.transition = 'opacity 0.15s, transform 0.15s';
+  setTimeout(() => {
+    el.classList.remove('open');
+    el.style.opacity = '';
+    el.style.transform = '';
+    el.style.transition = '';
+    el.style.animation = '';
+  }, 150);
+}
+
+function abrirModalIA(subtitulo) {
+  const el = document.getElementById('modalIaOS');
+  if (!el) return;
+  if (subtitulo) {
+    const sub = document.getElementById('iaOSSubtitle');
+    if (sub) sub.innerText = subtitulo;
+  }
+  el.classList.add('open');
+}
+
+
   const el = $('osDesc');
   if (!el) return;
   const atual = el.value.trim();
@@ -1259,8 +1355,8 @@ async function _iaConsultarOS(prompt, modo) {
   _iaOSMode = modo;
   _iaOSSugestao = null;
   $('btnAplicarIaOS').style.display = 'none';
-  body.innerHTML = `<div style="display:flex;align-items:center;gap:12px;padding:24px 0;justify-content:center;"><span class="j-spinner" style="border-color:#A78BFA;border-right-color:transparent;width:18px;height:18px;border-width:2px;"></span><span style="font-family:var(--fm);font-size:0.78rem;color:#A78BFA;letter-spacing:1px;">CONSULTANDO BASE TÉCNICA...</span></div>`;
-  abrirModal('modalIaOS');
+  body.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:40px 0;justify-content:center;"><span class="j-spinner" style="border-color:#A78BFA;border-right-color:transparent;width:28px;height:28px;border-width:3px;"></span><span style="font-family:var(--fm);font-size:0.75rem;color:#A78BFA;letter-spacing:2px;text-transform:uppercase;">CONSULTANDO BASE TÉCNICA...</span></div>`;
+  abrirModalIA(modo === 'diag' ? 'SUGESTÃO DE DIAGNÓSTICO' : modo === 'servicos' ? 'SUGESTÃO DE SERVIÇOS' : 'ANÁLISE DA O.S.');
 
   try {
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(key)}`, {
@@ -1349,7 +1445,7 @@ function aplicarSugestaoIA() {
     _iaOSSugestao.forEach(s => adicionarServico({ desc: s, valor: 0 }));
     toast(`✓ ${_iaOSSugestao.length} serviço(s) adicionado(s)`, 'ok');
   }
-  fecharModal('modalIaOS');
+  fecharModalIA();
 }
 
 
