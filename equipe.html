@@ -52,17 +52,15 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .section.active{display:block;}
 
 /* KPI ROW (mecânico) */
-.mec-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;}
+.mec-kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px;}
 .mec-kpi{background:var(--surf);border:1px solid var(--border);border-radius:3px;padding:16px;position:relative;overflow:hidden;}
 .mec-kpi::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;}
 .mec-kpi.c1::after{background:var(--cyan);}
 .mec-kpi.c2::after{background:var(--warn);}
-.mec-kpi.c3::after{background:var(--success);}
 .mec-kpi-label{font-family:var(--fm);font-size:0.58rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
 .mec-kpi-val{font-family:var(--fd);font-size:1.8rem;font-weight:700;}
 .mec-kpi.c1 .mec-kpi-val{color:var(--cyan);}
 .mec-kpi.c2 .mec-kpi-val{color:var(--warn);}
-.mec-kpi.c3 .mec-kpi-val{color:var(--success);}
 
 /* KANBAN */
 .kanban-wrap{display:flex;gap:12px;overflow-x:auto;padding-bottom:8px;align-items:flex-start;}
@@ -112,7 +110,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .btn-danger{padding:6px 12px;background:transparent;border:1px solid rgba(255,59,59,0.3);border-radius:2px;color:var(--danger);font-family:var(--fm);font-size:0.68rem;cursor:pointer;}
 .btn-success{padding:6px 12px;background:transparent;border:1px solid rgba(0,255,136,0.3);border-radius:2px;color:var(--success);font-family:var(--fm);font-size:0.68rem;cursor:pointer;}
 
-/* BOTÃO ÍCONE DO CHAT (microfone / clipe) — CORREÇÃO #2 e #3 */
+/* BOTÃO ÍCONE DO CHAT */
 .btn-chat-icon{width:40px;height:40px;min-width:40px;background:var(--surf3);border:1px solid var(--border);border-radius:3px;color:var(--cyan);font-size:1.05rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;touch-action:manipulation;user-select:none;-webkit-tap-highlight-color:transparent;}
 .btn-chat-icon:hover{border-color:var(--cyan);background:rgba(0,212,255,0.1);}
 .btn-chat-icon:active{transform:scale(0.96);}
@@ -193,7 +191,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   .tab{padding:10px 14px;font-size:0.62rem;white-space:nowrap;}
   .chat-box{height:60vh;}
   .chat-foot{padding:8px;gap:6px;flex-wrap:nowrap;}
-  .chat-foot .j-input{font-size:16px;}  /* evita zoom automático do iOS */
+  .chat-foot .j-input{font-size:16px;}
   .btn-chat-icon{width:38px;height:38px;min-width:38px;}
   .chat-foot .btn-primary{padding:8px 10px;font-size:0.72rem;}
   .modal{max-width:100%;}
@@ -228,12 +226,11 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   <div class="tab-bar">
     <div class="tab active" onclick="irTab('t-kanban',this)">🔧 PÁTIO / O.S.</div>
     <div class="tab" onclick="irTab('t-chat',this)">💬 CHAT COM ADMIN <span class="tab-badge d-none" id="chatTabBadge">0</span></div>
-    <div class="tab" onclick="irTab('t-comissao',this)">💰 MINHAS COMISSÕES</div>
+    <div class="tab" onclick="irTab('t-ia',this)">🤖 thIAguinho</div>
   </div>
 
   <div class="content">
 
-    <!-- KANBAN -->
     <div class="section active" id="t-kanban">
       <div class="mec-kpis">
         <div class="mec-kpi c1">
@@ -243,10 +240,6 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
         <div class="mec-kpi c2">
           <div class="mec-kpi-label">EM EXECUÇÃO AGORA</div>
           <div class="mec-kpi-val" id="kEmExec">0</div>
-        </div>
-        <div class="mec-kpi c3">
-          <div class="mec-kpi-label">COMISSÃO PENDENTE</div>
-          <div class="mec-kpi-val" id="kComPend">R$ 0</div>
         </div>
       </div>
 
@@ -266,7 +259,6 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
       </div>
     </div>
 
-    <!-- CHAT -->
     <div class="section" id="t-chat">
       <div class="j-card">
         <div class="j-card-header">
@@ -276,8 +268,6 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
           <div class="chat-msgs" id="chatMsgs">
             <div style="text-align:center;color:var(--muted);font-family:var(--fm);font-size:0.72rem;padding:30px;">Sem mensagens ainda</div>
           </div>
-          <!-- CORREÇÃO #2: botões de microfone e clipe adicionados -->
-          <!-- CORREÇÃO #3: click-to-record vinculado ao #btnPTTEquipe -->
           <div class="chat-foot">
             <button type="button" class="btn-chat-icon" id="btnPTTEquipe" onclick="togglePTT('btnPTTEquipe')" title="Gravar áudio" aria-label="Gravar áudio">🎤</button>
             <input type="file" id="fileInputEquipe" accept="image/*,audio/*,video/*,application/pdf,.doc,.docx,.xls,.xlsx" style="display:none" onchange="enviarArquivoChat(this)">
@@ -289,18 +279,32 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
       </div>
     </div>
 
-    <!-- COMISSÕES -->
-    <div class="section" id="t-comissao">
-      <div class="j-card">
-        <div class="j-card-header"><div class="j-card-title">MINHAS COMISSÕES</div></div>
-        <div style="padding:16px;" id="boxComissaoDetalhada"></div>
+    <div class="section" id="t-ia">
+      <div style="background:var(--surf-1);border:1px solid rgba(167,139,250,0.25);border-radius:var(--r-xl);overflow:hidden; height: 75vh; display:flex; flex-direction:column;">
+        <div style="padding:16px 20px;background:linear-gradient(135deg,rgba(167,139,250,0.1),transparent);border-bottom:1px solid rgba(167,139,250,0.2);display:flex;align-items:center;gap:12px;">
+          <div style="font-size:1.5rem;">🤖</div>
+          <div>
+            <div style="font-family:var(--fd);font-size:1.1rem;font-weight:700;color:white;">thIAguinho</div>
+            <div style="font-family:var(--fm);font-size:0.6rem;color:#A78BFA;letter-spacing:1px;">ASSISTENTE DO MECÂNICO</div>
+          </div>
+        </div>
+        <div style="padding:10px 14px;border-bottom:1px solid rgba(167,139,250,0.1);display:flex;gap:8px;flex-wrap:wrap;background:rgba(0,0,0,0.1);">
+          <span onclick="iaChip('Como resolver o código P0300?')" style="padding:6px 12px;background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.2);border-radius:20px;font-family:var(--fm);font-size:0.7rem;color:#A78BFA;cursor:pointer;">Dica de Falha (DTC)</span>
+          <span onclick="iaChip('Qual o torque do cabeçote do motor EA111?')" style="padding:6px 12px;background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.2);border-radius:20px;font-family:var(--fm);font-size:0.7rem;color:#A78BFA;cursor:pointer;">Torque EA111</span>
+        </div>
+        <div id="iaMsgs" style="flex:1;overflow-y:auto;padding:20px;background:var(--surf-0);display:flex;flex-direction:column;gap:12px;">
+          <div style="text-align:center;color:var(--text-muted);font-size:0.85rem;padding:20px;">Peça ajuda para diagnósticos, torques ou manuais.</div>
+        </div>
+        <div style="padding:14px;background:var(--surf2);border-top:1px solid rgba(167,139,250,0.2);display:flex;gap:10px;align-items:center;">
+          <input id="iaInput" class="j-input" placeholder="Pergunte ao thIAguinho..." style="margin:0;border-radius:24px;border-color:rgba(167,139,250,0.25);">
+          <button onclick="iaEnviar()" style="background:#A78BFA;border:none;border-radius:50%;width:44px;height:44px;min-width:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.1rem;color:#000;flex-shrink:0;">➤</button>
+        </div>
       </div>
     </div>
 
   </div>
 </div>
 
-<!-- MODAL OS EQUIPE -->
 <div class="overlay" id="modalOS">
 <div class="modal">
   <div class="modal-head">
@@ -347,32 +351,36 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
         <input type="number" class="j-input" id="osKm" placeholder="45000">
       </div>
     </div>
-    <div class="form-group"><label class="j-label">Defeito / Serviço Solicitado</label>
+    <div class="form-group"><label class="j-label">Defeito / Problema Relatado</label>
       <textarea class="j-textarea" id="osDesc" rows="3" placeholder="Descreva o problema..."></textarea>
     </div>
     <div class="form-group"><label class="j-label">Diagnóstico Técnico</label>
       <textarea class="j-textarea" id="osDiag" rows="2" placeholder="Diagnóstico do mecânico..."></textarea>
     </div>
+
+    <div style="background:var(--surf3);border:1px solid rgba(0,212,255,0.15);border-radius:3px;padding:14px;margin-bottom:14px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <span style="font-family:var(--fd);font-weight:700;color:var(--cyan);">SERVIÇOS A SEREM EXECUTADOS</span>
+        <button type="button" class="btn-outline" onclick="adicionarServico()">+ SERVIÇO</button>
+      </div>
+      <div id="containerServicos" style="display:flex;flex-direction:column;gap:7px;"></div>
+    </div>
+
     <div style="background:var(--surf3);border:1px solid rgba(0,255,136,0.15);border-radius:3px;padding:14px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <span style="font-family:var(--fd);font-weight:700;color:var(--success);">PEÇAS E MÃO DE OBRA</span>
+        <span style="font-family:var(--fd);font-weight:700;color:var(--success);">PEÇAS NECESSÁRIAS</span>
         <button type="button" class="btn-success" onclick="adicionarPeca()">+ PEÇA</button>
       </div>
-      <div class="form-row c2" style="margin-bottom:10px;">
-        <div><label class="j-label">Mão de Obra (R$)</label><input type="number" step="0.01" class="j-input" id="osMO" value="0" oninput="calcTotal()"></div>
-        <div></div>
-      </div>
       <div id="containerPecas" style="display:flex;flex-direction:column;gap:7px;margin-bottom:10px;"></div>
-      <div style="display:flex;justify-content:flex-end;align-items:center;gap:16px;padding:10px;background:rgba(0,255,136,0.04);border-radius:3px;border:1px dashed rgba(0,255,136,0.15);">
-        <span style="font-family:var(--fm);font-size:0.68rem;color:var(--muted)">TOTAL:</span>
-        <span style="font-family:var(--fd);font-size:1.8rem;font-weight:700;color:var(--success)">R$ <span id="totalVal">0,00</span></span>
-        <input type="hidden" id="totalHidden" value="0">
+      
+      <div class="form-row c2" style="display:none;">
+        <div><input type="number" class="j-input" id="osMO" value="0"></div>
+        <div><input type="hidden" id="totalHidden" value="0"></div>
       </div>
     </div>
   </div>
 
   <div class="tab-pane" id="tp2">
-    <!-- CORREÇÃO #4: GALERIA DE PROVAS AGORA COM BATCH UPLOAD -->
     <div style="background:var(--surf3);border:1px solid var(--border);border-radius:3px;padding:14px;margin-bottom:14px;">
       <div style="font-family:var(--fd);font-weight:700;margin-bottom:10px;color:var(--cyan);">GALERIA DE PROVAS</div>
 
@@ -381,7 +389,6 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
         <button class="btn-primary" id="btnUpload" onclick="enviarFotosBatch()" type="button">ENVIAR TODAS</button>
       </div>
 
-      <!-- Preview local — aparece só quando há fotos selecionadas antes de enviar -->
       <div id="mediaPreviewLocal" style="display:none;background:rgba(0,212,255,0.04);border:1px dashed var(--border2);border-radius:3px;padding:10px;margin-bottom:12px;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px;flex-wrap:wrap;">
           <span style="font-family:var(--fm);font-size:0.62rem;color:var(--cyan);letter-spacing:1px;">PRÉVIA — <span id="mediaPreviewCount">0</span> ARQUIVO(S) SELECIONADO(S)</span>
@@ -393,7 +400,6 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
         <div class="media-grid" id="mediaPreviewGrid"></div>
       </div>
 
-      <!-- Galeria final (arquivos já enviados) -->
       <div class="media-grid" id="mediaGrid"></div>
       <input type="hidden" id="mediaArray" value="[]">
     </div>
@@ -440,7 +446,6 @@ const J = {
   nome: sessionStorage.getItem('j_nome'),
   tnome: sessionStorage.getItem('j_tnome'),
   fid: sessionStorage.getItem('j_fid'),
-  comissao: parseFloat(sessionStorage.getItem('j_comissao')||0),
   gemini: sessionStorage.getItem('j_gemini'),
   cloudName: sessionStorage.getItem('j_cloud_name')||'dmuvm1o6m',
   cloudPreset: sessionStorage.getItem('j_cloud_preset')||'evolution'
@@ -486,16 +491,85 @@ function irTab(id,el){
   $(id)?.classList.add('active'); el?.classList.add('active');
 }
 
-const moeda = v=>'R$ '+parseFloat(v||0).toFixed(2).replace('.',',');
 const dtBr = iso=>iso?new Date(iso).toLocaleDateString('pt-BR'):'-';
 const dtHrBr = iso=>iso?new Date(iso).toLocaleString('pt-BR'):'-';
 
 // ═══════════════════════════════════════════════════════════════
-// MOTOR DE MÍDIA DO CHAT — CORREÇÕES #1, #2, #3, #4
-// Powered by thIAguinho Soluções Digitais
+// IA - thIAguinho
+// ═══════════════════════════════════════════════════════════════
+let _iaHist = [];
+
+function iaChip(txt) {
+  const el = $('iaInput');
+  if (el) el.value = txt;
+  iaEnviar();
+}
+
+$('iaInput')?.addEventListener('keydown', e => {
+  if (e.key === 'Enter') iaEnviar();
+});
+
+async function iaEnviar() {
+  const inp = $('iaInput');
+  const msg = inp?.value?.trim();
+  if (!msg) return;
+  inp.value = '';
+
+  _iaMsgUser(msg);
+  const lid = _iaMsgBot('<span class="j-spinner"></span> Pensando...');
+
+  const key = J.gemini || null;
+  _iaHist.push({ role: 'user', text: msg });
+
+  if (!key) {
+    _iaReplace(lid, 'A chave da IA não está configurada no painel administrativo.');
+    return;
+  }
+
+  try {
+    const contents = _iaHist.map(h => ({ role: h.role==='user'?'user':'model', parts:[{text:h.text}] }));
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(key)}`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        contents,
+        systemInstruction: { parts: [{ text: `Você é o thIAguinho, assistente técnico de mecânica automotiva. Auxilie o mecânico com diagramas, diagnósticos OBD, torques de motores e manuais de serviço. Seja direto, técnico e use o português do Brasil.` }] }
+      })
+    });
+    const data = await res.json();
+    const resp = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sem resposta';
+    _iaHist.push({ role: 'model', text: resp });
+    _iaReplace(lid, resp.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>'));
+  } catch(e) {
+    _iaReplace(lid, '⚠ Erro na IA: ' + e.message);
+  }
+}
+
+let _iaCnt = 0;
+function _iaMsgUser(txt) {
+  const c = $('iaMsgs'); if(!c) return;
+  if (c.children.length === 1 && c.children[0].style.textAlign === 'center') c.innerHTML = '';
+  const d = document.createElement('div');
+  d.style.cssText = 'padding:12px 16px;border-radius:12px 12px 0 12px;max-width:85%;background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.2);color:#fff;align-self:flex-end;font-size:0.9rem;word-break:break-word;margin-left:auto;';
+  d.textContent = txt; c.appendChild(d); c.scrollTop = c.scrollHeight;
+}
+function _iaMsgBot(html) {
+  const c = $('iaMsgs'); if(!c) return null;
+  const id = 'ia-' + (_iaCnt++);
+  const d = document.createElement('div'); d.id = id;
+  d.style.cssText = 'padding:12px 16px;border-radius:12px 12px 12px 0;max-width:90%;background:var(--surf2);border:1px solid rgba(167,139,250,0.15);color:var(--text);font-size:0.88rem;line-height:1.6;word-break:break-word;';
+  d.innerHTML = `<div style="font-family:var(--fm);font-size:0.6rem;color:#A78BFA;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">thIAguinho</div>${html}`;
+  c.appendChild(d); c.scrollTop = c.scrollHeight; return id;
+}
+function _iaReplace(id, html) {
+  const el = document.getElementById(id); if(!el) return;
+  el.innerHTML = `<div style="font-family:var(--fm);font-size:0.6rem;color:#A78BFA;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">thIAguinho</div>${html}`;
+  $('iaMsgs').scrollTop = 99999;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MOTOR DE MÍDIA DO CHAT
 // ═══════════════════════════════════════════════════════════════
 
-// ── Utilitários de escape seguro contra XSS ────────────────
 function _escapeHtml(s){
   return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
@@ -503,27 +577,15 @@ function _escapeAttr(s){
   return String(s==null?'':s).replace(/["<>]/g,c=>({'"':'&quot;','<':'&lt;','>':'&gt;'}[c]));
 }
 
-// ── CORREÇÃO #1: PARSING DE MÍDIA ROBUSTO ──────────────────
-// Tolera BOM, zero-width-space, NBSP, quebras de linha e maiúsculas
-// inseridas pelos teclados mobile (Gboard/iOS).
 function formatarMidiaChat(texto){
   if(texto==null) return '';
-  const limpo = String(texto)
-    .replace(/\uFEFF/g,'')
-    .replace(/\u200B/g,'')
-    .replace(/\u200C/g,'')
-    .replace(/\u200D/g,'')
-    .replace(/\u00A0/g,' ')
-    .trim();
+  const limpo = String(texto).replace(/\uFEFF/g,'').replace(/\u200B/g,'').replace(/\u200C/g,'').replace(/\u200D/g,'').replace(/\u00A0/g,' ').trim();
   if(!limpo) return '';
-
   const match = limpo.match(/^\s*\[\s*(AUDIO|IMAGEM|ARQUIVO)\s*\]\s*([\s\S]+)$/i);
   if(!match) return _escapeHtml(limpo).replace(/\n/g,'<br>');
-
   const tipo = match[1].toUpperCase();
   const url = match[2].trim().split(/\s+/)[0];
   if(!/^https?:\/\/\S+/i.test(url)) return _escapeHtml(limpo).replace(/\n/g,'<br>');
-
   const u = _escapeAttr(url);
   if(tipo==='AUDIO')   return `<audio src="${u}" controls preload="metadata" style="height:34px;max-width:220px;outline:none;display:block;"></audio>`;
   if(tipo==='IMAGEM')  return `<img src="${u}" loading="lazy" alt="imagem" style="max-width:220px;max-height:220px;border-radius:6px;cursor:zoom-in;display:block;" onclick="window.open('${u}','_blank','noopener')">`;
@@ -531,16 +593,12 @@ function formatarMidiaChat(texto){
   return _escapeHtml(limpo).replace(/\n/g,'<br>');
 }
 
-// ── CORREÇÃO #3: CLICK-TO-RECORD ROBUSTO ───────────────────
-// Clique 1× → inicia gravação (botão fica vermelho com ⏹)
-// Clique 2× → para, sobe ao Cloudinary e envia automaticamente
 let _pttState = { recorder:null, stream:null, chunks:[], btnId:null, mime:'' };
 
 async function togglePTT(btnId){
   btnId = btnId || 'btnPTTEquipe';
   const btn = $(btnId); if(!btn) return;
 
-  // Se já está gravando, PARA e envia
   if(_pttState.recorder && _pttState.recorder.state==='recording'){
     try{ _pttState.recorder.stop(); }catch(e){}
     return;
@@ -562,38 +620,21 @@ async function togglePTT(btnId){
     const recorder = mime ? new MediaRecorder(stream,{mimeType:mime}) : new MediaRecorder(stream);
 
     _pttState = { recorder, stream, chunks:[], btnId, mime: mime||'audio/webm' };
-
     recorder.ondataavailable = ev => { if(ev.data && ev.data.size>0) _pttState.chunks.push(ev.data); };
-
-    recorder.onerror = ev => {
-      toast('Erro na gravação: '+(ev?.error?.message||'desconhecido'),'err');
-      _pttLimpar();
-    };
-
+    recorder.onerror = ev => { toast('Erro na gravação: '+(ev?.error?.message||'desconhecido'),'err'); _pttLimpar(); };
     recorder.onstop = async ()=>{
-      // 1) Libera o microfone IMEDIATAMENTE (crítico no mobile)
       if(_pttState.stream){
         try{ _pttState.stream.getTracks().forEach(t=>{try{t.stop();}catch(e){}}); }catch(e){}
         _pttState.stream = null;
       }
-
       const btnEl = $(_pttState.btnId || btnId);
       if(btnEl){
-        btnEl.style.color=''; btnEl.style.background='';
-        btnEl.disabled = true;
-        btnEl.innerHTML='<span class="j-spinner"></span>';
+        btnEl.style.color=''; btnEl.style.background=''; btnEl.disabled = true; btnEl.innerHTML='<span class="j-spinner"></span>';
       }
-
       try{
-        if(!_pttState.chunks.length){
-          toast('Gravação vazia — fale algo antes de parar.','err');
-          _pttLimpar(); return;
-        }
+        if(!_pttState.chunks.length){ toast('Gravação vazia — fale algo antes de parar.','err'); _pttLimpar(); return; }
         const blob = new Blob(_pttState.chunks,{type:_pttState.mime||'audio/webm'});
-        if(blob.size < 500){
-          toast('Áudio muito curto.','err');
-          _pttLimpar(); return;
-        }
+        if(blob.size < 500){ toast('Áudio muito curto.','err'); _pttLimpar(); return; }
         const fd = new FormData();
         fd.append('file', blob, 'ptt.' + (_pttState.mime.includes('mp4')?'m4a':'webm'));
         fd.append('upload_preset', J.cloudPreset);
@@ -602,48 +643,28 @@ async function togglePTT(btnId){
         const data = await res.json();
         if(!data.secure_url) throw new Error(data?.error?.message||'Falha no upload do áudio.');
 
-        // Despacha direto para o chat da equipe
         $('chatInput').value = '[AUDIO]' + data.secure_url;
         await enviarMsg();
-
-      }catch(e){
-        toast('Erro ao enviar áudio: '+(e.message||e),'err');
-      }finally{
-        _pttLimpar();
-      }
+      }catch(e){ toast('Erro ao enviar áudio: '+(e.message||e),'err'); }finally{ _pttLimpar(); }
     };
-
     recorder.start();
-    btn.style.color='#fff';
-    btn.style.background='var(--danger)';
-    btn.innerHTML='⏹';
-    btn.title='Clique para parar e enviar';
-    btn.setAttribute('aria-pressed','true');
+    btn.style.color='#fff'; btn.style.background='var(--danger)'; btn.innerHTML='⏹';
+    btn.title='Clique para parar e enviar'; btn.setAttribute('aria-pressed','true');
     toast('🔴 Gravando... Clique ⏹ para enviar.','ok');
-
-  }catch(err){
-    toast('⚠ Permissão de microfone negada ou indisponível.','err');
-    _pttLimpar();
-  }
+  }catch(err){ toast('⚠ Permissão de microfone negada ou indisponível.','err'); _pttLimpar(); }
 }
 
 function _pttLimpar(){
   const st = _pttState;
-  if(st.stream){
-    try{ st.stream.getTracks().forEach(t=>{try{t.stop();}catch(e){}}); }catch(e){}
-  }
+  if(st.stream){ try{ st.stream.getTracks().forEach(t=>{try{t.stop();}catch(e){}}); }catch(e){} }
   const btnEl = $(st.btnId || 'btnPTTEquipe');
   if(btnEl){
-    btnEl.style.color=''; btnEl.style.background='';
-    btnEl.innerHTML='🎤';
-    btnEl.disabled = false;
-    btnEl.title='Gravar áudio';
-    btnEl.removeAttribute('aria-pressed');
+    btnEl.style.color=''; btnEl.style.background=''; btnEl.innerHTML='🎤';
+    btnEl.disabled = false; btnEl.title='Gravar áudio'; btnEl.removeAttribute('aria-pressed');
   }
   _pttState = { recorder:null, stream:null, chunks:[], btnId:null, mime:'' };
 }
 
-// ── CORREÇÃO #2: ENVIO DE ANEXO PELO CHAT DA EQUIPE ────────
 async function enviarArquivoChat(input){
   if(!input || !input.files || !input.files.length) return;
   const file = input.files[0];
@@ -663,28 +684,16 @@ async function enviarArquivoChat(input){
     const prefixo = isImg ? '[IMAGEM]' : '[ARQUIVO]';
     $('chatInput').value = prefixo + data.secure_url;
     await enviarMsg();
-
-  }catch(e){
-    toast('Erro no anexo: '+(e.message||e),'err');
-  }finally{
-    try{ input.value=''; }catch(e){}
-  }
+  }catch(e){ toast('Erro no anexo: '+(e.message||e),'err'); }finally{ try{ input.value=''; }catch(e){} }
 }
 
-// ── CORREÇÃO #4: BATCH UPLOAD DE FOTOS DA O.S. ─────────────
-// Estado local do preview antes de enviar
-let _batchOSFiles = [];  // Array de File ainda não enviados
+let _batchOSFiles = [];
 
 function previewFotosOS(input){
   if(!input || !input.files || !input.files.length){ limparPreviewOS(); return; }
-
-  // Acumula (permite bater foto, bater outra, e outra, sem perder as anteriores)
   const novos = Array.from(input.files);
   _batchOSFiles = _batchOSFiles.concat(novos);
-
-  // Libera o input para que possa selecionar/tirar mais fotos em seguida
   try{ input.value=''; }catch(e){}
-
   _renderPreviewOS();
 }
 
@@ -693,23 +702,15 @@ function _renderPreviewOS(){
   const grid = $('mediaPreviewGrid');
   const count = $('mediaPreviewCount');
   if(!wrap || !grid || !count) return;
-
   if(!_batchOSFiles.length){
-    wrap.style.display='none';
-    grid.innerHTML='';
-    count.innerText='0';
-    return;
+    wrap.style.display='none'; grid.innerHTML=''; count.innerText='0'; return;
   }
-
   wrap.style.display='block';
   count.innerText = _batchOSFiles.length;
-
   grid.innerHTML = _batchOSFiles.map((f,i)=>{
     const isVideo = /^video\//.test(f.type||'');
     const url = URL.createObjectURL(f);
-    const mediaEl = isVideo
-      ? `<video src="${url}" muted></video>`
-      : `<img src="${url}" alt="prévia">`;
+    const mediaEl = isVideo ? `<video src="${url}" muted></video>` : `<img src="${url}" alt="prévia">`;
     return `<div class="media-item" data-idx="${i}">
       ${mediaEl}
       <button class="media-del" type="button" onclick="removerFotoPreview(${i})" title="Remover">✕</button>
@@ -731,27 +732,20 @@ function limparPreviewOS(){
 }
 
 async function enviarFotosBatch(){
-  // Se o input ainda tiver seleção não capturada (caso raro), incorpora
   const fInput = $('mediaFile');
   if(fInput && fInput.files && fInput.files.length){
     _batchOSFiles = _batchOSFiles.concat(Array.from(fInput.files));
     try{ fInput.value=''; }catch(e){}
     _renderPreviewOS();
   }
+  if(!_batchOSFiles.length){ toast('Selecione ao menos uma foto.','warn'); return; }
 
-  if(!_batchOSFiles.length){
-    toast('Selecione ao menos uma foto.','warn');
-    return;
-  }
-
-  const btn = $('btnUpload');
-  const prog = $('mediaProgress');
+  const btn = $('btnUpload'); const prog = $('mediaProgress');
   if(btn){ btn.disabled=true; btn.innerText='ENVIANDO...'; }
   if(prog){ prog.style.display='inline'; prog.innerText='0/'+_batchOSFiles.length; }
 
   const total = _batchOSFiles.length;
-  const novasUrls = [];
-  let sucesso=0, falhas=0;
+  const novasUrls = []; let sucesso=0, falhas=0;
 
   for(let i=0; i<total; i++){
     const f = _batchOSFiles[i];
@@ -761,31 +755,19 @@ async function enviarFotosBatch(){
     try{
       const res = await fetch(`https://api.cloudinary.com/v1_1/${J.cloudName}/auto/upload`,{method:'POST',body:fd});
       const data = await res.json();
-      if(data && data.secure_url){
-        novasUrls.push({ url:data.secure_url, type:data.resource_type||'image' });
-        sucesso++;
-      }else{
-        falhas++;
-      }
-    }catch(e){
-      falhas++;
-    }
+      if(data && data.secure_url){ novasUrls.push({ url:data.secure_url, type:data.resource_type||'image' }); sucesso++; }else{ falhas++; }
+    }catch(e){ falhas++; }
     if(prog){ prog.innerText = (i+1)+'/'+total; }
   }
 
-  // Concatena com os já gravados (persistidos na O.S.)
   const jaSalvo = JSON.parse($('mediaArray').value||'[]');
   const final = jaSalvo.concat(novasUrls);
   $('mediaArray').value = JSON.stringify(final);
   renderMediaGrid();
-
-  // Limpa preview local
-  _batchOSFiles = [];
-  _renderPreviewOS();
+  _batchOSFiles = []; _renderPreviewOS();
 
   if(btn){ btn.disabled=false; btn.innerText='ENVIAR TODAS'; }
   if(prog){ prog.style.display='none'; prog.innerText=''; }
-
   if(sucesso && !falhas) toast(`✓ ${sucesso} arquivo(s) enviado(s). Lembre de SALVAR a O.S.`,'ok');
   else if(sucesso && falhas) toast(`⚠ ${sucesso} ok, ${falhas} falhou. Lembre de SALVAR a O.S.`,'warn');
   else toast('✕ Nenhum arquivo enviado.','err');
@@ -810,7 +792,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   db.collection('estoqueItems').where('tenantId','==',J.tid).onSnapshot(snap=>{
     dbEstoque=snap.docs.map(d=>({id:d.id,...d.data()}));
   });
-  // Chat interno (mensagens da equipe com admin)
+  
   db.collection('chat_equipe').where('tenantId','==',J.tid).onSnapshot(snap=>{
     dbMsgs=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.ts||0)-(b.ts||0));
     renderChat();
@@ -819,17 +801,12 @@ document.addEventListener('DOMContentLoaded',()=>{
     if(nLidas>0){badge.classList.remove('d-none');badge.innerText=nLidas;}
     else badge.classList.add('d-none');
   });
-  // Comissões
-  db.collection('financeiro').where('tenantId','==',J.tid).where('isComissao','==',true).where('mecId','==',J.fid||'').onSnapshot(snap=>{
-    renderComissoes(snap.docs.map(d=>({id:d.id,...d.data()})));
-  });
 });
 
 // ============================================================
 // KPIs
 // ============================================================
 function renderKPIs(){
-  // Mesmo critério do kanban: apenas OS do mecânico ou sem mecânico atribuído
   const minhas = dbOS.filter(o => !o.mecId || o.mecId === J.fid);
   const ativas = minhas.filter(o => !['Entregue','Cancelado','Concluido'].includes(o.status));
   if($('kMeusOS')) $('kMeusOS').innerText = ativas.length;
@@ -841,13 +818,10 @@ function renderKPIs(){
 // ============================================================
 function renderKanban(){
   const busca=($v('searchOS')||'').toLowerCase();
-
-  // Statuses que existem no HTML do equipe.html
   const statuses=['Aguardando','Orcamento','Aprovado','Andamento','Concluido'];
   const cols={},cnts={};
   statuses.forEach(s=>{cols[s]=[];cnts[s]=0;});
 
-  // Mapa de normalização: statuses Chevron → IDs do HTML
   const stMap={
     'Triagem':'Aguardando','triagem':'Aguardando','patio':'Aguardando',
     'Orcamento':'Orcamento','orcamento':'Orcamento',
@@ -860,7 +834,6 @@ function renderKanban(){
     'Aguardando':'Aguardando'
   };
 
-  // ✅ FILTRO: mecânico só vê suas OS + OS sem mecânico atribuído
   const minhasOS = dbOS.filter(o => {
     const st = (o.status||'').toLowerCase();
     if (st === 'cancelado') return false;
@@ -881,6 +854,7 @@ function renderKanban(){
     const cEl=$('cnt-'+s); if(cEl) cEl.innerText=cnts[s];
     const kEl=$('kb-'+s); if(!kEl) return;
     const cor = corMap[s];
+    // O Mecânico NÃO vê os valores da O.S. no kanban
     kEl.innerHTML=cols[s].sort((a,b)=>new Date(b.os.updatedAt||0)-new Date(a.os.updatedAt||0)).map(({os,v,c})=>`
       <div class="k-card" style="border-left-color:${cor}" onclick="prepOS('edit','${os.id}');abrirModal('modalOS')">
         <div class="k-placa" style="color:${cor}">${v?.placa||os.placa||'S/PLACA'}</div>
@@ -888,15 +862,13 @@ function renderKanban(){
         <div class="k-desc">${os.desc||os.relato||'Sem descrição'}</div>
         <div class="k-footer">
           <span class="k-tipo ${v?.tipo||'carro'}">${{carro:'🚗 CARRO',moto:'🏍️ MOTO',bicicleta:'🚲 BICICLETA'}[v?.tipo||'carro']||'VEÍCULO'}</span>
-          <span style="font-family:var(--fm);font-size:0.75rem;color:var(--success);font-weight:700;">${moeda(os.total)}</span>
         </div>
       </div>`).join('') || `<div style="text-align:center;padding:20px;color:var(--muted);font-family:var(--fm);font-size:0.7rem;">— Vazio —</div>`;
   });
 }
 
-
 // ============================================================
-// O.S.
+// O.S. LÓGICA DE SERVIÇOS E PEÇAS SEM PREÇOS
 // ============================================================
 function popularSelects(){
   const cOpts='<option value="">Selecione...</option>'+dbClientes.map(c=>`<option value="${c.id}">${c.nome}</option>`).join('');
@@ -913,12 +885,11 @@ function prepOS(mode,id=null){
   ['osId','osDesc','osDiag','osKm'].forEach(f=>{if($(f))$(f).value='';});
   $('osMO').value='0'; $('osTipo').value='carro'; $('osStatus').value='Aguardando';
   $('osData').value=new Date().toISOString().split('T')[0];
-  $('totalVal').innerText='0,00'; $('totalHidden').value='0';
-  $('containerPecas').innerHTML=''; $('mediaGrid').innerHTML=''; $('mediaArray').value='[]';
+  $('containerPecas').innerHTML=''; $('containerServicos').innerHTML='';
+  $('mediaGrid').innerHTML=''; $('mediaArray').value='[]';
   $('osTimeline').innerHTML=''; $('tlData').value='[]';
   $('osIdBadge').innerText='NOVA O.S.';
   ['chkPainel','chkPressao','chkCar','chkDoc'].forEach(f=>{if($(f))$(f).checked=false;});
-  // Limpa também o preview local do batch
   limparPreviewOS();
   popularSelects();
   if(mode==='edit'&&id){
@@ -941,37 +912,52 @@ function prepOS(mode,id=null){
     renderMediaGrid();
     $('tlData').value=JSON.stringify(os.timeline||[]);
     renderTimeline();
+    
     if(os.pecas) os.pecas.forEach(p=>renderPecaRow(p));
-    calcTotal();
+    if(os.servicos) os.servicos.forEach(s=>renderServicoRow(s));
   }
 }
 
+// ADICIONAR SERVIÇOS (SEM PREÇO)
+function adicionarServico(s=null){
+  const div=document.createElement('div');
+  div.style.cssText='display:flex;gap:7px;align-items:center;';
+  div.innerHTML=`
+    <input type="text" class="j-input serv-desc" placeholder="Descreva o serviço a ser feito..." value="${s?s.desc:''}" style="flex:1;">
+    <input type="hidden" class="serv-valor" value="${s?s.valor:0}">
+    <button type="button" onclick="this.parentElement.remove()" style="background:rgba(255,59,59,0.1);border:1px solid rgba(255,59,59,0.3);border-radius:2px;color:var(--danger);cursor:pointer;width:28px;height:34px;font-size:10px;">✕</button>
+  `;
+  $('containerServicos').appendChild(div);
+}
+function renderServicoRow(s){ adicionarServico(s); }
+
+// ADICIONAR PEÇAS (SEM MOSTRAR O PREÇO NO DROPDOWN)
 function adicionarPeca(){
   const div=document.createElement('div');
-  div.style.cssText='display:grid;grid-template-columns:1fr 60px 80px 28px;gap:7px;align-items:center;';
+  div.style.cssText='display:grid;grid-template-columns:1fr 60px 28px;gap:7px;align-items:center;';
   div.innerHTML=`
     <select class="j-select peca-sel" onchange="selPeca(this)">
-      <option value="">Selecionar peça...</option>
-      ${dbEstoque.filter(p=>(p.qtd||0)>0).map(p=>`<option value="${p.id}" data-v="${p.venda||0}" data-d="${p.desc||''}">[${p.qtd}un] ${p.desc} — ${moeda(p.venda)}</option>`).join('')}
+      <option value="">Selecionar peça do estoque...</option>
+      ${dbEstoque.filter(p=>(p.qtd||0)>0).map(p=>`<option value="${p.id}" data-v="${p.venda||0}" data-d="${p.desc||''}">${p.desc}</option>`).join('')}
     </select>
-    <input type="number" class="j-input peca-qtd" value="1" min="1" oninput="calcTotal()">
-    <input type="number" class="j-input peca-venda" value="0" step="0.01" oninput="calcTotal()">
-    <button type="button" onclick="this.parentElement.remove();calcTotal()" style="background:rgba(255,59,59,0.1);border:1px solid rgba(255,59,59,0.3);border-radius:2px;color:var(--danger);cursor:pointer;width:28px;height:34px;font-size:10px;">✕</button>
+    <input type="number" class="j-input peca-qtd" value="1" min="1" placeholder="Qtd">
+    <input type="hidden" class="peca-venda" value="0">
+    <button type="button" onclick="this.parentElement.remove()" style="background:rgba(255,59,59,0.1);border:1px solid rgba(255,59,59,0.3);border-radius:2px;color:var(--danger);cursor:pointer;width:28px;height:34px;font-size:10px;">✕</button>
   `;
-  $('containerPecas').appendChild(div); calcTotal();
+  $('containerPecas').appendChild(div);
 }
 
 function renderPecaRow(p){
   const div=document.createElement('div');
-  div.style.cssText='display:grid;grid-template-columns:1fr 60px 80px 28px;gap:7px;align-items:center;';
+  div.style.cssText='display:grid;grid-template-columns:1fr 60px 28px;gap:7px;align-items:center;';
   div.innerHTML=`
     <select class="j-select peca-sel" onchange="selPeca(this)">
       <option value="${p.estoqueId||''}">${p.desc||''}</option>
-      ${dbEstoque.filter(x=>(x.qtd||0)>0||x.id===p.estoqueId).map(x=>`<option value="${x.id}" data-v="${x.venda||0}" data-d="${x.desc||''}" ${x.id===p.estoqueId?'selected':''}>[${x.qtd}un] ${x.desc}</option>`).join('')}
+      ${dbEstoque.filter(x=>(x.qtd||0)>0||x.id===p.estoqueId).map(x=>`<option value="${x.id}" data-v="${x.venda||0}" data-d="${x.desc||''}" ${x.id===p.estoqueId?'selected':''}>${x.desc}</option>`).join('')}
     </select>
-    <input type="number" class="j-input peca-qtd" value="${p.qtd||1}" min="1" oninput="calcTotal()">
-    <input type="number" class="j-input peca-venda" value="${p.venda||0}" step="0.01" oninput="calcTotal()">
-    <button type="button" onclick="this.parentElement.remove();calcTotal()" style="background:rgba(255,59,59,0.1);border:1px solid rgba(255,59,59,0.3);border-radius:2px;color:var(--danger);cursor:pointer;width:28px;height:34px;font-size:10px;">✕</button>
+    <input type="number" class="j-input peca-qtd" value="${p.qtd||1}" min="1">
+    <input type="hidden" class="peca-venda" value="${p.venda||0}">
+    <button type="button" onclick="this.parentElement.remove()" style="background:rgba(255,59,59,0.1);border:1px solid rgba(255,59,59,0.3);border-radius:2px;color:var(--danger);cursor:pointer;width:28px;height:34px;font-size:10px;">✕</button>
   `;
   $('containerPecas').appendChild(div);
 }
@@ -979,34 +965,47 @@ function renderPecaRow(p){
 function selPeca(sel){
   const opt=sel.options[sel.selectedIndex];
   sel.parentElement.querySelector('.peca-venda').value=opt.dataset.v||0;
-  calcTotal();
-}
-
-function calcTotal(){
-  let t=parseFloat($v('osMO'))||0;
-  document.querySelectorAll('#containerPecas>div').forEach(r=>{
-    t+=(parseFloat(r.querySelector('.peca-qtd')?.value||0))*(parseFloat(r.querySelector('.peca-venda')?.value||0));
-  });
-  $('totalVal').innerText=t.toFixed(2).replace('.',',');
-  $('totalHidden').value=t;
 }
 
 async function salvarOS(){
   if(!$v('osCliente')||!$v('osVeiculo')){toast('⚠ Cliente e veículo obrigatórios','warn');return;}
+  
   const pecas=[];
   document.querySelectorAll('#containerPecas>div').forEach(r=>{
     const sel=r.querySelector('.peca-sel');
     const opt=sel?.options[sel?.selectedIndex];
-    pecas.push({estoqueId:sel?.value,desc:opt?.dataset.d||opt?.text||'',qtd:parseFloat(r.querySelector('.peca-qtd')?.value||1),venda:parseFloat(r.querySelector('.peca-venda')?.value||0)});
+    pecas.push({
+      estoqueId:sel?.value,
+      desc:opt?.dataset.d||opt?.text||'',
+      qtd:parseFloat(r.querySelector('.peca-qtd')?.value||1),
+      venda:parseFloat(r.querySelector('.peca-venda')?.value||0)
+    });
   });
+
+  const servicos=[];
+  document.querySelectorAll('#containerServicos>div').forEach(r=>{
+    const desc=r.querySelector('.serv-desc')?.value||'';
+    const valor=parseFloat(r.querySelector('.serv-valor')?.value||0);
+    if(desc) servicos.push({desc, valor});
+  });
+
+  // O Total é recalculado secretamente para não perder a integridade dos dados no Firebase
+  let t = parseFloat($v('osMO'))||0;
+  pecas.forEach(p => t += (p.qtd * p.venda));
+  servicos.forEach(s => t += s.valor);
+
   const tl=JSON.parse($v('tlData')||'[]');
   tl.push({dt:new Date().toISOString(),user:J.nome,acao:($v('osId')?'Editou':'Criou')+' O.S. — Status: '+$v('osStatus')});
+  
   const p={
     tenantId:J.tid,tipoVeiculo:$v('osTipo'),clienteId:$v('osCliente'),veiculoId:$v('osVeiculo'),
     mecId:J.fid,mecNome:J.nome,data:$v('osData'),km:$v('osKm'),
     desc:$v('osDesc'),diagnostico:$v('osDiag'),status:$v('osStatus'),
-    maoObra:parseFloat($v('osMO')||0),total:parseFloat($v('totalHidden')||0),
-    pecas,media:JSON.parse($('mediaArray').value||'[]'),
+    maoObra:parseFloat($v('osMO')||0),
+    total: t,
+    pecas,
+    servicos,
+    media:JSON.parse($('mediaArray').value||'[]'),
     chkComb:$v('chkComb'),chkPneuDia:$v('chkPD'),chkPneuTra:$v('chkPT'),chkObs:$v('chkObs'),
     chkPainel:$('chkPainel')?.checked,chkPressao:$('chkPressao')?.checked,
     chkCar:$('chkCar')?.checked,chkDoc:$('chkDoc')?.checked,
@@ -1018,27 +1017,6 @@ async function salvarOS(){
   toast('✓ O.S. SALVA'); fecharModal('modalOS');
 }
 
-// ============================================================
-// UPLOAD CLOUDINARY — LEGADO MANTIDO POR COMPATIBILIDADE
-// (A UI agora usa enviarFotosBatch; esta função permanece como fallback
-// caso algum código legado ainda chame uploadMedia.)
-// ============================================================
-async function uploadMedia(){
-  const f=$('mediaFile')?.files[0]; if(!f) return;
-  const btn=$('btnUpload'); btn.innerText='ENVIANDO...'; btn.disabled=true;
-  try{
-    const fd=new FormData(); fd.append('file',f); fd.append('upload_preset',J.cloudPreset);
-    const res=await fetch(`https://api.cloudinary.com/v1_1/${J.cloudName}/auto/upload`,{method:'POST',body:fd});
-    const data=await res.json();
-    if(data.secure_url){
-      const media=JSON.parse($('mediaArray').value||'[]');
-      media.push({url:data.secure_url,type:data.resource_type});
-      $('mediaArray').value=JSON.stringify(media);
-      renderMediaGrid(); toast('✓ UPLOAD OK');
-    }
-  }catch(e){toast('✕ ERRO: '+e.message,'err');}
-  btn.innerText='ENVIAR TODAS'; btn.disabled=false;
-}
 function renderMediaGrid(){
   const media=JSON.parse($('mediaArray')?.value||'[]');
   $('mediaGrid').innerHTML=media.map((m,i)=>`
@@ -1064,13 +1042,10 @@ function renderTimeline(){
 // ============================================================
 // CHAT EQUIPE ↔ ADMIN
 // ============================================================
-// CORREÇÃO #1: renderChat agora usa formatarMidiaChat() para reconhecer
-// [IMAGEM] / [AUDIO] / [ARQUIVO] com tolerância a ruído de teclado mobile.
 function renderChat(){
   const msgs=$('chatMsgs');
   if(!dbMsgs.length){msgs.innerHTML='<div style="text-align:center;color:var(--muted);font-family:var(--fm);font-size:0.72rem;padding:30px;">Sem mensagens ainda</div>';return;}
   msgs.innerHTML=dbMsgs.map(m=>{
-    // Marca lidas
     if(m.sender==='admin'&&!m.lidaEquipe&&m.para===J.fid) db.collection('chat_equipe').doc(m.id).update({lidaEquipe:true}).catch(()=>{});
     const t=m.ts?new Date(m.ts).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'';
     const side=m.sender==='equipe'?'admin':'cliente';
@@ -1091,39 +1066,6 @@ async function enviarMsg(){
 $('chatInput')?.addEventListener('keydown',e=>{
   if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); enviarMsg(); }
 });
-
-// ============================================================
-// COMISSÕES
-// ============================================================
-function renderComissoes(fins){
-  const total=fins.filter(f=>f.status==='Pendente').reduce((a,f)=>a+(f.valor||0),0);
-  const pago=fins.filter(f=>f.status==='Pago').reduce((a,f)=>a+(f.valor||0),0);
-  $('kComPend').innerText=moeda(total);
-  $('boxComissaoDetalhada').innerHTML=`
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
-      <div style="background:var(--surf3);border:1px solid rgba(0,255,136,0.2);border-radius:3px;padding:16px;text-align:center;">
-        <div style="font-family:var(--fm);font-size:0.6rem;color:var(--muted);letter-spacing:2px;margin-bottom:6px;">A RECEBER</div>
-        <div style="font-family:var(--fd);font-size:1.8rem;font-weight:700;color:var(--success)">${moeda(total)}</div>
-      </div>
-      <div style="background:var(--surf3);border:1px solid var(--border);border-radius:3px;padding:16px;text-align:center;">
-        <div style="font-family:var(--fm);font-size:0.6rem;color:var(--muted);letter-spacing:2px;margin-bottom:6px;">JÁ RECEBIDO</div>
-        <div style="font-family:var(--fd);font-size:1.8rem;font-weight:700;color:var(--muted2)">${moeda(pago)}</div>
-      </div>
-    </div>
-    <div style="font-family:var(--fd);font-size:0.9rem;font-weight:700;color:var(--muted2);letter-spacing:1px;margin-bottom:10px;">DETALHAMENTO POR O.S.</div>
-    ${fins.map(f=>`
-      <div style="background:var(--surf3);border:1px solid var(--border);border-radius:3px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;">
-        <div>
-          <div style="font-size:0.82rem;font-weight:700;">${f.desc||'-'}</div>
-          <div style="font-family:var(--fm);font-size:0.6rem;color:var(--muted)">${dtBr(f.venc)}</div>
-        </div>
-        <div style="text-align:right">
-          <div style="font-family:var(--fd);font-size:1.1rem;font-weight:700;color:${f.status==='Pago'?'var(--muted2)':'var(--success)'}">${moeda(f.valor)}</div>
-          <span class="pill ${f.status==='Pago'?'pill-gray':'pill-green'}">${f.status}</span>
-        </div>
-      </div>`).join('')||'<div style="text-align:center;color:var(--muted);font-family:var(--fm);font-size:0.75rem;padding:20px;">Nenhuma comissão registrada</div>'}
-  `;
-}
 
 /* Powered by thIAguinho Soluções Digitais */
 </script>
