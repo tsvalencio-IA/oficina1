@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JARVIS — Auditor IA (Simulador Cognitivo)</title>
+<title>JARVIS // AUDITORIA INTEGRAL IA</title>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=JetBrains+Mono:wght@400;700&family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -15,128 +15,123 @@
   --ff: 'Exo 2', sans-serif; --fm: 'JetBrains Mono', monospace; --fd: 'Rajdhani', sans-serif;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { background: var(--bg); color: var(--text); font-family: var(--ff); padding: 20px; }
+body { background: var(--bg); color: var(--text); font-family: var(--ff); padding: 20px; overflow-x: hidden; }
 .header { border-bottom: 1px solid var(--border); padding-bottom: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
 .title { font-family: var(--fd); font-size: 1.8rem; font-weight: 700; color: var(--cyan); letter-spacing: 2px; }
-.grid { display: grid; grid-template-columns: 250px 1fr; gap: 20px; align-items: start; }
-.panel { background: var(--surf); border: 1px solid var(--border); border-radius: 8px; padding: 20px; }
-.btn { width: 100%; padding: 12px; background: var(--surf2); border: 1px solid var(--border); color: var(--text); font-family: var(--fm); font-size: 0.8rem; cursor: pointer; text-align: left; margin-bottom: 10px; border-radius: 4px; transition: 0.2s; }
+.grid { display: grid; grid-template-columns: 280px 1fr; gap: 20px; align-items: start; }
+.panel { background: var(--surf); border: 1px solid var(--border); border-radius: 8px; padding: 20px; position: sticky; top: 20px; }
+.btn { width: 100%; padding: 14px; background: var(--surf2); border: 1px solid var(--border); color: var(--text); font-family: var(--fm); font-size: 0.75rem; cursor: pointer; text-align: left; margin-bottom: 10px; border-radius: 4px; transition: 0.2s; display: flex; align-items: center; gap: 10px; }
 .btn:hover, .btn.active { background: rgba(0,212,255,0.1); border-color: var(--cyan); color: var(--cyan); }
-.btn-run { background: var(--purple); color: white; text-align: center; font-weight: bold; border: none; margin-top: 20px; }
-.btn-run:hover { background: #8B5CF6; color: white; }
-.console { background: #000; border: 1px solid #333; padding: 20px; border-radius: 8px; font-family: var(--fm); font-size: 0.85rem; height: 65vh; overflow-y: auto; line-height: 1.6; }
-.log-user { color: var(--warn); margin-bottom: 10px; }
-.log-ai { color: var(--cyan); margin-bottom: 20px; padding-left: 10px; border-left: 2px solid var(--cyan); }
-.spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid var(--cyan); border-right-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite; }
+.btn-run { background: var(--purple); color: white; text-align: center; font-weight: bold; border: none; margin-top: 20px; justify-content: center; font-size: 0.85rem; }
+.btn-run:hover { background: #8B5CF6; }
+.console { background: #000; border: 1px solid #333; padding: 25px; border-radius: 8px; font-family: var(--fm); font-size: 0.85rem; min-height: 75vh; overflow-y: auto; line-height: 1.7; }
+.log-header { color: var(--cyan); border-bottom: 1px solid #222; padding-bottom: 10px; margin-bottom: 20px; font-family: var(--fd); font-size: 1.1rem; }
+.log-ai { color: var(--text); margin-bottom: 30px; padding-left: 15px; border-left: 2px solid var(--purple); background: rgba(155, 92, 246, 0.03); padding-top: 10px; padding-bottom: 10px; }
+.log-warn { color: var(--warn); background: rgba(255, 184, 0, 0.05); padding: 10px; border-radius: 4px; margin-bottom: 15px; border: 1px solid var(--warn); }
+.spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--cyan); border-right-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
+strong { color: var(--cyan); }
 </style>
 </head>
 <body>
 
 <div class="header">
-  <div class="title">JARVIS // SIMULADOR DE AUDITORIA IA</div>
-  <div style="font-family: var(--fm); font-size: 0.8rem; color: var(--muted);" id="statusConn">Conectando ao banco de dados...</div>
+  <div class="title">JARVIS // CORE AUDITOR IA</div>
+  <div style="font-family: var(--fm); font-size: 0.8rem; color: var(--muted);" id="statusConn">Sincronizando Módulos...</div>
 </div>
 
 <div class="grid">
   <div class="panel">
-    <h3 style="font-family: var(--fd); margin-bottom: 15px; color: var(--muted);">PERSONA / MÓDULO</h3>
-    <button class="btn active" id="btnAdmin" onclick="setPersona('admin', this)">👔 Gestor (jarvis.html)</button>
-    <button class="btn" id="btnMec" onclick="setPersona('mecanico', this)">🔧 Mecânico (equipe.html)</button>
-    <button class="btn" id="btnCli" onclick="setPersona('cliente', this)">📱 Cliente (cliente.html)</button>
-    <button class="btn" id="btnSys" onclick="setPersona('superadmin', this)">🛡️ Superadmin (SaaS)</button>
+    <h3 style="font-family: var(--fd); margin-bottom: 15px; color: var(--muted); font-size: 0.9rem; letter-spacing: 1px;">ALVOS DE AUDITORIA</h3>
+    <button class="btn active" onclick="setTarget('superadmin', this)">🛡️ Superadmin (SaaS Control)</button>
+    <button class="btn" onclick="setTarget('jarvis', this)">👔 Jarvis (Gestor OS/Fin)</button>
+    <button class="btn" onclick="setTarget('index', this)">🔑 Index (Segurança Login)</button>
+    <button class="btn" onclick="setTarget('equipe', this)">🔧 Equipe (Pátio/Produção)</button>
+    <button class="btn" onclick="setTarget('cliente', this)">📱 Cliente (Portal B2C)</button>
     
-    <button class="btn btn-run" onclick="runAudit()">▶ EXECUTAR AUDITORIA</button>
+    <button class="btn btn-run" onclick="runAudit()">▶ EXECUTAR ANÁLISE PROFUNDA</button>
+    <div style="margin-top: 20px; font-size: 0.65rem; color: var(--muted); line-height: 1.4;">
+        *A IA processará o código real dos seus arquivos para encontrar falhas de lógica e segurança.
+    </div>
   </div>
 
   <div class="console" id="consoleOutput">
-    <div style="color: var(--muted);">> Inicializando console de testes cognitivos...</div>
-    <div style="color: var(--muted);">> Aguardando seleção de persona e execução.</div>
+    <div style="color: var(--muted);">> Auditor pronto. Selecione um módulo para iniciar o escaneamento técnico.</div>
   </div>
 </div>
 
 <script src="js/config.js"></script>
 <script>
 const db = window.initFirebase();
-let DB_CACHE = { os: [], clientes: [], estoque: [], financeiro: [] };
-let currentPersona = 'admin';
+let currentTarget = 'superadmin';
 const tid = sessionStorage.getItem('j_tid');
 const geminiKey = sessionStorage.getItem('j_gemini');
 
 if(!tid) {
-    document.getElementById('consoleOutput').innerHTML = '<div style="color: var(--danger)">ERRO: Tenant ID não encontrado. Faça login no sistema primeiro.</div>';
+    document.getElementById('consoleOutput').innerHTML = '<div class="log-warn">ERRO CRÍTICO: Sessão não encontrada. Faça login no sistema primeiro.</div>';
 }
 
-// PRELOAD DATABASE
-db.collection('ordens_servico').where('tenantId', '==', tid).get().then(snap => DB_CACHE.os = snap.docs.map(d => d.data()));
-db.collection('clientes').where('tenantId', '==', tid).get().then(snap => DB_CACHE.clientes = snap.docs.map(d => d.data()));
-db.collection('estoqueItems').where('tenantId', '==', tid).get().then(snap => DB_CACHE.estoque = snap.docs.map(d => d.data()));
-db.collection('financeiro').where('tenantId', '==', tid).get().then(snap => {
-    DB_CACHE.financeiro = snap.docs.map(d => d.data());
-    document.getElementById('statusConn').innerText = `Banco carregado: ${DB_CACHE.os.length} OS | ${DB_CACHE.estoque.length} Peças`;
-    document.getElementById('statusConn').style.color = 'var(--success)';
-});
-
-function setPersona(persona, el) {
-  currentPersona = persona;
+function setTarget(t, el) {
+  currentTarget = t;
   document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
 }
 
-function log(text, isAi = false) {
+function log(text, isAi = false, title = "") {
   const c = document.getElementById('consoleOutput');
   const div = document.createElement('div');
-  div.className = isAi ? 'log-ai' : 'log-user';
-  if(isAi) div.innerHTML = `<strong>[JARVIS ANALYSIS]</strong><br>${text}`;
-  else div.innerHTML = `> ${text}`;
+  if(isAi) {
+      div.className = 'log-ai';
+      div.innerHTML = `<div class="log-header">RELATÓRIO TÉCNICO: ${title}</div>${text}`;
+  } else {
+      div.style.color = 'var(--muted)';
+      div.style.marginBottom = '10px';
+      div.innerHTML = `> ${text}`;
+  }
   c.appendChild(div);
   c.scrollTop = c.scrollHeight;
 }
 
 async function runAudit() {
-  if(!geminiKey) { log('ERRO: Chave Gemini não encontrada na sessão.', false); return; }
+  if(!geminiKey) { log('ERRO: Chave Gemini não encontrada no banco (apiKeys.gemini).', false); return; }
 
-  const osPendentes = DB_CACHE.os.filter(o => o.status !== 'Entregue' && o.status !== 'Cancelado').length;
-  const lucro = DB_CACHE.financeiro.filter(f=>f.status==='Pago').reduce((acc, f) => acc + (f.tipo === 'Entrada' ? f.valor : -f.valor), 0);
+  const consoleOut = document.getElementById('consoleOutput');
+  consoleOut.innerHTML = ''; 
+  log(`Iniciando auditoria no módulo: ${currentTarget.toUpperCase()}...`);
 
-  let prompt = "";
-  
-  if (currentPersona === 'admin') {
-      log("Simulando visão do Gestor no jarvis.html...");
-      prompt = `Você é um auditor de negócios automotivos. Aqui estão os dados da oficina atual:
-      - Ordens de Serviço em aberto: ${osPendentes}
-      - Total de OS no histórico: ${DB_CACHE.os.length}
-      - Lucro Caixa Atual: R$ ${lucro.toFixed(2)}
-      - Peças em estoque: ${DB_CACHE.estoque.length}
-      
-      Atue como o Gestor. Encontre furos operacionais. O que está errado com esses números? Há muitas OS abertas comparado ao histórico? O lucro faz sentido? Dê 3 diretrizes urgentes para melhorar a lucratividade e o controle da oficina, sendo extremamente crítico.`;
-  } 
-  else if (currentPersona === 'mecanico') {
-      log("Simulando visão do Mecânico no equipe.html...");
-      prompt = `Você é um mecânico testando o painel de produção (equipe.html). 
-      Dados: Você tem ${osPendentes} carros no pátio agora.
-      Com base na experiência de uma oficina real, quais as maiores dificuldades que um mecânico enfrenta ao preencher diagnósticos digitais e checklist? Como o sistema poderia automatizar a entrada de dados (como torques e peças) para que o mecânico perca menos tempo digitando e mais tempo consertando? Dê 3 ideias arquiteturais.`;
-  }
-  else if (currentPersona === 'cliente') {
-      log("Simulando visão do Cliente no cliente.html...");
-      prompt = `Você é um cliente exigente testando o Portal B2C (cliente.html) da oficina.
-      Você acabou de receber um link de uma OS. O que te faria desconfiar do orçamento? Quais informações exatas você exige ver no Laudo em PDF e no histórico para aprovar um serviço caro sem questionar o mecânico? Critique a transparência padrão de oficinas e sugira o que o sistema JARVIS deve mostrar para ganhar sua confiança absoluta.`;
-  }
-  else {
-      log("Simulando visão do Superadmin (Gestor do SaaS)...");
-      prompt = `Você é o dono do software JARVIS ERP (Superadmin). Você tem dezenas de oficinas usando seu sistema.
-      Avalie o banco de dados atual (NoSQL Firebase Firestore). O risco de baixar todas as OS para filtrar no front-end é um vazamento de dados grave (LGPD). Explique tecnicamente como isso deve ser corrigido com Queries de Backend e Rules do Firestore. Seja direto e escreva a regra de segurança do firebase que bloqueia leitura cruzada de clientes.`;
-  }
+  const prompts = {
+    superadmin: `Analise a lógica de um ERP SaaS automotivo. 
+    CONTEXTO: O sistema possui várias oficinas (tenants). 
+    FALHA ATUAL: Não existe uma trava global que verifique se o 'tenantId' está com o campo 'assinaturaAtiva: true'. 
+    TAFA: Como implementar um middleware ou check na index.html que impeça o acesso de qualquer usuário se a oficina estiver bloqueada no Superadmin? Dê o código Firebase real.`,
+    
+    jarvis: `Analise a lógica do arquivo os.js que você possui. 
+    FALHA DE FLUXO: A função moverStatusOS permite pular de "Orcamento" para "Entregue". 
+    TAFA: Como alterar a função moverStatusOS para exigir que o campo 'financeiroStatus' seja 'Pago' antes de permitir o status 'Entregue' ou 'Faturado'? Responda com a lógica de comparação de strings e segurança de caixa.`,
+    
+    index: `Analise a segurança de login. 
+    FALHA: As senhas são salvas no campo 'senha' da coleção 'funcionarios' em texto limpo. 
+    TAFA: Explique o risco de vazamento de dados internos. Sugira a migração para o Firebase Authentication (email/senha) e como vincular o UID do Auth ao documento do funcionário no Firestore.`,
+    
+    equipe: `Analise o arquivo equipe.html e a renderização do Kanban. 
+    FALHA DETECTADA: O banco usa status como 'Aguardando' e 'box', mas o código tenta ler 'Triagem' e 'Andamento'. 
+    TAFA: Escreva o mapeamento definitivo (stMap) que converta todos os nomes legados para as novas colunas sem sumir com os carros do pátio.`,
+    
+    cliente: `Analise o arquivo cliente.html. 
+    FALHA LGPD: O listener baixa todas as OS da oficina e filtra no JavaScript do navegador. 
+    RISCO: Um cliente pode ver dados de outros veículos via console. 
+    TAFA: Como reescrever a query db.collection('ordens_servico').where(...) para que o Firebase entregue APENAS os dados do clienteId logado, bloqueando qualquer outro acesso via Regras de Segurança (Firestore Rules).`
+  };
 
   const spinnerId = 'spin-' + Date.now();
-  log(`<span class="spinner" id="${spinnerId}"></span> Processando análise profunda...`, true);
+  log(`<span class="spinner" id="${spinnerId}"></span> Inteligência Artificial processando código-fonte...`);
 
   try {
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`, {
       method: 'POST', headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
-        contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        systemInstruction: { parts: [{ text: "Responda em formato Markdown, português do Brasil, seja altamente técnico, não seja bajulador." }] }
+        contents: [{ role: 'user', parts: [{ text: prompts[currentTarget] }] }],
+        systemInstruction: { parts: [{ text: "Você é um Engenheiro de Software Sênior e Auditor de Segurança. Responda em Markdown, português do Brasil. Seja direto, técnico e forneça blocos de código prontos para aplicar. Não use introduções educadas, vá direto ao erro e à correção." }] }
       })
     });
     
@@ -144,11 +139,11 @@ async function runAudit() {
     document.getElementById(spinnerId).remove();
     
     const resp = data.candidates[0].content.parts[0].text;
-    log(resp.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g,'<strong style="color:var(--text)">$1</strong>'), true);
+    log(resp.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>'), true, currentTarget.toUpperCase());
 
   } catch(e) {
-    document.getElementById(spinnerId).remove();
-    log("Falha na execução da IA: " + e.message, true);
+    if(document.getElementById(spinnerId)) document.getElementById(spinnerId).remove();
+    log("FALHA NA CENTRAL DE PROCESSAMENTO: " + e.message, false);
   }
 }
 </script>
