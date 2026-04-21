@@ -508,7 +508,6 @@ function iaChip(txt) {
 $('iaInput')?.addEventListener('keydown', e => {
   if (e.key === 'Enter') iaEnviar();
 });
-
 async function iaEnviar() {
   const inp = $('iaInput');
   const msg = inp?.value?.trim();
@@ -516,7 +515,7 @@ async function iaEnviar() {
   inp.value = '';
 
   _iaMsgUser(msg);
-  const lid = _iaMsgBot('<span class="j-spinner"></span> Pensando...');
+  const lid = _iaMsgBot('<span class="j-spinner"></span> Consultando manuais e histórico...');
 
   const key = J.gemini || null;
   _iaHist.push({ role: 'user', text: msg });
@@ -526,21 +525,57 @@ async function iaEnviar() {
     return;
   }
 
+  // 1. CONSTRUÇÃO DA MEMÓRIA DO JARVIS (HISTÓRICO DE PLACAS E SERVIÇOS)
+  let historyContext = "BASE DE DADOS DE SERVIÇOS ANTERIORES DA OFICINA:\n";
+  const limiteData = new Date();
+  limiteData.setMonth(limiteData.getMonth() - 24); // Puxa histórico de até 2 anos para cobrir garantias longas
+
+  dbOS.filter(o => new Date(o.createdAt || o.data || o.updatedAt || Date.now()) > limiteData).forEach(o => {
+    historyContext += `[OS #${o.id.slice(-5).toUpperCase()} | Placa: ${o.placa || 'S/P'} | Data: ${o.data || 'N/A'}]\n`;
+    historyContext += `- Relato/Diagnóstico: ${o.desc || 'N/A'} | ${o.diagnostico || 'N/A'}\n`;
+    if (o.pecas && o.pecas.length > 0) historyContext += `- Peças Trocadas: ${o.pecas.map(p => p.desc).join(', ')}\n`;
+    if (o.servicos && o.servicos.length > 0) historyContext += `- Serviços Feitos: ${o.servicos.map(s => s.desc).join(', ')}\n`;
+  });
+
+  // 2. O PROMPT MESTRE (DOUTOR-IE / BOSCH + AUDITORIA)
+  const systemPrompt = `Você é o thIAguinho, a Inteligência Artificial avançada (JARVIS) desta oficina mecânica. 
+Seu nível de conhecimento técnico é equivalente às plataformas Doutor-IE e Bosch Mecânico Pro.
+Seu papel é atuar como um Engenheiro Clínico Automotivo: auxiliar com diagnósticos de altíssima precisão, torques, esquemas elétricos, e atuar como AUDITOR DE SERVIÇOS E GARANTIAS.
+
+DIRETRIZES DE AUDITORIA (EXTREMAMENTE IMPORTANTE):
+1. Abaixo deste prompt, você recebeu a "BASE DE DADOS DE SERVIÇOS ANTERIORES DA OFICINA".
+2. Se o usuário mencionar uma placa de veículo e uma peça/serviço, VOCÊ É OBRIGADO a varrer a BASE DE DADOS fornecida e verificar se essa placa já esteve na oficina e se essa peça já foi trocada.
+3. REGRAS DE GARANTIA PADRÃO DO MERCADO:
+   - Amortecedores: 2 anos ou 50.000 km.
+   - Kits de Amortecedor (batente, coifa, coxim): 3 meses ou 10.000 km.
+   - Pastilhas e Discos de freio: 3 meses ou 5.000 km.
+   - Baterias: 1 ano a 18 meses.
+   - Peças de motor e injeção: 3 meses (garantia legal).
+4. Se você identificar que o mecânico quer trocar uma peça que ainda está na garantia segundo o histórico, ALERTE IMEDIATAMENTE em negrito.
+5. Quando houver reincidência de quebra prematura (ex: amortecedor estourou em 3 meses), liste as CAUSAS RAIZ prováveis (ex: mola cansada, erro de montagem, batente de má qualidade) para o mecânico investigar antes de apenas trocar a peça de novo.
+
+POSTURA E TOM:
+- Seja clínico, direto e altamente técnico. Evite jargões vagos.
+- Para códigos OBD (DTC), forneça: Significado, Causas, Sintomas e Passos de Teste (Pinagem, Multímetro, Osciloscópio).
+- Responda sempre em português do Brasil.
+
+${historyContext}`;
+
   try {
     const contents = _iaHist.map(h => ({ role: h.role==='user'?'user':'model', parts:[{text:h.text}] }));
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(key)}`, {
       method: 'POST', headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
         contents,
-        systemInstruction: { parts: [{ text: `Você é o thIAguinho, assistente técnico de mecânica automotiva. Auxilie o mecânico com diagramas, diagnósticos OBD, torques de motores e manuais de serviço. Seja direto, técnico e use o português do Brasil.` }] }
+        systemInstruction: { parts: [{ text: systemPrompt }] }
       })
     });
     const data = await res.json();
-    const resp = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sem resposta';
+    const resp = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sem resposta da base técnica.';
     _iaHist.push({ role: 'model', text: resp });
     _iaReplace(lid, resp.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>'));
   } catch(e) {
-    _iaReplace(lid, '⚠ Erro na IA: ' + e.message);
+    _iaReplace(lid, '⚠ Erro de conexão com a central de diagnóstico: ' + e.message);
   }
 }
 
