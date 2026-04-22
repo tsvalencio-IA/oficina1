@@ -22,6 +22,49 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 ::-webkit-scrollbar-track{background:var(--surf);}
 ::-webkit-scrollbar-thumb{background:var(--surf3);}
 
+/* VOZ (STT) */
+.field-voice-wrap{position:relative;display:flex;flex-direction:column;gap:0;}
+.field-voice-wrap textarea,.field-voice-wrap input{padding-right:44px!important;}
+.btn-voice{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:32px;height:32px;background:rgba(0,212,255,0.08);border:1px solid var(--border);border-radius:2px;color:var(--muted2);font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;z-index:2;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
+.btn-voice:hover{background:rgba(0,212,255,0.18);color:var(--cyan);border-color:var(--cyan);}
+.btn-voice.listening{background:rgba(255,59,59,0.15);border-color:var(--danger);color:var(--danger);animation:pulse-mic 0.8s ease-in-out infinite;}
+.field-voice-wrap.has-textarea .btn-voice{top:18px;transform:none;}
+@keyframes pulse-mic{0%,100%{opacity:1;}50%{opacity:0.5;}}
+
+/* CHECKLIST TOUCH */
+.chk-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px;}
+.chk-btn{padding:14px 10px;background:var(--surf3);border:2px solid var(--border);border-radius:4px;color:var(--muted2);font-family:var(--fm);font-size:0.68rem;letter-spacing:1px;cursor:pointer;transition:all 0.2s;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;touch-action:manipulation;user-select:none;-webkit-tap-highlight-color:transparent;}
+.chk-btn .chk-icon{font-size:1.4rem;line-height:1;}
+.chk-btn.chk-ok{background:rgba(0,255,136,0.1);border-color:var(--success);color:var(--success);}
+.chk-btn.chk-fail{background:rgba(255,59,59,0.1);border-color:var(--danger);color:var(--danger);}
+
+/* STATUS QUICK-MOVE */
+.k-card-actions{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap;}
+.k-move-btn{flex:1;min-width:0;padding:5px 4px;border:1px solid var(--border);background:rgba(255,255,255,0.03);border-radius:2px;color:var(--muted2);font-family:var(--fm);font-size:0.52rem;letter-spacing:0.5px;cursor:pointer;transition:all 0.18s;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;touch-action:manipulation;}
+.k-move-btn:hover{border-color:var(--cyan);color:var(--cyan);background:rgba(0,212,255,0.06);}
+.k-move-btn.danger:hover{border-color:var(--danger);color:var(--danger);}
+
+/* COMB SELECTOR */
+.comb-grid{display:flex;gap:6px;flex-wrap:wrap;}
+.comb-opt{padding:8px 12px;border:1px solid var(--border);border-radius:3px;background:var(--surf3);color:var(--muted2);font-family:var(--fm);font-size:0.65rem;cursor:pointer;transition:all 0.18s;touch-action:manipulation;}
+.comb-opt.active{border-color:var(--warn);color:var(--warn);background:rgba(255,184,0,0.1);}
+
+/* PNEU BAR */
+.pneu-bar-wrap{display:flex;flex-direction:column;gap:6px;}
+.pneu-row{display:flex;align-items:center;gap:8px;}
+.pneu-label{font-family:var(--fm);font-size:0.6rem;color:var(--muted);width:70px;flex-shrink:0;}
+.pneu-slider{flex:1;accent-color:var(--cyan);height:6px;cursor:pointer;}
+.pneu-val{font-family:var(--fm);font-size:0.72rem;color:var(--cyan);width:32px;text-align:right;flex-shrink:0;}
+
+/* NOVA O.S. FAB */
+.fab-nova-os{position:fixed;bottom:24px;right:20px;z-index:200;width:56px;height:56px;background:var(--cyan);border:none;border-radius:50%;color:#000;font-size:1.6rem;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(0,212,255,0.4);touch-action:manipulation;transition:transform 0.2s;}
+.fab-nova-os:active{transform:scale(0.92);}
+
+/* IA voice no input */
+.ia-foot-wrap{padding:14px;background:var(--surf2);border-top:1px solid rgba(167,139,250,0.2);display:flex;gap:10px;align-items:center;position:relative;}
+.btn-ia-voice{width:40px;height:40px;min-width:40px;background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.3);border-radius:50%;color:#A78BFA;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;touch-action:manipulation;}
+.btn-ia-voice.listening{background:rgba(255,59,59,0.15);border-color:var(--danger);color:var(--danger);animation:pulse-mic 0.8s ease-in-out infinite;}
+
 /* TOPBAR */
 .topbar{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--surf);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;}
 .topbar-left{display:flex;align-items:center;gap:14px;}
@@ -122,18 +165,6 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 /* MODAL */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:1000;display:none;align-items:flex-start;justify-content:center;padding:30px 16px;backdrop-filter:blur(4px);overflow-y:auto;}
 .overlay.open{display:flex;}
-
-/* MODAL IA — sempre por cima, estilo TV */
-.overlay-ia{position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;display:none;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);}
-.overlay-ia.open{display:flex;animation:ia-tv-on 0.22s ease;}
-@keyframes ia-tv-on{0%{opacity:0;transform:scale(0.95);}70%{opacity:1;transform:scale(1.01);}100%{opacity:1;transform:scale(1);}}
-.modal-ia{background:var(--surf);border:1px solid rgba(167,139,250,0.4);border-radius:10px;width:100%;max-width:660px;max-height:90vh;display:flex;flex-direction:column;position:relative;overflow:hidden;box-shadow:0 0 60px rgba(167,139,250,0.25),0 0 120px rgba(167,139,250,0.08);}
-.modal-ia::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#A78BFA,#00D4FF,#A78BFA,transparent);animation:ia-glow-bar 3s ease infinite;}
-@keyframes ia-glow-bar{0%,100%{opacity:0.5;}50%{opacity:1;}}
-.modal-ia-head{padding:16px 20px;border-bottom:1px solid rgba(167,139,250,0.2);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,rgba(167,139,250,0.08),transparent);flex-shrink:0;}
-.modal-ia-body{flex:1;overflow-y:auto;padding:20px;min-height:180px;max-height:60vh;}
-.modal-ia-foot{padding:14px 20px;border-top:1px solid rgba(167,139,250,0.15);display:flex;justify-content:flex-end;gap:8px;flex-shrink:0;background:rgba(0,0,0,0.2);}
-@media(max-width:600px){.overlay-ia{padding:0;align-items:flex-end;}.modal-ia{max-width:100%;border-radius:16px 16px 0 0;max-height:88vh;}.modal-ia-body{max-height:52vh;}}
 .modal{background:var(--surf);border:1px solid var(--border2);border-radius:4px;width:100%;max-width:780px;position:relative;margin:auto;}
 .modal::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);}
 .modal-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
@@ -191,16 +222,8 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .chat-msg audio{max-width:100%;margin-top:4px;}
 .chat-foot{padding:10px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:center;}
 
-/* CHIPS PROBLEMA */
-._chip-prob{padding:3px 9px;background:rgba(0,212,255,0.06);border:1px solid var(--border);border-radius:10px;color:var(--muted2);font-family:var(--fm);font-size:0.58rem;cursor:pointer;transition:all 0.15s;white-space:nowrap;}
-._chip-prob:hover{background:rgba(0,212,255,0.12);border-color:var(--border2);color:var(--text);}
-
-/* BANNER HISTÓRICO */
-#bannerHistVeiculo{transition:all 0.2s;}
-
 @media(max-width:600px){
-  .mec-kpis{grid-template-columns:1fr 1fr!important;}
-  .mec-kpis .mec-kpi:last-child{grid-column:1/-1;}
+  .mec-kpis{grid-template-columns:1fr;}
   .form-row.c2,.form-row.c3{grid-template-columns:1fr;}
   .kanban-wrap{flex-direction:column;}
   .k-col{min-width:100%;width:100%;max-height:none;}
@@ -219,11 +242,30 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   .modal-tabs{overflow-x:auto;}
   .mtab{padding:9px 12px;font-size:0.62rem;white-space:nowrap;}
   .media-grid{grid-template-columns:repeat(auto-fill,minmax(85px,1fr));}
+  /* Checklist touch - maior no mobile */
+  .chk-btn{padding:16px 8px;font-size:0.7rem;}
+  .chk-btn .chk-icon{font-size:1.6rem;}
+  .comb-opt{padding:10px 14px;font-size:0.68rem;}
+  .fab-nova-os{bottom:20px;right:16px;}
+  .pneu-slider{height:8px;}
 }
+/* MODAL IA — z-index 9999, sempre por cima */
+.overlay-ia{position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;display:none;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);}
+.overlay-ia.open{display:flex;animation:ia-tv-on 0.22s ease;}
+@keyframes ia-tv-on{0%{opacity:0;transform:scale(0.95);}70%{opacity:1;transform:scale(1.01);}100%{opacity:1;transform:scale(1);}}
+.modal-ia{background:var(--surf);border:1px solid rgba(167,139,250,0.4);border-radius:10px;width:100%;max-width:660px;max-height:90vh;display:flex;flex-direction:column;position:relative;overflow:hidden;box-shadow:0 0 60px rgba(167,139,250,0.25),0 0 120px rgba(167,139,250,0.08);}
+.modal-ia::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#A78BFA,#00D4FF,#A78BFA,transparent);animation:ia-glow-bar 3s ease infinite;}
+@keyframes ia-glow-bar{0%,100%{opacity:0.5;}50%{opacity:1;}}
+.modal-ia-head{padding:16px 20px;border-bottom:1px solid rgba(167,139,250,0.2);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,rgba(167,139,250,0.08),transparent);flex-shrink:0;}
+.modal-ia-body{flex:1;overflow-y:auto;padding:20px;min-height:180px;max-height:60vh;}
+.modal-ia-foot{padding:14px 20px;border-top:1px solid rgba(167,139,250,0.15);display:flex;justify-content:flex-end;gap:8px;flex-shrink:0;background:rgba(0,0,0,0.2);}
+@media(max-width:600px){.overlay-ia{padding:0;align-items:flex-end;}.modal-ia{max-width:100%;border-radius:16px 16px 0 0;max-height:88vh;}.modal-ia-body{max-height:52vh;}}
 </style>
 </head>
 <body>
 <div id="toastBox"></div>
+<!-- FAB Mobile: Nova O.S. -->
+<button class="fab-nova-os" onclick="prepOS('add');abrirModal('modalOS')" title="Nova O.S." aria-label="Nova Ordem de Serviço">＋</button>
 
 <div class="topbar">
   <div class="topbar-left">
@@ -252,7 +294,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   <div class="content">
 
     <div class="section active" id="t-kanban">
-      <div class="mec-kpis" style="grid-template-columns:repeat(3,1fr);">
+      <div class="mec-kpis">
         <div class="mec-kpi c1">
           <div class="mec-kpi-label">MINHAS O.S. ABERTAS</div>
           <div class="mec-kpi-val" id="kMeusOS">0</div>
@@ -260,10 +302,6 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
         <div class="mec-kpi c2">
           <div class="mec-kpi-label">EM EXECUÇÃO AGORA</div>
           <div class="mec-kpi-val" id="kEmExec">0</div>
-        </div>
-        <div class="mec-kpi" style="border-bottom:2px solid var(--success);">
-          <div class="mec-kpi-label" style="color:var(--muted);">CONCLUÍDAS HOJE</div>
-          <div class="mec-kpi-val" id="kHoje" style="color:var(--success);">0</div>
         </div>
       </div>
 
@@ -293,10 +331,11 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
             <div style="text-align:center;color:var(--muted);font-family:var(--fm);font-size:0.72rem;padding:30px;">Sem mensagens ainda</div>
           </div>
           <div class="chat-foot">
-            <button type="button" class="btn-chat-icon" id="btnPTTEquipe" onclick="togglePTT('btnPTTEquipe')" title="Gravar áudio" aria-label="Gravar áudio">🎤</button>
+            <button type="button" class="btn-chat-icon" id="btnPTTEquipe" onclick="togglePTT('btnPTTEquipe')" title="Gravar áudio PTT" aria-label="Gravar áudio">🎤</button>
+            <button type="button" class="btn-chat-icon" id="btnSTTChat" onclick="iniciarVoz('chatInput',this)" title="Voz para texto" aria-label="Voz para texto">🎙️</button>
             <input type="file" id="fileInputEquipe" accept="image/*,audio/*,video/*,application/pdf,.doc,.docx,.xls,.xlsx" style="display:none" onchange="enviarArquivoChat(this)">
             <button type="button" class="btn-chat-icon" onclick="document.getElementById('fileInputEquipe').click()" title="Anexar foto ou arquivo" aria-label="Anexar arquivo">📎</button>
-            <input class="j-input" id="chatInput" placeholder="Escreva uma mensagem..." style="flex:1;" autocomplete="off">
+            <input class="j-input" id="chatInput" placeholder="Escreva ou use 🎙️..." style="flex:1;" autocomplete="off">
             <button class="btn-primary" onclick="enviarMsg()">ENVIAR</button>
           </div>
         </div>
@@ -313,20 +352,15 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
           </div>
         </div>
         <div style="padding:10px 14px;border-bottom:1px solid rgba(167,139,250,0.1);display:flex;gap:8px;flex-wrap:wrap;background:rgba(0,0,0,0.1);">
-          <span onclick="iaChip('Como diagnosticar e resolver o código OBD P0300 (misfire múltiplo)? Dê causas, sintomas e passos de teste com multímetro.')" style="padding:6px 12px;background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.2);border-radius:20px;font-family:var(--fm);font-size:0.7rem;color:#A78BFA;cursor:pointer;">🔴 Diagnóstico DTC</span>
-          <span onclick="iaChip('Qual o torque de aperto do cabeçote do motor EA111 1.0? Liste a sequência de aperto e os valores em N.m.')" style="padding:6px 12px;background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.2);border-radius:20px;font-family:var(--fm);font-size:0.7rem;color:#A78BFA;cursor:pointer;">🔩 Torque EA111</span>
-          <span onclick="iaChip('Quais as causas mais comuns de motor falhando em marcha lenta? Liste causas por ordem de probabilidade e como testar cada uma.')" style="padding:6px 12px;background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.2);border-radius:20px;font-family:var(--fm);font-size:0.7rem;color:#A78BFA;cursor:pointer;">⚙️ Falha em Marcha</span>
-          <span onclick="iaChip('Quais os procedimentos para verificar e regular a geometria de rodas (alinhamento e balanceamento)? Quais sintomas indicam necessidade?')" style="padding:6px 12px;background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.2);border-radius:20px;font-family:var(--fm);font-size:0.7rem;color:#A78BFA;cursor:pointer;">🚗 Geometria/Alinhamento</span>
-          <span onclick="iaChip('Como testar o sistema de arrefecimento completo? Sintomas de falha na bomba d\\'água, termostato e radiador.')" style="padding:6px 12px;background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.2);border-radius:20px;font-family:var(--fm);font-size:0.7rem;color:#A78BFA;cursor:pointer;">🌡️ Arrefecimento</span>
-          <span onclick="iaChip('Quais as causas de barulho ao frear? Como distinguir pastilha gasta, disco empenado e rolamento de roda defeituoso?')" style="padding:6px 12px;background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.2);border-radius:20px;font-family:var(--fm);font-size:0.7rem;color:#A78BFA;cursor:pointer;">🛑 Barulho nos Freios</span>
-          <span onclick="iaChip('Como testar um alternador e bateria sem equipamento especializado? Quais valores de tensão são normais?')" style="padding:6px 12px;background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.2);border-radius:20px;font-family:var(--fm);font-size:0.7rem;color:#A78BFA;cursor:pointer;">⚡ Elétrico/Alternador</span>
-          <span onclick="iaChip('Liste as principais verificações de um checklist de revisão preventiva completa (30 mil km) para veículos flex.')" style="padding:6px 12px;background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.2);border-radius:20px;font-family:var(--fm);font-size:0.7rem;color:#A78BFA;cursor:pointer;">📋 Revisão Preventiva</span>
+          <span onclick="iaChip('Como resolver o código P0300?')" style="padding:6px 12px;background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.2);border-radius:20px;font-family:var(--fm);font-size:0.7rem;color:#A78BFA;cursor:pointer;">Dica de Falha (DTC)</span>
+          <span onclick="iaChip('Qual o torque do cabeçote do motor EA111?')" style="padding:6px 12px;background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.2);border-radius:20px;font-family:var(--fm);font-size:0.7rem;color:#A78BFA;cursor:pointer;">Torque EA111</span>
         </div>
         <div id="iaMsgs" style="flex:1;overflow-y:auto;padding:20px;background:var(--surf-0);display:flex;flex-direction:column;gap:12px;">
           <div style="text-align:center;color:var(--text-muted);font-size:0.85rem;padding:20px;">Peça ajuda para diagnósticos, torques ou manuais.</div>
         </div>
-        <div style="padding:14px;background:var(--surf2);border-top:1px solid rgba(167,139,250,0.2);display:flex;gap:10px;align-items:center;">
-          <input id="iaInput" class="j-input" placeholder="Pergunte ao thIAguinho..." style="margin:0;border-radius:24px;border-color:rgba(167,139,250,0.25);">
+        <div class="ia-foot-wrap">
+          <button type="button" class="btn-ia-voice" id="btnVozIA" onclick="iniciarVozIA()" title="Falar com a IA">🎙️</button>
+          <input id="iaInput" class="j-input" placeholder="Pergunte ao thIAguinho..." style="margin:0;border-radius:24px;border-color:rgba(167,139,250,0.25);flex:1;">
           <button onclick="iaEnviar()" style="background:#A78BFA;border:none;border-radius:50%;width:44px;height:44px;min-width:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.1rem;color:#000;flex-shrink:0;">➤</button>
         </div>
       </div>
@@ -361,17 +395,20 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 <div class="overlay" id="modalOS">
 <div class="modal">
   <div class="modal-head">
-    <div class="modal-title">FICHA TÉCNICA O.S.</div>
-    <div style="display:flex;align-items:center;gap:10px;">
-      <span class="pill pill-cyan" id="osIdBadge" style="font-size:0.68rem;letter-spacing:2px;">NOVA</span>
-      <button class="modal-close" onclick="fecharModal('modalOS')">✕</button>
+    <div style="display:flex;flex-direction:column;gap:4px;">
+      <div class="modal-title">FICHA TÉCNICA O.S.</div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <span class="pill pill-cyan" id="osIdBadge" style="font-size:0.68rem;letter-spacing:2px;">NOVA</span>
+        <span id="osPlacanHeader" style="display:none;font-family:var(--fm);font-size:0.85rem;font-weight:700;letter-spacing:3px;color:var(--warn);background:rgba(255,184,0,0.1);border:1px solid rgba(255,184,0,0.3);border-radius:3px;padding:2px 10px;"></span>
+        <span id="osClienteHeader" style="font-family:var(--fm);font-size:0.65rem;color:var(--muted2);"></span>
+      </div>
     </div>
+    <button class="modal-close" onclick="fecharModal('modalOS')">✕</button>
   </div>
-
   <!-- BANNER HISTÓRICO DO VEÍCULO -->
-  <div id="bannerHistVeiculo" style="display:none;margin:0;padding:10px 20px;background:rgba(255,184,0,0.07);border-bottom:1px solid rgba(255,184,0,0.2);">
-    <div style="font-family:var(--fm);font-size:0.6rem;color:var(--warn);letter-spacing:1px;margin-bottom:4px;">⚠ HISTÓRICO DESTE VEÍCULO NA OFICINA</div>
-    <div id="bannerHistContent" style="font-size:0.78rem;color:var(--text);line-height:1.5;"></div>
+  <div id="bannerHistVeiculo" style="display:none;padding:10px 20px;background:rgba(255,184,0,0.06);border-bottom:1px solid rgba(255,184,0,0.2);">
+    <div style="font-family:var(--fm);font-size:0.58rem;color:var(--warn);letter-spacing:1px;margin-bottom:5px;">⚠ HISTÓRICO DESTE VEÍCULO NA OFICINA</div>
+    <div id="bannerHistContent" style="font-size:0.78rem;color:var(--text);line-height:1.6;"></div>
   </div>
   <div class="modal-tabs">
     <div class="mtab active" onclick="swTab(this,'tp1','tp2','tp3')">ORÇAMENTO</div>
@@ -411,34 +448,27 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
       </div>
     </div>
     <div class="form-group"><label class="j-label">Defeito / Problema Relatado</label>
-      <textarea class="j-textarea" id="osDesc" rows="3" placeholder="Descreva o problema..."></textarea>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;">
-        <span style="font-family:var(--fm);font-size:0.55rem;color:var(--muted);letter-spacing:1px;align-self:center;">ATALHOS:</span>
-        <button type="button" onclick="inserirProblema('Barulho suspeito ao frear — rangido/estalido na desaceleração')" class="_chip-prob">🔊 Barulho freio</button>
-        <button type="button" onclick="inserirProblema('Motor falhando em marcha lenta e/ou aceleração — perda de potência')" class="_chip-prob">⚙️ Falha motor</button>
-        <button type="button" onclick="inserirProblema('Luz de aviso acesa no painel — verificação de códigos OBD necessária')" class="_chip-prob">💡 Luz painel</button>
-        <button type="button" onclick="inserirProblema('Suspensão com barulho — batidas e estalos ao passar em buracos')" class="_chip-prob">🚗 Suspensão</button>
-        <button type="button" onclick="inserirProblema('Revisão preventiva programada — troca de óleo, filtros e verificação geral')" class="_chip-prob">🔧 Revisão</button>
-        <button type="button" onclick="inserirProblema('Ar-condicionado não resfria adequadamente ou com cheiro estranho')" class="_chip-prob">❄️ A/C</button>
-        <button type="button" onclick="inserirProblema('Vazamento identificado — verificar origem (óleo, água, combustível)')" class="_chip-prob">💧 Vazamento</button>
-        <button type="button" onclick="inserirProblema('Bateria fraca — veículo com dificuldade de partida ou não liga')" class="_chip-prob">⚡ Bateria</button>
+      <div class="field-voice-wrap has-textarea">
+        <textarea class="j-textarea" id="osDesc" rows="3" placeholder="Descreva o problema..."></textarea>
+        <button type="button" class="btn-voice" onclick="iniciarVoz('osDesc',this)" title="Falar para preencher">🎙️</button>
       </div>
     </div>
-    <div class="form-group">
+    <div class="form-group"><label class="j-label">Diagnóstico Técnico</label>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
-        <label class="j-label" style="margin-bottom:0;">Diagnóstico Técnico</label>
-        <button type="button" id="btnIaDiag" onclick="iaSugerirDiagnostico()" style="padding:4px 10px;background:rgba(167,139,250,0.15);border:1px solid rgba(167,139,250,0.3);border-radius:12px;color:#A78BFA;font-family:var(--fm);font-size:0.6rem;letter-spacing:1px;cursor:pointer;display:flex;align-items:center;gap:5px;transition:all 0.2s;" onmouseover="this.style.background='rgba(167,139,250,0.25)'" onmouseout="this.style.background='rgba(167,139,250,0.15)'">
-          🤖 SUGERIR COM IA
-        </button>
+        <label class="j-label" style="margin-bottom:0;"></label>
+        <button type="button" onclick="iaSugerirDiagnostico()" style="padding:3px 10px;background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.3);border-radius:12px;color:#A78BFA;font-family:var(--fm);font-size:0.58rem;letter-spacing:1px;cursor:pointer;">🤖 IA SUGERIR</button>
       </div>
-      <textarea class="j-textarea" id="osDiag" rows="2" placeholder="Diagnóstico do mecânico..."></textarea>
+      <div class="field-voice-wrap has-textarea">
+        <textarea class="j-textarea" id="osDiag" rows="2" placeholder="Diagnóstico do mecânico..."></textarea>
+        <button type="button" class="btn-voice" onclick="iniciarVoz('osDiag',this)" title="Falar para preencher">🎙️</button>
+      </div>
     </div>
 
     <div style="background:var(--surf3);border:1px solid rgba(0,212,255,0.15);border-radius:3px;padding:14px;margin-bottom:14px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:6px;">
         <span style="font-family:var(--fd);font-weight:700;color:var(--cyan);">SERVIÇOS A SEREM EXECUTADOS</span>
-        <div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap;">
-          <button type="button" id="btnIaServicos" onclick="iaSugerirServicos()" style="padding:4px 10px;background:rgba(167,139,250,0.15);border:1px solid rgba(167,139,250,0.3);border-radius:12px;color:#A78BFA;font-family:var(--fm);font-size:0.6rem;letter-spacing:1px;cursor:pointer;display:flex;align-items:center;gap:5px;" onmouseover="this.style.background='rgba(167,139,250,0.25)'" onmouseout="this.style.background='rgba(167,139,250,0.15)'">🤖 IA SUGERIR</button>
+        <div style="display:flex;gap:6px;">
+          <button type="button" onclick="iaSugerirServicos()" style="padding:4px 10px;background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.3);border-radius:12px;color:#A78BFA;font-family:var(--fm);font-size:0.58rem;letter-spacing:1px;cursor:pointer;">🤖 IA</button>
           <button type="button" class="btn-outline" onclick="adicionarServico()">+ SERVIÇO</button>
         </div>
       </div>
@@ -483,36 +513,73 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
       <input type="hidden" id="mediaArray" value="[]">
     </div>
     <div style="background:var(--surf3);border:1px solid var(--border);border-radius:3px;padding:14px;">
-      <div style="font-family:var(--fd);font-weight:700;margin-bottom:10px;color:var(--warn);">CHECKLIST DE ENTRADA</div>
-      <div class="form-row c3">
-        <div class="form-group"><label class="j-label">Pneu Diant %</label><input type="number" class="j-input" id="chkPD" placeholder="0-100" max="100"></div>
-        <div class="form-group"><label class="j-label">Pneu Tras %</label><input type="number" class="j-input" id="chkPT" placeholder="0-100" max="100"></div>
-        <div class="form-group"><label class="j-label">Combustível</label>
-          <select class="j-select" id="chkComb"><option>N/A</option><option>Reserva</option><option>1/4</option><option>Meio</option><option>3/4</option><option>Cheio</option></select>
+      <div style="font-family:var(--fd);font-weight:700;margin-bottom:12px;color:var(--warn);">⚡ CHECKLIST RÁPIDO</div>
+
+      <!-- COMBUSTÍVEL - seletor visual -->
+      <div class="form-group">
+        <label class="j-label">Combustível</label>
+        <div class="comb-grid" id="combGrid">
+          <div class="comb-opt" onclick="setComb('Reserva',this)">⚠ Reserva</div>
+          <div class="comb-opt" onclick="setComb('1/4',this)">▂ 1/4</div>
+          <div class="comb-opt" onclick="setComb('Meio',this)">▄ Meio</div>
+          <div class="comb-opt" onclick="setComb('3/4',this)">▆ 3/4</div>
+          <div class="comb-opt active" onclick="setComb('N/A',this)">— N/A</div>
+        </div>
+        <input type="hidden" id="chkComb" value="N/A">
+      </div>
+
+      <!-- PNEUS - sliders -->
+      <div class="form-group">
+        <label class="j-label">Estado dos Pneus</label>
+        <div class="pneu-bar-wrap">
+          <div class="pneu-row">
+            <span class="pneu-label">🔵 Dianteiro</span>
+            <input type="range" class="pneu-slider" id="chkPD" min="0" max="100" value="100" oninput="$('pneuDVal').innerText=this.value+'%'">
+            <span class="pneu-val" id="pneuDVal">100%</span>
+          </div>
+          <div class="pneu-row">
+            <span class="pneu-label">🔴 Traseiro</span>
+            <input type="range" class="pneu-slider" id="chkPT" min="0" max="100" value="100" oninput="$('pneuTVal').innerText=this.value+'%'">
+            <span class="pneu-val" id="pneuTVal">100%</span>
+          </div>
         </div>
       </div>
-      <div class="form-row c3" style="margin-bottom:10px;">
-        <div class="form-group"><label class="j-label">Nível Óleo Motor</label>
-          <select class="j-select" id="chkOleo"><option>N/A</option><option>Baixo</option><option>Normal</option><option>Alto</option><option>Crítico</option></select>
+
+      <!-- ITENS - botões toque -->
+      <div class="form-group">
+        <label class="j-label">Itens de Entrada</label>
+        <div class="chk-grid">
+          <button type="button" class="chk-btn" id="chk-painel" onclick="toggleChk('chk-painel','chkPainel')">
+            <span class="chk-icon">🎛️</span>
+            <span>Painel</span>
+          </button>
+          <button type="button" class="chk-btn" id="chk-pressao" onclick="toggleChk('chk-pressao','chkPressao')">
+            <span class="chk-icon">🔧</span>
+            <span>Pressão OK</span>
+          </button>
+          <button type="button" class="chk-btn" id="chk-car" onclick="toggleChk('chk-car','chkCar')">
+            <span class="chk-icon">🚗</span>
+            <span>Carroceria</span>
+          </button>
+          <button type="button" class="chk-btn" id="chk-doc" onclick="toggleChk('chk-doc','chkDoc')">
+            <span class="chk-icon">📄</span>
+            <span>Documentos</span>
+          </button>
         </div>
-        <div class="form-group"><label class="j-label">Líq. Arrefecimento</label>
-          <select class="j-select" id="chkArref"><option>N/A</option><option>Baixo</option><option>Normal</option><option>Ausente</option></select>
-        </div>
-        <div class="form-group"><label class="j-label">Freio (Pastilha)</label>
-          <select class="j-select" id="chkFreio"><option>N/A</option><option>OK</option><option>Desgastado</option><option>Crítico</option></select>
+        <input type="hidden" id="chkPainel" value="">
+        <input type="hidden" id="chkPressao" value="">
+        <input type="hidden" id="chkCar" value="">
+        <input type="hidden" id="chkDoc" value="">
+      </div>
+
+      <!-- AVARIAS - com voz -->
+      <div class="form-group">
+        <label class="j-label">Avarias Prévias / Obs</label>
+        <div class="field-voice-wrap has-textarea">
+          <textarea class="j-textarea" id="chkObs" rows="2" placeholder="Arranhões, amassados... (ou use o microfone)"></textarea>
+          <button type="button" class="btn-voice" onclick="iniciarVoz('chkObs',this)" title="Falar avarias">🎙️</button>
         </div>
       </div>
-      <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:10px;">
-        <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:0.8rem;"><input type="checkbox" id="chkPainel" style="accent-color:var(--cyan);"> Painel OK</label>
-        <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:0.8rem;"><input type="checkbox" id="chkPressao" style="accent-color:var(--cyan);"> Pressão Pneus OK</label>
-        <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:0.8rem;"><input type="checkbox" id="chkCar" style="accent-color:var(--cyan);"> Carroceria OK</label>
-        <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:0.8rem;"><input type="checkbox" id="chkDoc" style="accent-color:var(--cyan);"> Documentos OK</label>
-        <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:0.8rem;"><input type="checkbox" id="chkLuzes" style="accent-color:var(--cyan);"> Luzes OK</label>
-        <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:0.8rem;"><input type="checkbox" id="chkCinto" style="accent-color:var(--cyan);"> Cintos OK</label>
-        <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:0.8rem;"><input type="checkbox" id="chkAC" style="accent-color:var(--cyan);"> Ar-cond OK</label>
-        <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:0.8rem;"><input type="checkbox" id="chkEstepe" style="accent-color:var(--cyan);"> Estepe OK</label>
-      </div>
-      <div class="form-group"><label class="j-label">Avarias Prévias / Obs</label><textarea class="j-textarea" id="chkObs" rows="2" placeholder="Arranhões, amassados, riscos, peças faltando..."></textarea></div>
     </div>
   </div>
 
@@ -589,8 +656,181 @@ const dtBr = iso=>iso?new Date(iso).toLocaleDateString('pt-BR'):'-';
 const dtHrBr = iso=>iso?new Date(iso).toLocaleString('pt-BR'):'-';
 
 // ═══════════════════════════════════════════════════════════════
-// IA - thIAguinho
+// STT - SPEECH TO TEXT (reconhecimento de voz)
 // ═══════════════════════════════════════════════════════════════
+const STT_SUPPORT = ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window);
+let _sttActive = null;
+
+function iniciarVoz(fieldId, btnEl) {
+  if (!STT_SUPPORT) { toast('⚠ Seu navegador não suporta reconhecimento de voz. Use Chrome/Edge.', 'warn'); return; }
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (_sttActive) {
+    try { _sttActive.stop(); } catch(e) {}
+    _sttActive = null;
+    if (btnEl) { btnEl.classList.remove('listening'); btnEl.innerHTML = '🎙️'; }
+    return;
+  }
+
+  const rec = new SpeechRecognition();
+  rec.lang = 'pt-BR';
+  rec.interimResults = true;
+  rec.continuous = false;
+
+  if (btnEl) { btnEl.classList.add('listening'); btnEl.innerHTML = '⏹'; }
+  _sttActive = rec;
+
+  const field = $(fieldId);
+  const baseVal = field ? field.value : '';
+
+  rec.onresult = (e) => {
+    let transcript = '';
+    for (let i = 0; i < e.results.length; i++) transcript += e.results[i][0].transcript;
+    if (field) field.value = baseVal + (baseVal ? ' ' : '') + transcript;
+  };
+  rec.onerror = (e) => {
+    toast('⚠ Erro no microfone: ' + (e.error || 'desconhecido'), 'err');
+    if (btnEl) { btnEl.classList.remove('listening'); btnEl.innerHTML = '🎙️'; }
+    _sttActive = null;
+  };
+  rec.onend = () => {
+    if (btnEl) { btnEl.classList.remove('listening'); btnEl.innerHTML = '🎙️'; }
+    _sttActive = null;
+  };
+  rec.start();
+  toast('🔴 Fale agora... Clique ⏹ para parar.', 'ok');
+}
+
+function iniciarVozIA() {
+  const btn = $('btnVozIA');
+  iniciarVoz('iaInput', btn);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CHECKLIST TOUCH
+// ═══════════════════════════════════════════════════════════════
+function toggleChk(btnId, hiddenId) {
+  const btn = $(btnId);
+  const hidden = $(hiddenId);
+  if (!btn || !hidden) return;
+  const isOk = btn.classList.contains('chk-ok');
+  const isFail = btn.classList.contains('chk-fail');
+
+  if (!isOk && !isFail) {
+    // neutro → OK
+    btn.classList.add('chk-ok');
+    hidden.value = 'ok';
+    btn.querySelector('.chk-icon').innerText = '✅';
+  } else if (isOk) {
+    // OK → Falha
+    btn.classList.remove('chk-ok');
+    btn.classList.add('chk-fail');
+    hidden.value = 'fail';
+    btn.querySelector('.chk-icon').innerText = '❌';
+  } else {
+    // Falha → neutro
+    btn.classList.remove('chk-fail');
+    hidden.value = '';
+    const icons = {
+      'chk-painel': '🎛️', 'chk-pressao': '🔧',
+      'chk-car': '🚗', 'chk-doc': '📄'
+    };
+    btn.querySelector('.chk-icon').innerText = icons[btnId] || '●';
+  }
+}
+
+function setComb(val, el) {
+  document.querySelectorAll('.comb-opt').forEach(o => o.classList.remove('active'));
+  el.classList.add('active');
+  $('chkComb').value = val;
+}
+
+// Restaurar estado dos botões touch ao editar OS
+function _restaurarChkBtns(os) {
+  const mapa = {
+    chkPainel: {btnId:'chk-painel', hiddenId:'chkPainel', iconNeutro:'🎛️'},
+    chkPressao: {btnId:'chk-pressao', hiddenId:'chkPressao', iconNeutro:'🔧'},
+    chkCar: {btnId:'chk-car', hiddenId:'chkCar', iconNeutro:'🚗'},
+    chkDoc: {btnId:'chk-doc', hiddenId:'chkDoc', iconNeutro:'📄'},
+  };
+  Object.entries(mapa).forEach(([key, cfg]) => {
+    const btn = $(cfg.btnId);
+    const hidden = $(cfg.hiddenId);
+    if (!btn || !hidden) return;
+    const val = os[key];
+    btn.classList.remove('chk-ok','chk-fail');
+    btn.querySelector('.chk-icon').innerText = cfg.iconNeutro;
+    hidden.value = '';
+    if (val === 'ok' || val === true) {
+      btn.classList.add('chk-ok');
+      hidden.value = 'ok';
+      btn.querySelector('.chk-icon').innerText = '✅';
+    } else if (val === 'fail') {
+      btn.classList.add('chk-fail');
+      hidden.value = 'fail';
+      btn.querySelector('.chk-icon').innerText = '❌';
+    }
+  });
+
+  // Combustível
+  const combVal = os.chkComb || 'N/A';
+  $('chkComb').value = combVal;
+  document.querySelectorAll('.comb-opt').forEach(o => {
+    o.classList.toggle('active', o.innerText.includes(combVal) || (combVal==='N/A' && o.innerText.includes('N/A')));
+  });
+
+  // Pneus (slider)
+  const pd = os.chkPneuDia !== undefined ? os.chkPneuDia : 100;
+  const pt = os.chkPneuTra !== undefined ? os.chkPneuTra : 100;
+  $('chkPD').value = pd; if($('pneuDVal')) $('pneuDVal').innerText = pd + '%';
+  $('chkPT').value = pt; if($('pneuTVal')) $('pneuTVal').innerText = pt + '%';
+}
+
+// Resetar checklist buttons ao criar nova OS
+function _resetChkBtns() {
+  ['chk-painel','chk-pressao','chk-car','chk-doc'].forEach(id => {
+    const btn = $(id); if (!btn) return;
+    btn.classList.remove('chk-ok','chk-fail');
+    const icons = {'chk-painel':'🎛️','chk-pressao':'🔧','chk-car':'🚗','chk-doc':'📄'};
+    btn.querySelector('.chk-icon').innerText = icons[id] || '●';
+  });
+  ['chkPainel','chkPressao','chkCar','chkDoc'].forEach(id => { if($(id)) $(id).value=''; });
+  document.querySelectorAll('.comb-opt').forEach(o => o.classList.remove('active'));
+  const na = [...document.querySelectorAll('.comb-opt')].find(o => o.innerText.includes('N/A'));
+  if (na) na.classList.add('active');
+  $('chkComb').value = 'N/A';
+  $('chkPD').value = 100; if($('pneuDVal')) $('pneuDVal').innerText = '100%';
+  $('chkPT').value = 100; if($('pneuTVal')) $('pneuTVal').innerText = '100%';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// QUICK-MOVE STATUS no Kanban
+// ═══════════════════════════════════════════════════════════════
+const STATUS_NEXT = {
+  'Aguardando': {label:'→ Orçamento', next:'Orcamento'},
+  'Orcamento':  {label:'→ Em Serviço', next:'Andamento'},
+  'Aprovado':   {label:'→ Em Serviço', next:'Andamento'},
+  'Andamento':  {label:'✓ Concluir', next:'Concluido'},
+  'Concluido':  {label:'↩ Reabrir', next:'Andamento'},
+};
+
+async function quickMoveOS(osId, novoStatus, ev) {
+  ev.stopPropagation();
+  try {
+    const tl = [];
+    const os = dbOS.find(x => x.id === osId);
+    if (os && os.timeline) tl.push(...os.timeline);
+    tl.push({ dt: new Date().toISOString(), user: J.nome, acao: `Moveu para: ${novoStatus}` });
+    await db.collection('ordens_servico').doc(osId).update({
+      status: novoStatus,
+      timeline: tl,
+      updatedAt: new Date().toISOString()
+    });
+    toast(`✓ Status: ${novoStatus}`, 'ok');
+  } catch(e) { toast('Erro ao mover: ' + e.message, 'err'); }
+}
+
+
 let _iaHist = [];
 
 function iaChip(txt) {
@@ -902,43 +1142,18 @@ async function enviarFotosBatch(){
   else toast('✕ Nenhum arquivo enviado.','err');
 }
 
-async function iaRapidoOS(osId) {
-  const os = dbOS.find(x => x.id === osId);
-  if (!os) return;
-  const v = dbVeiculos.find(x => x.id === os.veiculoId) || {};
-  const key = J.gemini || null;
-  if (!key) { toast('⚠ Chave da IA não configurada.', 'warn'); return; }
-
-  const body = $('modalIaOSBody');
-  _iaOSMode = '';
-  _iaOSSugestao = null;
-  $('btnAplicarIaOS').style.display = 'none';
-  body.innerHTML = `<div style="display:flex;align-items:center;gap:12px;padding:24px 0;justify-content:center;"><span class="j-spinner" style="border-color:#A78BFA;border-right-color:transparent;width:18px;height:18px;border-width:2px;"></span><span style="font-family:var(--fm);font-size:0.78rem;color:#A78BFA;letter-spacing:1px;">ANALISANDO O.S. ${os.id.slice(-5).toUpperCase()}...</span></div>`;
-  abrirModalIA('ANÁLISE RÁPIDA — OS #' + os.id.slice(-5).toUpperCase());
-
-  const prompt = `Analise esta Ordem de Serviço de oficina:\n\nVeículo: ${v.modelo||''} ${v.placa||os.placa||'S/P'} | KM: ${os.km||'N/I'}\nProblema: "${os.desc||'não informado'}"\nDiagnóstico atual: "${os.diagnostico||'não preenchido'}"\nStatus: ${os.status||''}\n\nResponda com:\n1. **Avaliação rápida** do diagnóstico atual (correto/incompleto/ausente)\n2. **Próximos passos recomendados** (lista prática)\n3. **Peças ou verificações críticas** para não esquecer\n4. **Alerta de garantia** se houver histórico relevante`;
-
-  try {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(key)}`, {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({
-        contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        systemInstruction: { parts: [{ text: `Você é o thIAguinho, assistente técnico mecânico. Responda em português do Brasil, de forma clínica e objetiva.` }] }
-      })
-    });
-    const data = await res.json();
-    const resp = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sem resposta.';
-    const html = resp.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong style="color:var(--cyan)">$1</strong>');
-    body.innerHTML = `
-      <div style="font-family:var(--fm);font-size:0.6rem;color:#A78BFA;letter-spacing:1px;margin-bottom:10px;">OS #${os.id.slice(-5).toUpperCase()} · ${v.placa||os.placa||'S/P'}</div>
-      <div style="font-size:0.85rem;line-height:1.7;color:var(--text);">${html}</div>`;
-  } catch(e) {
-    body.innerHTML = `<div style="color:var(--danger);font-family:var(--fm);font-size:0.78rem;padding:20px;">⚠ Erro: ${e.message}</div>`;
-  }
-}
-
-
+// ============================================================
+// LISTENERS
+// ============================================================
 document.addEventListener('DOMContentLoaded',()=>{
+  // Avisar sobre STT se não suportado
+  if (!STT_SUPPORT) {
+    document.querySelectorAll('.btn-voice,.btn-ia-voice').forEach(b => {
+      b.title = 'Voz não suportada — use Chrome ou Edge';
+      b.style.opacity = '0.35';
+    });
+  }
+
   db.collection('ordens_servico').where('tenantId','==',J.tid).onSnapshot(snap=>{
     dbOS=snap.docs.map(d=>({id:d.id,...d.data()}));
     renderKanban(); renderKPIs();
@@ -971,11 +1186,8 @@ document.addEventListener('DOMContentLoaded',()=>{
 function renderKPIs(){
   const minhas = dbOS.filter(o => !o.mecId || o.mecId === J.fid);
   const ativas = minhas.filter(o => !['Entregue','Cancelado','Concluido'].includes(o.status));
-  const hoje = new Date().toISOString().split('T')[0];
-  const concluidasHoje = minhas.filter(o => o.status === 'Concluido' && (o.updatedAt||'').startsWith(hoje)).length;
   if($('kMeusOS')) $('kMeusOS').innerText = ativas.length;
   if($('kEmExec')) $('kEmExec').innerText = minhas.filter(o => o.status === 'Andamento').length;
-  if($('kHoje')) $('kHoje').innerText = concluidasHoje;
 }
 
 // ============================================================
@@ -1020,18 +1232,22 @@ function renderKanban(){
     const kEl=$('kb-'+s); if(!kEl) return;
     const cor = corMap[s];
     // O Mecânico NÃO vê os valores da O.S. no kanban
-    kEl.innerHTML=cols[s].sort((a,b)=>new Date(b.os.updatedAt||0)-new Date(a.os.updatedAt||0)).map(({os,v,c})=>`
-      <div class="k-card" style="border-left-color:${cor}">
-        <div onclick="prepOS('edit','${os.id}');abrirModal('modalOS')">
-          <div class="k-placa" style="color:${cor}">${v?.placa||os.placa||'S/PLACA'}</div>
-          <div class="k-cli">${c?.nome||os.cliente||'—'}</div>
-          <div class="k-desc">${os.desc||os.relato||'Sem descrição'}</div>
-        </div>
+    kEl.innerHTML=cols[s].sort((a,b)=>new Date(b.os.updatedAt||0)-new Date(a.os.updatedAt||0)).map(({os,v,c})=>{
+      const qm = STATUS_NEXT[s];
+      const qmBtn = qm ? `<button class="k-move-btn" onclick="quickMoveOS('${os.id}','${qm.next}',event)">${qm.label}</button>` : '';
+      return `
+      <div class="k-card" style="border-left-color:${cor}" onclick="prepOS('edit','${os.id}');abrirModal('modalOS')">
+        <div class="k-placa" style="color:${cor}">${v?.placa||os.placa||'S/PLACA'}</div>
+        <div class="k-cli">${c?.nome||os.cliente||'—'}</div>
+        <div class="k-desc">${os.desc||os.relato||'Sem descrição'}</div>
         <div class="k-footer">
           <span class="k-tipo ${v?.tipo||'carro'}">${{carro:'🚗 CARRO',moto:'🏍️ MOTO',bicicleta:'🚲 BICICLETA'}[v?.tipo||'carro']||'VEÍCULO'}</span>
-          <button type="button" onclick="event.stopPropagation();iaRapidoOS('${os.id}')" style="padding:2px 8px;background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.25);border-radius:10px;color:#A78BFA;font-size:0.55rem;font-family:var(--fm);cursor:pointer;letter-spacing:0.5px;" title="Consultar IA sobre esta O.S.">🤖 IA</button>
         </div>
-      </div>`).join('') || `<div style="text-align:center;padding:20px;color:var(--muted);font-family:var(--fm);font-size:0.7rem;">— Vazio —</div>`;
+        <div class="k-card-actions" onclick="event.stopPropagation()">
+          ${qmBtn}
+          <button class="k-move-btn danger" onclick="event.stopPropagation();prepOS('edit','${os.id}');abrirModal('modalOS')">✏ Editar</button>
+        </div>
+      </div>`}).join('') || `<div style="text-align:center;padding:20px;color:var(--muted);font-family:var(--fm);font-size:0.7rem;">— Vazio —</div>`;
   });
 }
 
@@ -1047,18 +1263,7 @@ function filtrarVeics(){
   let veics=dbVeiculos.filter(v=>v.clienteId===cid);
   if(tipo) veics=veics.filter(v=>v.tipo===tipo);
   if($('osVeiculo')) $('osVeiculo').innerHTML='<option value="">Selecione...</option>'+veics.map(v=>`<option value="${v.id}">${v.modelo} (${v.placa})</option>`).join('');
-  const vid = $v('osVeiculo');
-  mostrarHistoricoVeiculo(vid || null);
 }
-
-$('osVeiculo')?.addEventListener('change', function(){ mostrarHistoricoVeiculo(this.value || null); });
-
-// Delegação para o select de veículo (re-renderizado por filtrarVeics)
-document.addEventListener('change', function(e){
-  if(e.target && e.target.id === 'osVeiculo'){
-    mostrarHistoricoVeiculo(e.target.value || null);
-  }
-});
 
 function prepOS(mode,id=null){
   ['osId','osDesc','osDiag','osKm'].forEach(f=>{if($(f))$(f).value='';});
@@ -1068,10 +1273,11 @@ function prepOS(mode,id=null){
   $('mediaGrid').innerHTML=''; $('mediaArray').value='[]';
   $('osTimeline').innerHTML=''; $('tlData').value='[]';
   $('osIdBadge').innerText='NOVA O.S.';
-  ['chkPainel','chkPressao','chkCar','chkDoc','chkLuzes','chkCinto','chkAC','chkEstepe'].forEach(f=>{if($(f))$(f).checked=false;});
-  ['chkOleo','chkArref','chkFreio'].forEach(f=>{if($(f))$(f).value='N/A';});
-  if($('bannerHistVeiculo')) $('bannerHistVeiculo').style.display='none';
-  limparPreviewOS();
+  // Limpar header ao abrir nova O.S.
+  const ph = document.getElementById('osPlacanHeader'); if(ph){ph.style.display='none';ph.innerText='';}
+  const ch = document.getElementById('osClienteHeader'); if(ch) ch.innerText='';
+  const bh = document.getElementById('bannerHistVeiculo'); if(bh) bh.style.display='none';
+  limparPreviewOS(); _resetChkBtns();
   popularSelects();
   if(mode==='edit'&&id){
     const os=dbOS.find(x=>x.id===id); if(!os) return;
@@ -1081,24 +1287,13 @@ function prepOS(mode,id=null){
     $('osCliente').value=os.clienteId||''; filtrarVeics();
     setTimeout(()=>{
       $('osVeiculo').value=os.veiculoId||'';
-      mostrarHistoricoVeiculo(os.veiculoId||null);
+      atualizarHeaderOS(os.veiculoId||'', os.clienteId||'');
     },80);
     $('osData').value=os.data||''; $('osKm').value=os.km||'';
     $('osDesc').value=os.desc||''; $('osDiag').value=os.diagnostico||'';
     $('osMO').value=os.maoObra||0;
-    $('chkComb').value=os.chkComb||'N/A'; $('chkPD').value=os.chkPneuDia||''; $('chkPT').value=os.chkPneuTra||'';
     $('chkObs').value=os.chkObs||'';
-    if($('chkOleo'))$('chkOleo').value=os.chkOleo||'N/A';
-    if($('chkArref'))$('chkArref').value=os.chkArref||'N/A';
-    if($('chkFreio'))$('chkFreio').value=os.chkFreio||'N/A';
-    if(os.chkPainel) $('chkPainel').checked=true;
-    if(os.chkPressao) $('chkPressao').checked=true;
-    if(os.chkCar) $('chkCar').checked=true;
-    if(os.chkDoc) $('chkDoc').checked=true;
-    if(os.chkLuzes) $('chkLuzes').checked=true;
-    if(os.chkCinto) $('chkCinto').checked=true;
-    if(os.chkAC) $('chkAC').checked=true;
-    if(os.chkEstepe) $('chkEstepe').checked=true;
+    _restaurarChkBtns(os);
     $('mediaArray').value=JSON.stringify(os.media||[]);
     renderMediaGrid();
     $('tlData').value=JSON.stringify(os.timeline||[]);
@@ -1108,14 +1303,16 @@ function prepOS(mode,id=null){
   }
 }
 
-// ADICIONAR SERVIÇOS (SEM PREÇO)
+// ADICIONAR SERVIÇOS (SEM PREÇO) - com botão de voz
 function adicionarServico(s=null){
   const div=document.createElement('div');
-  div.style.cssText='display:flex;gap:7px;align-items:center;';
+  div.style.cssText='display:flex;gap:7px;align-items:center;position:relative;';
+  const uid = 'sv_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
   div.innerHTML=`
-    <input type="text" class="j-input serv-desc" placeholder="Descreva o serviço a ser feito..." value="${s?s.desc:''}" style="flex:1;">
+    <input type="text" class="j-input serv-desc" id="${uid}" placeholder="Descreva o serviço... (ou use 🎙️)" value="${s?s.desc:''}" style="flex:1;padding-right:40px;">
+    <button type="button" class="btn-voice" style="position:absolute;right:38px;top:50%;transform:translateY(-50%);" onclick="iniciarVoz('${uid}',this)" title="Falar serviço">🎙️</button>
     <input type="hidden" class="serv-valor" value="${s?s.valor:0}">
-    <button type="button" onclick="this.parentElement.remove()" style="background:rgba(255,59,59,0.1);border:1px solid rgba(255,59,59,0.3);border-radius:2px;color:var(--danger);cursor:pointer;width:28px;height:34px;font-size:10px;">✕</button>
+    <button type="button" onclick="this.parentElement.remove()" style="background:rgba(255,59,59,0.1);border:1px solid rgba(255,59,59,0.3);border-radius:2px;color:var(--danger);cursor:pointer;width:28px;height:34px;font-size:10px;flex-shrink:0;">✕</button>
   `;
   $('containerServicos').appendChild(div);
 }
@@ -1196,12 +1393,9 @@ async function salvarOS(){
     pecas,
     servicos,
     media:JSON.parse($('mediaArray').value||'[]'),
-    chkComb:$v('chkComb'),chkPneuDia:$v('chkPD'),chkPneuTra:$v('chkPT'),chkObs:$v('chkObs'),
-    chkOleo:$v('chkOleo')||'N/A',chkArref:$v('chkArref')||'N/A',chkFreio:$v('chkFreio')||'N/A',
-    chkPainel:$('chkPainel')?.checked,chkPressao:$('chkPressao')?.checked,
-    chkCar:$('chkCar')?.checked,chkDoc:$('chkDoc')?.checked,
-    chkLuzes:$('chkLuzes')?.checked,chkCinto:$('chkCinto')?.checked,
-    chkAC:$('chkAC')?.checked,chkEstepe:$('chkEstepe')?.checked,
+    chkComb:$v('chkComb'),chkPneuDia:parseInt($('chkPD')?.value||100),chkPneuTra:parseInt($('chkPT')?.value||100),chkObs:$v('chkObs'),
+    chkPainel:$('chkPainel')?.value||'',chkPressao:$('chkPressao')?.value||'',
+    chkCar:$('chkCar')?.value||'',chkDoc:$('chkDoc')?.value||'',
     timeline:tl,updatedAt:new Date().toISOString()
   };
   const id=$v('osId');
@@ -1232,167 +1426,9 @@ function renderTimeline(){
     </div>`).join('');
 }
 
-function inserirProblema(txt) {
-  const el = $('osDesc');
-  if (!el) return;
-  const atual = el.value.trim();
-  el.value = atual ? atual + '\n' + txt : txt;
-  el.focus();
-}
-
-function mostrarHistoricoVeiculo(veiculoId) {
-  const banner = $('bannerHistVeiculo');
-  const content = $('bannerHistContent');
-  if (!banner || !content) return;
-  if (!veiculoId) { banner.style.display = 'none'; return; }
-
-  const v = dbVeiculos.find(x => x.id === veiculoId);
-  const osVeiculo = dbOS.filter(o => o.veiculoId === veiculoId && o.id !== $v('osId'))
-    .sort((a,b) => new Date(b.createdAt||0) - new Date(a.createdAt||0))
-    .slice(0,3);
-
-  if (!osVeiculo.length) { banner.style.display = 'none'; return; }
-
-  const placa = v?.placa || '';
-  const itens = osVeiculo.map(o => {
-    const data = o.data ? new Date(o.data).toLocaleDateString('pt-BR') : '—';
-    const servicos = o.servicos?.map(s=>s.desc).join(', ') || o.desc || 'S/desc';
-    return `<span style="margin-right:12px;">📅 ${data} — ${servicos.substring(0,60)}${servicos.length>60?'...':''}</span>`;
-  }).join('<br>');
-
-  content.innerHTML = `<strong style="color:var(--warn);">${placa}</strong> tem ${osVeiculo.length} O.S. anterior(es):<br>${itens}`;
-  banner.style.display = 'block';
-}
-
-
-
-let _iaOSMode = ''; // 'diag' ou 'servicos'
-let _iaOSSugestao = null;
-
-async function _iaConsultarOS(prompt, modo) {
-  const key = J.gemini || null;
-  if (!key) { toast('⚠ Chave da IA não configurada pelo administrador.', 'warn'); return null; }
-
-  const body = $('modalIaOSBody');
-  _iaOSMode = modo;
-  _iaOSSugestao = null;
-  $('btnAplicarIaOS').style.display = 'none';
-  body.innerHTML = `<div style="display:flex;align-items:center;gap:12px;padding:24px 0;justify-content:center;"><span class="j-spinner" style="border-color:#A78BFA;border-right-color:transparent;width:18px;height:18px;border-width:2px;"></span><span style="font-family:var(--fm);font-size:0.78rem;color:#A78BFA;letter-spacing:1px;">CONSULTANDO BASE TÉCNICA...</span></div>`;
-  abrirModalIA(modo === 'diag' ? 'SUGESTÃO DE DIAGNÓSTICO' : modo === 'servicos' ? 'SUGESTÃO DE SERVIÇOS' : 'ANÁLISE DA O.S.');
-
-  try {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(key)}`, {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({
-        contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        systemInstruction: { parts: [{ text: `Você é o thIAguinho, assistente técnico de uma oficina mecânica. Responda SEMPRE em português do Brasil. Seja clínico, técnico e objetivo. Formate a resposta usando ** para negrito e listas com -. Seja direto e prático para o mecânico.` }] }
-      })
-    });
-    const data = await res.json();
-    return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
-  } catch(e) {
-    body.innerHTML = `<div style="color:var(--danger);font-family:var(--fm);font-size:0.78rem;padding:20px;">⚠ Erro na conexão: ${e.message}</div>`;
-    return null;
-  }
-}
-
-async function iaSugerirDiagnostico() {
-  const problema = $v('osDesc');
-  if (!problema) { toast('⚠ Descreva o problema primeiro no campo "Defeito / Problema Relatado".', 'warn'); return; }
-
-  const veiculo = $('osVeiculo')?.options[$('osVeiculo')?.selectedIndex]?.text || '';
-  const km = $v('osKm');
-  const tipo = $v('osTipo');
-
-  const prompt = `Um mecânico precisa de ajuda para diagnosticar o seguinte problema:\n\nVeículo: ${veiculo || tipo || 'não informado'}\nKM: ${km || 'não informado'}\nProblema relatado: "${problema}"\n\nForneça:\n1. **Diagnóstico técnico mais provável** (1-2 linhas objetivas para preencher na O.S.)\n2. **Causas mais prováveis** (lista com 3-5 itens)\n3. **Componentes a verificar** (lista prática)\n4. **Alerta de garantia** se aplicável\n\nComece com um bloco de DIAGNÓSTICO SUGERIDO que o mecânico pode copiar diretamente para a O.S.`;
-
-  const resp = await _iaConsultarOS(prompt, 'diag');
-  if (!resp) return;
-
-  // Extrair o diagnóstico sugerido para aplicação direta
-  const matchDiag = resp.match(/DIAGNÓSTICO SUGERIDO[:\s\*]*([\s\S]*?)(?=\n\n|\n\*\*|$)/i);
-  _iaOSSugestao = matchDiag ? matchDiag[1].trim().replace(/\*\*/g,'') : resp.split('\n').slice(0,3).join(' ').replace(/\*\*/g,'').substring(0,300);
-
-  const html = resp.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong style="color:var(--cyan)">$1</strong>').replace(/^- /gm,'• ');
-  $('modalIaOSBody').innerHTML = `
-    <div style="font-family:var(--fm);font-size:0.6rem;color:#A78BFA;letter-spacing:1px;margin-bottom:12px;text-transform:uppercase;">Análise baseada no problema relatado</div>
-    <div style="font-size:0.85rem;line-height:1.7;color:var(--text);">${html}</div>
-    <div style="margin-top:14px;padding:12px;background:rgba(167,139,250,0.08);border:1px solid rgba(167,139,250,0.2);border-radius:4px;">
-      <div style="font-family:var(--fm);font-size:0.58rem;color:#A78BFA;margin-bottom:6px;letter-spacing:1px;">SERÁ INSERIDO NO CAMPO DIAGNÓSTICO:</div>
-      <div id="previewDiagSug" style="font-size:0.82rem;color:var(--text);line-height:1.5;">${_iaOSSugestao}</div>
-    </div>`;
-  $('btnAplicarIaOS').style.display = '';
-  $('btnAplicarIaOS').innerText = '✓ INSERIR NO DIAGNÓSTICO';
-}
-
-async function iaSugerirServicos() {
-  const problema = $v('osDesc');
-  const diag = $v('osDiag');
-  if (!problema && !diag) { toast('⚠ Descreva o problema ou diagnóstico primeiro.', 'warn'); return; }
-
-  const veiculo = $('osVeiculo')?.options[$('osVeiculo')?.selectedIndex]?.text || '';
-  const km = $v('osKm');
-  const tipo = $v('osTipo');
-
-  const prompt = `Um mecânico precisa de uma lista de serviços para uma O.S.:\n\nVeículo: ${veiculo || tipo || 'não informado'}\nKM: ${km || 'não informado'}\nProblema: "${problema}"\nDiagnóstico: "${diag || 'não preenchido'}"\n\nGere uma lista de SERVIÇOS TÉCNICOS a serem executados para resolver este problema. Formato obrigatório:\n- [Nome do serviço técnico objetivo]\n- [Nome do serviço técnico objetivo]\n...\n\nApenas nomes de serviços objetivos (ex: "Troca de correia dentada e tensionador", "Limpeza de bicos injetores"), sem descrição longa. Máximo 6 serviços. Inclua apenas o que for realmente necessário para o diagnóstico informado.`;
-
-  const resp = await _iaConsultarOS(prompt, 'servicos');
-  if (!resp) return;
-
-  // Parse lista de serviços
-  const linhas = resp.split('\n').filter(l => l.trim().startsWith('-') || l.trim().match(/^\d+\./));
-  const servicos = linhas.map(l => l.replace(/^[-\d\.]+\s*/, '').replace(/\*\*/g,'').trim()).filter(s => s.length > 3 && s.length < 120);
-  _iaOSSugestao = servicos;
-
-  const html = resp.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong style="color:var(--cyan)">$1</strong>');
-  $('modalIaOSBody').innerHTML = `
-    <div style="font-family:var(--fm);font-size:0.6rem;color:#A78BFA;letter-spacing:1px;margin-bottom:12px;text-transform:uppercase;">Serviços sugeridos pela IA</div>
-    <div style="font-size:0.85rem;line-height:1.7;color:var(--text);">${html}</div>
-    ${servicos.length ? `<div style="margin-top:14px;padding:12px;background:rgba(0,255,136,0.06);border:1px solid rgba(0,255,136,0.15);border-radius:4px;">
-      <div style="font-family:var(--fm);font-size:0.58rem;color:var(--success);margin-bottom:6px;letter-spacing:1px;">${servicos.length} SERVIÇO(S) SERÃO ADICIONADOS À O.S.:</div>
-      ${servicos.map(s=>`<div style="font-size:0.8rem;color:var(--text);padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.04);">• ${s}</div>`).join('')}
-    </div>` : ''}`;
-  if (servicos.length) {
-    $('btnAplicarIaOS').style.display = '';
-    $('btnAplicarIaOS').innerText = `✓ ADICIONAR ${servicos.length} SERVIÇO(S)`;
-  }
-}
-
-function aplicarSugestaoIA() {
-  if (_iaOSMode === 'diag' && _iaOSSugestao) {
-    const atual = $v('osDiag');
-    $('osDiag').value = atual ? atual + '\n' + _iaOSSugestao : _iaOSSugestao;
-    toast('✓ Diagnóstico inserido', 'ok');
-  } else if (_iaOSMode === 'servicos' && Array.isArray(_iaOSSugestao) && _iaOSSugestao.length) {
-    _iaOSSugestao.forEach(s => adicionarServico({ desc: s, valor: 0 }));
-    toast(`✓ ${_iaOSSugestao.length} serviço(s) adicionado(s)`, 'ok');
-  }
-  fecharModalIA();
-}
-
-
-// ── ABRIR/FECHAR MODAL IA (z-index 9999, por cima da O.S.) ──
-function abrirModalIA(subtitulo) {
-  const el = document.getElementById('modalIaOS');
-  if (!el) return;
-  const sub = document.getElementById('iaOSSubtitle');
-  if (sub && subtitulo) sub.innerText = subtitulo;
-  el.classList.add('open');
-}
-function fecharModalIA() {
-  const el = document.getElementById('modalIaOS');
-  if (!el) return;
-  el.style.transition = 'opacity 0.15s, transform 0.15s';
-  el.style.opacity = '0';
-  el.style.transform = 'scale(0.96)';
-  setTimeout(() => {
-    el.classList.remove('open');
-    el.style.opacity = '';
-    el.style.transform = '';
-    el.style.transition = '';
-  }, 150);
-}
-
+// ============================================================
+// CHAT EQUIPE ↔ ADMIN
+// ============================================================
 function renderChat(){
   const msgs=$('chatMsgs');
   if(!dbMsgs.length){msgs.innerHTML='<div style="text-align:center;color:var(--muted);font-family:var(--fm);font-size:0.72rem;padding:30px;">Sem mensagens ainda</div>';return;}
@@ -1417,6 +1453,188 @@ async function enviarMsg(){
 $('chatInput')?.addEventListener('keydown',e=>{
   if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); enviarMsg(); }
 });
+
+// ═══════════════════════════════════════════════════════════════
+// PLACA + HISTÓRICO DO VEÍCULO NO CABEÇALHO DA O.S.
+// ═══════════════════════════════════════════════════════════════
+function atualizarHeaderOS(veiculoId, clienteId) {
+  const v = dbVeiculos.find(x => x.id === veiculoId);
+  const c = dbClientes.find(x => x.id === clienteId);
+  const placa = v?.placa || '';
+  const modelo = v?.modelo || '';
+  const nomeCliente = c?.nome || '';
+
+  const placaEl = document.getElementById('osPlacanHeader');
+  const cliEl   = document.getElementById('osClienteHeader');
+  if (placaEl) {
+    if (placa) { placaEl.innerText = placa; placaEl.style.display = ''; }
+    else placaEl.style.display = 'none';
+  }
+  if (cliEl) cliEl.innerText = nomeCliente ? `${nomeCliente}${modelo ? ' · ' + modelo : ''}` : modelo;
+
+  // Histórico
+  const banner  = document.getElementById('bannerHistVeiculo');
+  const content = document.getElementById('bannerHistContent');
+  if (!banner || !content || !veiculoId) { if(banner) banner.style.display='none'; return; }
+
+  const osVeiculo = dbOS
+    .filter(o => o.veiculoId === veiculoId && o.id !== $v('osId'))
+    .sort((a,b) => new Date(b.createdAt||b.updatedAt||0) - new Date(a.createdAt||a.updatedAt||0))
+    .slice(0, 4);
+
+  if (!osVeiculo.length) { banner.style.display = 'none'; return; }
+
+  content.innerHTML = osVeiculo.map(o => {
+    const data = o.data ? new Date(o.data + 'T12:00:00').toLocaleDateString('pt-BR') : '—';
+    const km   = o.km   ? ` · ${o.km} km` : '';
+    const desc = (o.desc || o.relato || 'S/desc').substring(0, 70);
+    const pecasStr = o.pecas?.filter(p=>p.desc).map(p=>p.desc).slice(0,3).join(', ');
+    const servStr  = o.servicos?.filter(s=>s.desc).map(s=>s.desc).slice(0,3).join(', ');
+    const detalhe  = pecasStr || servStr || '';
+    return `<div style="padding:4px 0;border-bottom:1px solid rgba(255,184,0,0.08);font-size:0.76rem;">
+      <strong style="color:var(--warn);">${data}${km}</strong> — ${desc}
+      ${detalhe ? `<br><span style="color:var(--muted2);font-size:0.7rem;">↳ ${detalhe}</span>` : ''}
+    </div>`;
+  }).join('');
+  banner.style.display = 'block';
+}
+
+document.addEventListener('change', function(e) {
+  if (e.target && (e.target.id === 'osVeiculo' || e.target.id === 'osCliente')) {
+    atualizarHeaderOS($v('osVeiculo'), $v('osCliente'));
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// MODAL IA — ABRIR/FECHAR (z-index 9999)
+// ═══════════════════════════════════════════════════════════════
+function abrirModalIA(subtitulo) {
+  const el = document.getElementById('modalIaOS');
+  if (!el) return;
+  const sub = document.getElementById('iaOSSubtitle');
+  if (sub && subtitulo) sub.innerText = subtitulo;
+  el.classList.add('open');
+}
+function fecharModalIA() {
+  const el = document.getElementById('modalIaOS');
+  if (!el) return;
+  el.style.transition = 'opacity 0.15s,transform 0.15s';
+  el.style.opacity = '0'; el.style.transform = 'scale(0.96)';
+  setTimeout(() => {
+    el.classList.remove('open');
+    el.style.opacity=''; el.style.transform=''; el.style.transition='';
+  }, 150);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// IA ASSISTENTE DA O.S.
+// ═══════════════════════════════════════════════════════════════
+let _iaOSMode = '', _iaOSSugestao = null;
+
+async function _iaConsultarOS(prompt, modo) {
+  const key = J.gemini || null;
+  if (!key) { toast('⚠ Chave Gemini não configurada.','warn'); return null; }
+  _iaOSMode = modo; _iaOSSugestao = null;
+  document.getElementById('btnAplicarIaOS').style.display = 'none';
+  document.getElementById('modalIaOSBody').innerHTML =
+    `<div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:40px 0;">
+      <span class="j-spinner" style="border-color:#A78BFA;border-right-color:transparent;width:28px;height:28px;border-width:3px;"></span>
+      <span style="font-family:var(--fm);font-size:0.75rem;color:#A78BFA;letter-spacing:2px;">CONSULTANDO BASE TÉCNICA...</span>
+    </div>`;
+  abrirModalIA(modo==='diag'?'SUGESTÃO DE DIAGNÓSTICO':modo==='servicos'?'SUGESTÃO DE SERVIÇOS':'ANÁLISE DA O.S.');
+  try {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(key)}`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        contents:[{role:'user',parts:[{text:prompt}]}],
+        systemInstruction:{parts:[{text:'Você é o thIAguinho, assistente técnico de oficina mecânica. Responda em português do Brasil. Seja objetivo e técnico. Use ** para negrito e - para listas.'}]}
+      })
+    });
+    const data = await res.json();
+    return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
+  } catch(e) {
+    document.getElementById('modalIaOSBody').innerHTML=`<div style="color:var(--danger);font-family:var(--fm);padding:20px;">⚠ Erro: ${e.message}</div>`;
+    return null;
+  }
+}
+
+async function iaSugerirDiagnostico() {
+  const problema = $v('osDesc');
+  if (!problema) { toast('⚠ Descreva o problema primeiro.','warn'); return; }
+  const veiculo = document.getElementById('osVeiculo')?.options[document.getElementById('osVeiculo')?.selectedIndex]?.text || '';
+  const km = $v('osKm'), tipo = $v('osTipo');
+
+  // Enriquecer com histórico real do veículo
+  const veiculoId = $v('osVeiculo');
+  let histStr = '';
+  if (veiculoId) {
+    const hist = dbOS.filter(o=>o.veiculoId===veiculoId).sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0)).slice(0,5);
+    if (hist.length) {
+      histStr = '\nHISTÓRICO DESTE VEÍCULO:\n' + hist.map(o=>`- ${o.data||'?'}: ${o.desc||''} | Diag: ${o.diagnostico||''} | Peças: ${(o.pecas||[]).map(p=>p.desc).join(', ')}`).join('\n');
+    }
+  }
+
+  const prompt = `Mecânico precisa de diagnóstico:\nVeículo: ${veiculo||tipo}\nKM: ${km||'N/I'}\nProblema: "${problema}"${histStr}\n\nForneça:\n1. **DIAGNÓSTICO SUGERIDO** (1-2 linhas objetivas)\n2. **Causas prováveis** (lista)\n3. **Componentes a verificar** (lista)\n4. **Alerta de garantia** se o histórico mostrar peça já trocada recentemente`;
+
+  const resp = await _iaConsultarOS(prompt, 'diag');
+  if (!resp) return;
+
+  const match = resp.match(/DIAGNÓSTICO SUGERIDO[:\s\*]*([\s\S]*?)(?=\n\n|\n\*\*|$)/i);
+  _iaOSSugestao = match ? match[1].trim().replace(/\*\*/g,'') : resp.split('\n').slice(0,3).join(' ').replace(/\*\*/g,'').substring(0,300);
+
+  const html = resp.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong style="color:var(--cyan)">$1</strong>');
+  document.getElementById('modalIaOSBody').innerHTML = `
+    <div style="font-family:var(--fm);font-size:0.6rem;color:#A78BFA;letter-spacing:1px;margin-bottom:12px;">ANÁLISE BASEADA NO PROBLEMA E HISTÓRICO</div>
+    <div style="font-size:0.85rem;line-height:1.7;">${html}</div>
+    <div style="margin-top:14px;padding:12px;background:rgba(167,139,250,0.08);border:1px solid rgba(167,139,250,0.2);border-radius:4px;">
+      <div style="font-family:var(--fm);font-size:0.58rem;color:#A78BFA;margin-bottom:6px;">SERÁ INSERIDO NO CAMPO DIAGNÓSTICO:</div>
+      <div style="font-size:0.82rem;line-height:1.5;">${_iaOSSugestao}</div>
+    </div>`;
+  document.getElementById('btnAplicarIaOS').style.display='';
+  document.getElementById('btnAplicarIaOS').innerText='✓ INSERIR NO DIAGNÓSTICO';
+}
+
+async function iaSugerirServicos() {
+  const problema = $v('osDesc'), diag = $v('osDiag');
+  if (!problema && !diag) { toast('⚠ Descreva o problema ou diagnóstico.','warn'); return; }
+  const veiculo = document.getElementById('osVeiculo')?.options[document.getElementById('osVeiculo')?.selectedIndex]?.text || '';
+  const km = $v('osKm'), tipo = $v('osTipo');
+
+  const prompt = `Veículo: ${veiculo||tipo} | KM: ${km||'N/I'}\nProblema: "${problema}"\nDiagnóstico: "${diag||'não preenchido'}"\n\nGere lista de SERVIÇOS TÉCNICOS a executar. Formato obrigatório:\n- [nome do serviço objetivo]\nMáximo 6 itens. Apenas nomes de serviços, sem descrição longa.`;
+
+  const resp = await _iaConsultarOS(prompt, 'servicos');
+  if (!resp) return;
+
+  const linhas = resp.split('\n').filter(l=>l.trim().match(/^[-\d\.]/));
+  const servicos = linhas.map(l=>l.replace(/^[-\d\.]+\s*/,'').replace(/\*\*/g,'').trim()).filter(s=>s.length>3&&s.length<120);
+  _iaOSSugestao = servicos;
+
+  const html = resp.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong style="color:var(--cyan)">$1</strong>');
+  document.getElementById('modalIaOSBody').innerHTML = `
+    <div style="font-family:var(--fm);font-size:0.6rem;color:#A78BFA;letter-spacing:1px;margin-bottom:12px;">SERVIÇOS SUGERIDOS PELA IA</div>
+    <div style="font-size:0.85rem;line-height:1.7;">${html}</div>
+    ${servicos.length?`<div style="margin-top:14px;padding:12px;background:rgba(0,255,136,0.06);border:1px solid rgba(0,255,136,0.15);border-radius:4px;">
+      <div style="font-family:var(--fm);font-size:0.58rem;color:var(--success);margin-bottom:6px;">${servicos.length} SERVIÇO(S) SERÃO ADICIONADOS:</div>
+      ${servicos.map(s=>`<div style="font-size:0.8rem;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.04);">• ${s}</div>`).join('')}
+    </div>`:''}`;
+  if (servicos.length) {
+    document.getElementById('btnAplicarIaOS').style.display='';
+    document.getElementById('btnAplicarIaOS').innerText=`✓ ADICIONAR ${servicos.length} SERVIÇO(S)`;
+  }
+}
+
+function aplicarSugestaoIA() {
+  if (_iaOSMode==='diag' && _iaOSSugestao) {
+    const el = document.getElementById('osDiag');
+    const atual = el ? el.value.trim() : '';
+    if (el) el.value = atual ? atual + '\n' + _iaOSSugestao : _iaOSSugestao;
+    toast('✓ Diagnóstico inserido','ok');
+  } else if (_iaOSMode==='servicos' && Array.isArray(_iaOSSugestao) && _iaOSSugestao.length) {
+    _iaOSSugestao.forEach(s => adicionarServico({desc:s, valor:0}));
+    toast(`✓ ${_iaOSSugestao.length} serviço(s) adicionado(s)`,'ok');
+  }
+  fecharModalIA();
+}
 
 /* Powered by thIAguinho Soluções Digitais */
 </script>
