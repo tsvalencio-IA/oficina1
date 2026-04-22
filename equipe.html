@@ -22,6 +22,49 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 ::-webkit-scrollbar-track{background:var(--surf);}
 ::-webkit-scrollbar-thumb{background:var(--surf3);}
 
+/* VOZ (STT) */
+.field-voice-wrap{position:relative;display:flex;flex-direction:column;gap:0;}
+.field-voice-wrap textarea,.field-voice-wrap input{padding-right:44px!important;}
+.btn-voice{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:32px;height:32px;background:rgba(0,212,255,0.08);border:1px solid var(--border);border-radius:2px;color:var(--muted2);font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;z-index:2;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
+.btn-voice:hover{background:rgba(0,212,255,0.18);color:var(--cyan);border-color:var(--cyan);}
+.btn-voice.listening{background:rgba(255,59,59,0.15);border-color:var(--danger);color:var(--danger);animation:pulse-mic 0.8s ease-in-out infinite;}
+.field-voice-wrap.has-textarea .btn-voice{top:18px;transform:none;}
+@keyframes pulse-mic{0%,100%{opacity:1;}50%{opacity:0.5;}}
+
+/* CHECKLIST TOUCH */
+.chk-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px;}
+.chk-btn{padding:14px 10px;background:var(--surf3);border:2px solid var(--border);border-radius:4px;color:var(--muted2);font-family:var(--fm);font-size:0.68rem;letter-spacing:1px;cursor:pointer;transition:all 0.2s;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;touch-action:manipulation;user-select:none;-webkit-tap-highlight-color:transparent;}
+.chk-btn .chk-icon{font-size:1.4rem;line-height:1;}
+.chk-btn.chk-ok{background:rgba(0,255,136,0.1);border-color:var(--success);color:var(--success);}
+.chk-btn.chk-fail{background:rgba(255,59,59,0.1);border-color:var(--danger);color:var(--danger);}
+
+/* STATUS QUICK-MOVE */
+.k-card-actions{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap;}
+.k-move-btn{flex:1;min-width:0;padding:5px 4px;border:1px solid var(--border);background:rgba(255,255,255,0.03);border-radius:2px;color:var(--muted2);font-family:var(--fm);font-size:0.52rem;letter-spacing:0.5px;cursor:pointer;transition:all 0.18s;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;touch-action:manipulation;}
+.k-move-btn:hover{border-color:var(--cyan);color:var(--cyan);background:rgba(0,212,255,0.06);}
+.k-move-btn.danger:hover{border-color:var(--danger);color:var(--danger);}
+
+/* COMB SELECTOR */
+.comb-grid{display:flex;gap:6px;flex-wrap:wrap;}
+.comb-opt{padding:8px 12px;border:1px solid var(--border);border-radius:3px;background:var(--surf3);color:var(--muted2);font-family:var(--fm);font-size:0.65rem;cursor:pointer;transition:all 0.18s;touch-action:manipulation;}
+.comb-opt.active{border-color:var(--warn);color:var(--warn);background:rgba(255,184,0,0.1);}
+
+/* PNEU BAR */
+.pneu-bar-wrap{display:flex;flex-direction:column;gap:6px;}
+.pneu-row{display:flex;align-items:center;gap:8px;}
+.pneu-label{font-family:var(--fm);font-size:0.6rem;color:var(--muted);width:70px;flex-shrink:0;}
+.pneu-slider{flex:1;accent-color:var(--cyan);height:6px;cursor:pointer;}
+.pneu-val{font-family:var(--fm);font-size:0.72rem;color:var(--cyan);width:32px;text-align:right;flex-shrink:0;}
+
+/* NOVA O.S. FAB */
+.fab-nova-os{position:fixed;bottom:24px;right:20px;z-index:200;width:56px;height:56px;background:var(--cyan);border:none;border-radius:50%;color:#000;font-size:1.6rem;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(0,212,255,0.4);touch-action:manipulation;transition:transform 0.2s;}
+.fab-nova-os:active{transform:scale(0.92);}
+
+/* IA voice no input */
+.ia-foot-wrap{padding:14px;background:var(--surf2);border-top:1px solid rgba(167,139,250,0.2);display:flex;gap:10px;align-items:center;position:relative;}
+.btn-ia-voice{width:40px;height:40px;min-width:40px;background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.3);border-radius:50%;color:#A78BFA;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;touch-action:manipulation;}
+.btn-ia-voice.listening{background:rgba(255,59,59,0.15);border-color:var(--danger);color:var(--danger);animation:pulse-mic 0.8s ease-in-out infinite;}
+
 /* TOPBAR */
 .topbar{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--surf);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;}
 .topbar-left{display:flex;align-items:center;gap:14px;}
@@ -199,11 +242,19 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   .modal-tabs{overflow-x:auto;}
   .mtab{padding:9px 12px;font-size:0.62rem;white-space:nowrap;}
   .media-grid{grid-template-columns:repeat(auto-fill,minmax(85px,1fr));}
+  /* Checklist touch - maior no mobile */
+  .chk-btn{padding:16px 8px;font-size:0.7rem;}
+  .chk-btn .chk-icon{font-size:1.6rem;}
+  .comb-opt{padding:10px 14px;font-size:0.68rem;}
+  .fab-nova-os{bottom:20px;right:16px;}
+  .pneu-slider{height:8px;}
 }
 </style>
 </head>
 <body>
 <div id="toastBox"></div>
+<!-- FAB Mobile: Nova O.S. -->
+<button class="fab-nova-os" onclick="prepOS('add');abrirModal('modalOS')" title="Nova O.S." aria-label="Nova Ordem de Serviço">＋</button>
 
 <div class="topbar">
   <div class="topbar-left">
@@ -269,10 +320,11 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
             <div style="text-align:center;color:var(--muted);font-family:var(--fm);font-size:0.72rem;padding:30px;">Sem mensagens ainda</div>
           </div>
           <div class="chat-foot">
-            <button type="button" class="btn-chat-icon" id="btnPTTEquipe" onclick="togglePTT('btnPTTEquipe')" title="Gravar áudio" aria-label="Gravar áudio">🎤</button>
+            <button type="button" class="btn-chat-icon" id="btnPTTEquipe" onclick="togglePTT('btnPTTEquipe')" title="Gravar áudio PTT" aria-label="Gravar áudio">🎤</button>
+            <button type="button" class="btn-chat-icon" id="btnSTTChat" onclick="iniciarVoz('chatInput',this)" title="Voz para texto" aria-label="Voz para texto">🎙️</button>
             <input type="file" id="fileInputEquipe" accept="image/*,audio/*,video/*,application/pdf,.doc,.docx,.xls,.xlsx" style="display:none" onchange="enviarArquivoChat(this)">
             <button type="button" class="btn-chat-icon" onclick="document.getElementById('fileInputEquipe').click()" title="Anexar foto ou arquivo" aria-label="Anexar arquivo">📎</button>
-            <input class="j-input" id="chatInput" placeholder="Escreva uma mensagem..." style="flex:1;" autocomplete="off">
+            <input class="j-input" id="chatInput" placeholder="Escreva ou use 🎙️..." style="flex:1;" autocomplete="off">
             <button class="btn-primary" onclick="enviarMsg()">ENVIAR</button>
           </div>
         </div>
@@ -295,8 +347,9 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
         <div id="iaMsgs" style="flex:1;overflow-y:auto;padding:20px;background:var(--surf-0);display:flex;flex-direction:column;gap:12px;">
           <div style="text-align:center;color:var(--text-muted);font-size:0.85rem;padding:20px;">Peça ajuda para diagnósticos, torques ou manuais.</div>
         </div>
-        <div style="padding:14px;background:var(--surf2);border-top:1px solid rgba(167,139,250,0.2);display:flex;gap:10px;align-items:center;">
-          <input id="iaInput" class="j-input" placeholder="Pergunte ao thIAguinho..." style="margin:0;border-radius:24px;border-color:rgba(167,139,250,0.25);">
+        <div class="ia-foot-wrap">
+          <button type="button" class="btn-ia-voice" id="btnVozIA" onclick="iniciarVozIA()" title="Falar com a IA">🎙️</button>
+          <input id="iaInput" class="j-input" placeholder="Pergunte ao thIAguinho..." style="margin:0;border-radius:24px;border-color:rgba(167,139,250,0.25);flex:1;">
           <button onclick="iaEnviar()" style="background:#A78BFA;border:none;border-radius:50%;width:44px;height:44px;min-width:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.1rem;color:#000;flex-shrink:0;">➤</button>
         </div>
       </div>
@@ -352,10 +405,16 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
       </div>
     </div>
     <div class="form-group"><label class="j-label">Defeito / Problema Relatado</label>
-      <textarea class="j-textarea" id="osDesc" rows="3" placeholder="Descreva o problema..."></textarea>
+      <div class="field-voice-wrap has-textarea">
+        <textarea class="j-textarea" id="osDesc" rows="3" placeholder="Descreva o problema..."></textarea>
+        <button type="button" class="btn-voice" onclick="iniciarVoz('osDesc',this)" title="Falar para preencher">🎙️</button>
+      </div>
     </div>
     <div class="form-group"><label class="j-label">Diagnóstico Técnico</label>
-      <textarea class="j-textarea" id="osDiag" rows="2" placeholder="Diagnóstico do mecânico..."></textarea>
+      <div class="field-voice-wrap has-textarea">
+        <textarea class="j-textarea" id="osDiag" rows="2" placeholder="Diagnóstico do mecânico..."></textarea>
+        <button type="button" class="btn-voice" onclick="iniciarVoz('osDiag',this)" title="Falar para preencher">🎙️</button>
+      </div>
     </div>
 
     <div style="background:var(--surf3);border:1px solid rgba(0,212,255,0.15);border-radius:3px;padding:14px;margin-bottom:14px;">
@@ -404,21 +463,73 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
       <input type="hidden" id="mediaArray" value="[]">
     </div>
     <div style="background:var(--surf3);border:1px solid var(--border);border-radius:3px;padding:14px;">
-      <div style="font-family:var(--fd);font-weight:700;margin-bottom:10px;color:var(--warn);">CHECKLIST</div>
-      <div class="form-row c3">
-        <div class="form-group"><label class="j-label">Pneu Diant %</label><input type="number" class="j-input" id="chkPD" placeholder="0-100" max="100"></div>
-        <div class="form-group"><label class="j-label">Pneu Tras %</label><input type="number" class="j-input" id="chkPT" placeholder="0-100" max="100"></div>
-        <div class="form-group"><label class="j-label">Combustível</label>
-          <select class="j-select" id="chkComb"><option>N/A</option><option>Reserva</option><option>1/4</option><option>Meio</option><option>3/4</option><option>Cheio</option></select>
+      <div style="font-family:var(--fd);font-weight:700;margin-bottom:12px;color:var(--warn);">⚡ CHECKLIST RÁPIDO</div>
+
+      <!-- COMBUSTÍVEL - seletor visual -->
+      <div class="form-group">
+        <label class="j-label">Combustível</label>
+        <div class="comb-grid" id="combGrid">
+          <div class="comb-opt" onclick="setComb('Reserva',this)">⚠ Reserva</div>
+          <div class="comb-opt" onclick="setComb('1/4',this)">▂ 1/4</div>
+          <div class="comb-opt" onclick="setComb('Meio',this)">▄ Meio</div>
+          <div class="comb-opt" onclick="setComb('3/4',this)">▆ 3/4</div>
+          <div class="comb-opt active" onclick="setComb('N/A',this)">— N/A</div>
+        </div>
+        <input type="hidden" id="chkComb" value="N/A">
+      </div>
+
+      <!-- PNEUS - sliders -->
+      <div class="form-group">
+        <label class="j-label">Estado dos Pneus</label>
+        <div class="pneu-bar-wrap">
+          <div class="pneu-row">
+            <span class="pneu-label">🔵 Dianteiro</span>
+            <input type="range" class="pneu-slider" id="chkPD" min="0" max="100" value="100" oninput="$('pneuDVal').innerText=this.value+'%'">
+            <span class="pneu-val" id="pneuDVal">100%</span>
+          </div>
+          <div class="pneu-row">
+            <span class="pneu-label">🔴 Traseiro</span>
+            <input type="range" class="pneu-slider" id="chkPT" min="0" max="100" value="100" oninput="$('pneuTVal').innerText=this.value+'%'">
+            <span class="pneu-val" id="pneuTVal">100%</span>
+          </div>
         </div>
       </div>
-      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px;">
-        <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:0.8rem;"><input type="checkbox" id="chkPainel" style="accent-color:var(--cyan);"> Painel OK</label>
-        <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:0.8rem;"><input type="checkbox" id="chkPressao" style="accent-color:var(--cyan);"> Pressão Pneus OK</label>
-        <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:0.8rem;"><input type="checkbox" id="chkCar" style="accent-color:var(--cyan);"> Carroceria OK</label>
-        <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:0.8rem;"><input type="checkbox" id="chkDoc" style="accent-color:var(--cyan);"> Documentos OK</label>
+
+      <!-- ITENS - botões toque -->
+      <div class="form-group">
+        <label class="j-label">Itens de Entrada</label>
+        <div class="chk-grid">
+          <button type="button" class="chk-btn" id="chk-painel" onclick="toggleChk('chk-painel','chkPainel')">
+            <span class="chk-icon">🎛️</span>
+            <span>Painel</span>
+          </button>
+          <button type="button" class="chk-btn" id="chk-pressao" onclick="toggleChk('chk-pressao','chkPressao')">
+            <span class="chk-icon">🔧</span>
+            <span>Pressão OK</span>
+          </button>
+          <button type="button" class="chk-btn" id="chk-car" onclick="toggleChk('chk-car','chkCar')">
+            <span class="chk-icon">🚗</span>
+            <span>Carroceria</span>
+          </button>
+          <button type="button" class="chk-btn" id="chk-doc" onclick="toggleChk('chk-doc','chkDoc')">
+            <span class="chk-icon">📄</span>
+            <span>Documentos</span>
+          </button>
+        </div>
+        <input type="hidden" id="chkPainel" value="">
+        <input type="hidden" id="chkPressao" value="">
+        <input type="hidden" id="chkCar" value="">
+        <input type="hidden" id="chkDoc" value="">
       </div>
-      <div class="form-group"><label class="j-label">Avarias Prévias / Obs</label><textarea class="j-textarea" id="chkObs" rows="2" placeholder="Arranhões, amassados..."></textarea></div>
+
+      <!-- AVARIAS - com voz -->
+      <div class="form-group">
+        <label class="j-label">Avarias Prévias / Obs</label>
+        <div class="field-voice-wrap has-textarea">
+          <textarea class="j-textarea" id="chkObs" rows="2" placeholder="Arranhões, amassados... (ou use o microfone)"></textarea>
+          <button type="button" class="btn-voice" onclick="iniciarVoz('chkObs',this)" title="Falar avarias">🎙️</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -495,8 +606,181 @@ const dtBr = iso=>iso?new Date(iso).toLocaleDateString('pt-BR'):'-';
 const dtHrBr = iso=>iso?new Date(iso).toLocaleString('pt-BR'):'-';
 
 // ═══════════════════════════════════════════════════════════════
-// IA - thIAguinho
+// STT - SPEECH TO TEXT (reconhecimento de voz)
 // ═══════════════════════════════════════════════════════════════
+const STT_SUPPORT = ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window);
+let _sttActive = null;
+
+function iniciarVoz(fieldId, btnEl) {
+  if (!STT_SUPPORT) { toast('⚠ Seu navegador não suporta reconhecimento de voz. Use Chrome/Edge.', 'warn'); return; }
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (_sttActive) {
+    try { _sttActive.stop(); } catch(e) {}
+    _sttActive = null;
+    if (btnEl) { btnEl.classList.remove('listening'); btnEl.innerHTML = '🎙️'; }
+    return;
+  }
+
+  const rec = new SpeechRecognition();
+  rec.lang = 'pt-BR';
+  rec.interimResults = true;
+  rec.continuous = false;
+
+  if (btnEl) { btnEl.classList.add('listening'); btnEl.innerHTML = '⏹'; }
+  _sttActive = rec;
+
+  const field = $(fieldId);
+  const baseVal = field ? field.value : '';
+
+  rec.onresult = (e) => {
+    let transcript = '';
+    for (let i = 0; i < e.results.length; i++) transcript += e.results[i][0].transcript;
+    if (field) field.value = baseVal + (baseVal ? ' ' : '') + transcript;
+  };
+  rec.onerror = (e) => {
+    toast('⚠ Erro no microfone: ' + (e.error || 'desconhecido'), 'err');
+    if (btnEl) { btnEl.classList.remove('listening'); btnEl.innerHTML = '🎙️'; }
+    _sttActive = null;
+  };
+  rec.onend = () => {
+    if (btnEl) { btnEl.classList.remove('listening'); btnEl.innerHTML = '🎙️'; }
+    _sttActive = null;
+  };
+  rec.start();
+  toast('🔴 Fale agora... Clique ⏹ para parar.', 'ok');
+}
+
+function iniciarVozIA() {
+  const btn = $('btnVozIA');
+  iniciarVoz('iaInput', btn);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CHECKLIST TOUCH
+// ═══════════════════════════════════════════════════════════════
+function toggleChk(btnId, hiddenId) {
+  const btn = $(btnId);
+  const hidden = $(hiddenId);
+  if (!btn || !hidden) return;
+  const isOk = btn.classList.contains('chk-ok');
+  const isFail = btn.classList.contains('chk-fail');
+
+  if (!isOk && !isFail) {
+    // neutro → OK
+    btn.classList.add('chk-ok');
+    hidden.value = 'ok';
+    btn.querySelector('.chk-icon').innerText = '✅';
+  } else if (isOk) {
+    // OK → Falha
+    btn.classList.remove('chk-ok');
+    btn.classList.add('chk-fail');
+    hidden.value = 'fail';
+    btn.querySelector('.chk-icon').innerText = '❌';
+  } else {
+    // Falha → neutro
+    btn.classList.remove('chk-fail');
+    hidden.value = '';
+    const icons = {
+      'chk-painel': '🎛️', 'chk-pressao': '🔧',
+      'chk-car': '🚗', 'chk-doc': '📄'
+    };
+    btn.querySelector('.chk-icon').innerText = icons[btnId] || '●';
+  }
+}
+
+function setComb(val, el) {
+  document.querySelectorAll('.comb-opt').forEach(o => o.classList.remove('active'));
+  el.classList.add('active');
+  $('chkComb').value = val;
+}
+
+// Restaurar estado dos botões touch ao editar OS
+function _restaurarChkBtns(os) {
+  const mapa = {
+    chkPainel: {btnId:'chk-painel', hiddenId:'chkPainel', iconNeutro:'🎛️'},
+    chkPressao: {btnId:'chk-pressao', hiddenId:'chkPressao', iconNeutro:'🔧'},
+    chkCar: {btnId:'chk-car', hiddenId:'chkCar', iconNeutro:'🚗'},
+    chkDoc: {btnId:'chk-doc', hiddenId:'chkDoc', iconNeutro:'📄'},
+  };
+  Object.entries(mapa).forEach(([key, cfg]) => {
+    const btn = $(cfg.btnId);
+    const hidden = $(cfg.hiddenId);
+    if (!btn || !hidden) return;
+    const val = os[key];
+    btn.classList.remove('chk-ok','chk-fail');
+    btn.querySelector('.chk-icon').innerText = cfg.iconNeutro;
+    hidden.value = '';
+    if (val === 'ok' || val === true) {
+      btn.classList.add('chk-ok');
+      hidden.value = 'ok';
+      btn.querySelector('.chk-icon').innerText = '✅';
+    } else if (val === 'fail') {
+      btn.classList.add('chk-fail');
+      hidden.value = 'fail';
+      btn.querySelector('.chk-icon').innerText = '❌';
+    }
+  });
+
+  // Combustível
+  const combVal = os.chkComb || 'N/A';
+  $('chkComb').value = combVal;
+  document.querySelectorAll('.comb-opt').forEach(o => {
+    o.classList.toggle('active', o.innerText.includes(combVal) || (combVal==='N/A' && o.innerText.includes('N/A')));
+  });
+
+  // Pneus (slider)
+  const pd = os.chkPneuDia !== undefined ? os.chkPneuDia : 100;
+  const pt = os.chkPneuTra !== undefined ? os.chkPneuTra : 100;
+  $('chkPD').value = pd; if($('pneuDVal')) $('pneuDVal').innerText = pd + '%';
+  $('chkPT').value = pt; if($('pneuTVal')) $('pneuTVal').innerText = pt + '%';
+}
+
+// Resetar checklist buttons ao criar nova OS
+function _resetChkBtns() {
+  ['chk-painel','chk-pressao','chk-car','chk-doc'].forEach(id => {
+    const btn = $(id); if (!btn) return;
+    btn.classList.remove('chk-ok','chk-fail');
+    const icons = {'chk-painel':'🎛️','chk-pressao':'🔧','chk-car':'🚗','chk-doc':'📄'};
+    btn.querySelector('.chk-icon').innerText = icons[id] || '●';
+  });
+  ['chkPainel','chkPressao','chkCar','chkDoc'].forEach(id => { if($(id)) $(id).value=''; });
+  document.querySelectorAll('.comb-opt').forEach(o => o.classList.remove('active'));
+  const na = [...document.querySelectorAll('.comb-opt')].find(o => o.innerText.includes('N/A'));
+  if (na) na.classList.add('active');
+  $('chkComb').value = 'N/A';
+  $('chkPD').value = 100; if($('pneuDVal')) $('pneuDVal').innerText = '100%';
+  $('chkPT').value = 100; if($('pneuTVal')) $('pneuTVal').innerText = '100%';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// QUICK-MOVE STATUS no Kanban
+// ═══════════════════════════════════════════════════════════════
+const STATUS_NEXT = {
+  'Aguardando': {label:'→ Orçamento', next:'Orcamento'},
+  'Orcamento':  {label:'→ Em Serviço', next:'Andamento'},
+  'Aprovado':   {label:'→ Em Serviço', next:'Andamento'},
+  'Andamento':  {label:'✓ Concluir', next:'Concluido'},
+  'Concluido':  {label:'↩ Reabrir', next:'Andamento'},
+};
+
+async function quickMoveOS(osId, novoStatus, ev) {
+  ev.stopPropagation();
+  try {
+    const tl = [];
+    const os = dbOS.find(x => x.id === osId);
+    if (os && os.timeline) tl.push(...os.timeline);
+    tl.push({ dt: new Date().toISOString(), user: J.nome, acao: `Moveu para: ${novoStatus}` });
+    await db.collection('ordens_servico').doc(osId).update({
+      status: novoStatus,
+      timeline: tl,
+      updatedAt: new Date().toISOString()
+    });
+    toast(`✓ Status: ${novoStatus}`, 'ok');
+  } catch(e) { toast('Erro ao mover: ' + e.message, 'err'); }
+}
+
+
 let _iaHist = [];
 
 function iaChip(txt) {
@@ -812,6 +1096,14 @@ async function enviarFotosBatch(){
 // LISTENERS
 // ============================================================
 document.addEventListener('DOMContentLoaded',()=>{
+  // Avisar sobre STT se não suportado
+  if (!STT_SUPPORT) {
+    document.querySelectorAll('.btn-voice,.btn-ia-voice').forEach(b => {
+      b.title = 'Voz não suportada — use Chrome ou Edge';
+      b.style.opacity = '0.35';
+    });
+  }
+
   db.collection('ordens_servico').where('tenantId','==',J.tid).onSnapshot(snap=>{
     dbOS=snap.docs.map(d=>({id:d.id,...d.data()}));
     renderKanban(); renderKPIs();
@@ -890,7 +1182,10 @@ function renderKanban(){
     const kEl=$('kb-'+s); if(!kEl) return;
     const cor = corMap[s];
     // O Mecânico NÃO vê os valores da O.S. no kanban
-    kEl.innerHTML=cols[s].sort((a,b)=>new Date(b.os.updatedAt||0)-new Date(a.os.updatedAt||0)).map(({os,v,c})=>`
+    kEl.innerHTML=cols[s].sort((a,b)=>new Date(b.os.updatedAt||0)-new Date(a.os.updatedAt||0)).map(({os,v,c})=>{
+      const qm = STATUS_NEXT[s];
+      const qmBtn = qm ? `<button class="k-move-btn" onclick="quickMoveOS('${os.id}','${qm.next}',event)">${qm.label}</button>` : '';
+      return `
       <div class="k-card" style="border-left-color:${cor}" onclick="prepOS('edit','${os.id}');abrirModal('modalOS')">
         <div class="k-placa" style="color:${cor}">${v?.placa||os.placa||'S/PLACA'}</div>
         <div class="k-cli">${c?.nome||os.cliente||'—'}</div>
@@ -898,7 +1193,11 @@ function renderKanban(){
         <div class="k-footer">
           <span class="k-tipo ${v?.tipo||'carro'}">${{carro:'🚗 CARRO',moto:'🏍️ MOTO',bicicleta:'🚲 BICICLETA'}[v?.tipo||'carro']||'VEÍCULO'}</span>
         </div>
-      </div>`).join('') || `<div style="text-align:center;padding:20px;color:var(--muted);font-family:var(--fm);font-size:0.7rem;">— Vazio —</div>`;
+        <div class="k-card-actions" onclick="event.stopPropagation()">
+          ${qmBtn}
+          <button class="k-move-btn danger" onclick="event.stopPropagation();prepOS('edit','${os.id}');abrirModal('modalOS')">✏ Editar</button>
+        </div>
+      </div>`}).join('') || `<div style="text-align:center;padding:20px;color:var(--muted);font-family:var(--fm);font-size:0.7rem;">— Vazio —</div>`;
   });
 }
 
@@ -924,8 +1223,7 @@ function prepOS(mode,id=null){
   $('mediaGrid').innerHTML=''; $('mediaArray').value='[]';
   $('osTimeline').innerHTML=''; $('tlData').value='[]';
   $('osIdBadge').innerText='NOVA O.S.';
-  ['chkPainel','chkPressao','chkCar','chkDoc'].forEach(f=>{if($(f))$(f).checked=false;});
-  limparPreviewOS();
+  limparPreviewOS(); _resetChkBtns();
   popularSelects();
   if(mode==='edit'&&id){
     const os=dbOS.find(x=>x.id===id); if(!os) return;
@@ -937,30 +1235,27 @@ function prepOS(mode,id=null){
     $('osData').value=os.data||''; $('osKm').value=os.km||'';
     $('osDesc').value=os.desc||''; $('osDiag').value=os.diagnostico||'';
     $('osMO').value=os.maoObra||0;
-    $('chkComb').value=os.chkComb||'N/A'; $('chkPD').value=os.chkPneuDia||''; $('chkPT').value=os.chkPneuTra||'';
     $('chkObs').value=os.chkObs||'';
-    if(os.chkPainel) $('chkPainel').checked=true;
-    if(os.chkPressao) $('chkPressao').checked=true;
-    if(os.chkCar) $('chkCar').checked=true;
-    if(os.chkDoc) $('chkDoc').checked=true;
+    _restaurarChkBtns(os);
     $('mediaArray').value=JSON.stringify(os.media||[]);
     renderMediaGrid();
     $('tlData').value=JSON.stringify(os.timeline||[]);
     renderTimeline();
-    
     if(os.pecas) os.pecas.forEach(p=>renderPecaRow(p));
     if(os.servicos) os.servicos.forEach(s=>renderServicoRow(s));
   }
 }
 
-// ADICIONAR SERVIÇOS (SEM PREÇO)
+// ADICIONAR SERVIÇOS (SEM PREÇO) - com botão de voz
 function adicionarServico(s=null){
   const div=document.createElement('div');
-  div.style.cssText='display:flex;gap:7px;align-items:center;';
+  div.style.cssText='display:flex;gap:7px;align-items:center;position:relative;';
+  const uid = 'sv_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
   div.innerHTML=`
-    <input type="text" class="j-input serv-desc" placeholder="Descreva o serviço a ser feito..." value="${s?s.desc:''}" style="flex:1;">
+    <input type="text" class="j-input serv-desc" id="${uid}" placeholder="Descreva o serviço... (ou use 🎙️)" value="${s?s.desc:''}" style="flex:1;padding-right:40px;">
+    <button type="button" class="btn-voice" style="position:absolute;right:38px;top:50%;transform:translateY(-50%);" onclick="iniciarVoz('${uid}',this)" title="Falar serviço">🎙️</button>
     <input type="hidden" class="serv-valor" value="${s?s.valor:0}">
-    <button type="button" onclick="this.parentElement.remove()" style="background:rgba(255,59,59,0.1);border:1px solid rgba(255,59,59,0.3);border-radius:2px;color:var(--danger);cursor:pointer;width:28px;height:34px;font-size:10px;">✕</button>
+    <button type="button" onclick="this.parentElement.remove()" style="background:rgba(255,59,59,0.1);border:1px solid rgba(255,59,59,0.3);border-radius:2px;color:var(--danger);cursor:pointer;width:28px;height:34px;font-size:10px;flex-shrink:0;">✕</button>
   `;
   $('containerServicos').appendChild(div);
 }
@@ -1041,9 +1336,9 @@ async function salvarOS(){
     pecas,
     servicos,
     media:JSON.parse($('mediaArray').value||'[]'),
-    chkComb:$v('chkComb'),chkPneuDia:$v('chkPD'),chkPneuTra:$v('chkPT'),chkObs:$v('chkObs'),
-    chkPainel:$('chkPainel')?.checked,chkPressao:$('chkPressao')?.checked,
-    chkCar:$('chkCar')?.checked,chkDoc:$('chkDoc')?.checked,
+    chkComb:$v('chkComb'),chkPneuDia:parseInt($('chkPD')?.value||100),chkPneuTra:parseInt($('chkPT')?.value||100),chkObs:$v('chkObs'),
+    chkPainel:$('chkPainel')?.value||'',chkPressao:$('chkPressao')?.value||'',
+    chkCar:$('chkCar')?.value||'',chkDoc:$('chkDoc')?.value||'',
     timeline:tl,updatedAt:new Date().toISOString()
   };
   const id=$v('osId');
