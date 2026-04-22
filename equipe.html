@@ -859,39 +859,58 @@ async function iaEnviar() {
     return;
   }
 
-  // 1. CONSTRUÇÃO DA MEMÓRIA DO JARVIS (HISTÓRICO DE PLACAS E SERVIÇOS)
-  let historyContext = "BASE DE DADOS DE SERVIÇOS ANTERIORES DA OFICINA:\n";
-  const limiteData = new Date();
-  limiteData.setMonth(limiteData.getMonth() - 24); // Puxa histórico de até 2 anos para cobrir garantias longas
+  // 1. HISTÓRICO COMPLETO DA OFICINA — todos os veículos, todos os defeitos, aprendizado real
+  let historyContext = "═══════════════════════════════════════\nBASE DE CONHECIMENTO DESTA OFICINA (HISTÓRICO REAL):\n═══════════════════════════════════════\n";
 
-  dbOS.filter(o => new Date(o.createdAt || o.data || o.updatedAt || Date.now()) > limiteData).forEach(o => {
-    historyContext += `[OS #${o.id.slice(-5).toUpperCase()} | Placa: ${o.placa || 'S/P'} | Data: ${o.data || 'N/A'}]\n`;
-    historyContext += `- Relato/Diagnóstico: ${o.desc || 'N/A'} | ${o.diagnostico || 'N/A'}\n`;
-    if (o.pecas && o.pecas.length > 0) historyContext += `- Peças Trocadas: ${o.pecas.map(p => p.desc).join(', ')}\n`;
-    if (o.servicos && o.servicos.length > 0) historyContext += `- Serviços Feitos: ${o.servicos.map(s => s.desc).join(', ')}\n`;
+  // Agrupa por placa para detectar reincidências
+  const porPlaca = {};
+  dbOS.forEach(o => {
+    const placa = o.placa || dbVeiculos.find(v=>v.id===o.veiculoId)?.placa || 'S/P';
+    if (!porPlaca[placa]) porPlaca[placa] = [];
+    porPlaca[placa].push(o);
   });
 
-  // 2. O PROMPT MESTRE (DOUTOR-IE / BOSCH + AUDITORIA)
-  const systemPrompt = `Você é o thIAguinho, a Inteligência Artificial avançada (JARVIS) desta oficina mecânica. 
-Seu nível de conhecimento técnico é equivalente às plataformas Doutor-IE e Bosch Mecânico Pro.
-Seu papel é atuar como um Engenheiro Clínico Automotivo: auxiliar com diagnósticos de altíssima precisão, torques, esquemas elétricos, e atuar como AUDITOR DE SERVIÇOS E GARANTIAS.
+  Object.entries(porPlaca).forEach(([placa, oss]) => {
+    historyContext += `\n🚗 PLACA: ${placa} (${oss.length} atendimento(s))\n`;
+    oss.sort((a,b)=>new Date(b.createdAt||b.data||0)-new Date(a.createdAt||a.data||0)).forEach(o => {
+      const v = dbVeiculos.find(x=>x.id===o.veiculoId);
+      const modelo = v?.modelo || o.tipoVeiculo || '';
+      historyContext += `  • [${o.data||'?'}] OS#${o.id.slice(-5).toUpperCase()} ${modelo} — KM: ${o.km||'?'}\n`;
+      if (o.desc)        historyContext += `    RELATO: ${o.desc}\n`;
+      if (o.diagnostico) historyContext += `    DIAGNÓSTICO: ${o.diagnostico}\n`;
+      if (o.pecas?.length)    historyContext += `    PEÇAS: ${o.pecas.map(p=>`${p.desc}${p.qtd>1?' x'+p.qtd:''}`).join(', ')}\n`;
+      if (o.servicos?.length) historyContext += `    SERVIÇOS: ${o.servicos.map(s=>s.desc).join(', ')}\n`;
+      if (o.status === 'Concluido') historyContext += `    STATUS: ✅ Concluído\n`;
+    });
+  });
 
-DIRETRIZES DE AUDITORIA (EXTREMAMENTE IMPORTANTE):
-1. Abaixo deste prompt, você recebeu a "BASE DE DADOS DE SERVIÇOS ANTERIORES DA OFICINA".
-2. Se o usuário mencionar uma placa de veículo e uma peça/serviço, VOCÊ É OBRIGADO a varrer a BASE DE DADOS fornecida e verificar se essa placa já esteve na oficina e se essa peça já foi trocada.
-3. REGRAS DE GARANTIA PADRÃO DO MERCADO:
-   - Amortecedores: 2 anos ou 50.000 km.
-   - Kits de Amortecedor (batente, coifa, coxim): 3 meses ou 10.000 km.
-   - Pastilhas e Discos de freio: 3 meses ou 5.000 km.
-   - Baterias: 1 ano a 18 meses.
-   - Peças de motor e injeção: 3 meses (garantia legal).
-4. Se você identificar que o mecânico quer trocar uma peça que ainda está na garantia segundo o histórico, ALERTE IMEDIATAMENTE em negrito.
-5. Quando houver reincidência de quebra prematura (ex: amortecedor estourou em 3 meses), liste as CAUSAS RAIZ prováveis (ex: mola cansada, erro de montagem, batente de má qualidade) para o mecânico investigar antes de apenas trocar a peça de novo.
+  // 2. PROMPT MESTRE — Doutor-IE/Bosch + auditoria + web grounding
+  const systemPrompt = `Você é o thIAguinho, Engenheiro Clínico Automotivo desta oficina mecânica.
+Nível técnico: equivalente ao Doutor-IE + Bosch Mecânico Pro + AllData.
+Você tem DUAS fontes de conhecimento obrigatórias — use AMBAS em toda resposta:
 
-POSTURA E TOM:
-- Seja clínico, direto e altamente técnico. Evite jargões vagos.
-- Para códigos OBD (DTC), forneça: Significado, Causas, Sintomas e Passos de Teste (Pinagem, Multímetro, Osciloscópio).
-- Responda sempre em português do Brasil.
+FONTE 1 — BASE INTERNA (histórico real desta oficina, fornecido abaixo)
+FONTE 2 — INTERNET (use sua ferramenta de busca Google para confirmar torques, especificações técnicas, TSBs, recalls e procedimentos com dados atualizados)
+
+REGRAS ABSOLUTAS:
+1. AUDITORIA DE GARANTIA: Se o mecânico mencionar uma placa + peça, VARRA a base interna e verifique se essa peça foi trocada recentemente. Alerte em **NEGRITO** se ainda estiver na garantia.
+   - Amortecedores: 2 anos / 50.000 km
+   - Pastilhas/Discos: 3 meses / 5.000 km
+   - Baterias: 12 a 18 meses
+   - Motor/Injeção: 3 meses (garantia legal PROCON)
+   - Kits suspensão (batente/coifa): 3 meses / 10.000 km
+
+2. REINCIDÊNCIA: Se a mesma placa apresentou o mesmo problema mais de uma vez, identifique e liste CAUSAS RAIZ (ex: mola cansada causando amortecedor, erro de montagem, peça de qualidade inferior).
+
+3. VERDADE COMPROVADA: Para torques, especificações, diagramas elétricos e TSBs, use a busca Google para confirmar os valores exatos. Nunca invente especificações técnicas. Se não tiver certeza, diga "consultando..." e busque.
+
+4. FORMATO DA RESPOSTA:
+   - Seja clínico e direto. Sem rodeios.
+   - Códigos OBD: Significado + Causas + Sintomas + Passos de Teste com valores de multímetro
+   - Torques: cite a fonte (manual do fabricante/modelo/ano)
+   - Se encontrar histórico relevante na base: cite a OS pelo número
+
+Responda sempre em português do Brasil.
 
 ${historyContext}`;
 
@@ -901,13 +920,19 @@ ${historyContext}`;
       method: 'POST', headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
         contents,
-        systemInstruction: { parts: [{ text: systemPrompt }] }
+        systemInstruction: { parts: [{ text: systemPrompt }] },
+        tools: [{ google_search: {} }]
       })
     });
     const data = await res.json();
     const resp = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sem resposta da base técnica.';
+
+    // Montar fontes citadas se houver groundingMetadata
+    const fontes = data.candidates?.[0]?.groundingMetadata?.searchEntryPoint?.renderedContent || '';
+    const fontesHtml = fontes ? `<div style="margin-top:12px;padding:8px 10px;background:rgba(0,212,255,0.06);border:1px solid var(--border);border-radius:4px;font-family:var(--fm);font-size:0.58rem;color:var(--muted2);">🌐 FONTES CONSULTADAS NA WEB</div>` : '';
+
     _iaHist.push({ role: 'model', text: resp });
-    _iaReplace(lid, resp.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>'));
+    _iaReplace(lid, resp.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong style="color:var(--warn)">$1</strong>').replace(/\*(.*?)\*/g,'<em>$1</em>') + fontesHtml);
   } catch(e) {
     _iaReplace(lid, '⚠ Erro de conexão com a central de diagnóstico: ' + e.message);
   }
@@ -1257,6 +1282,9 @@ function renderKanban(){
 function popularSelects(){
   const cOpts='<option value="">Selecione...</option>'+dbClientes.map(c=>`<option value="${c.id}">${c.nome}</option>`).join('');
   if($('osCliente')) $('osCliente').innerHTML=cOpts;
+  // Redesenhar kanban sempre que clientes ou veículos chegarem do Firestore
+  // Isso garante que as placas apareçam mesmo no primeiro carregamento
+  renderKanban();
 }
 function filtrarVeics(){
   const cid=$v('osCliente'),tipo=$v('osTipo');
@@ -1539,7 +1567,7 @@ async function _iaConsultarOS(prompt, modo) {
   document.getElementById('modalIaOSBody').innerHTML =
     `<div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:40px 0;">
       <span class="j-spinner" style="border-color:#A78BFA;border-right-color:transparent;width:28px;height:28px;border-width:3px;"></span>
-      <span style="font-family:var(--fm);font-size:0.75rem;color:#A78BFA;letter-spacing:2px;">CONSULTANDO BASE TÉCNICA...</span>
+      <span style="font-family:var(--fm);font-size:0.75rem;color:#A78BFA;letter-spacing:2px;">CONSULTANDO HISTÓRICO + WEB...</span>
     </div>`;
   abrirModalIA(modo==='diag'?'SUGESTÃO DE DIAGNÓSTICO':modo==='servicos'?'SUGESTÃO DE SERVIÇOS':'ANÁLISE DA O.S.');
   try {
@@ -1547,7 +1575,8 @@ async function _iaConsultarOS(prompt, modo) {
       method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
         contents:[{role:'user',parts:[{text:prompt}]}],
-        systemInstruction:{parts:[{text:'Você é o thIAguinho, assistente técnico de oficina mecânica. Responda em português do Brasil. Seja objetivo e técnico. Use ** para negrito e - para listas.'}]}
+        systemInstruction:{parts:[{text:'Você é o thIAguinho, assistente técnico de oficina mecânica. Responda em português do Brasil. Use a busca Google para confirmar torques, especificações e procedimentos com fontes reais. Seja objetivo, técnico e clínico. Use ** para negrito e - para listas.'}]},
+        tools:[{google_search:{}}]
       })
     });
     const data = await res.json();
