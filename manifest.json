@@ -1,0 +1,41 @@
+{
+  "name": "thIAguinho — Gestão Automotiva",
+  "short_name": "thIAguinho",
+  "description": "Sistema completo de gestão automotiva. Cliente, mecânico, gestor e administrador num só app.",
+  "start_url": "./selecionar-perfil.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#060A14",
+  "theme_color": "#00D4FF",
+  "lang": "pt-BR",
+  "categories": ["productivity", "automotive", "business"],
+  "icons": [
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Sou Cliente",
+      "short_name": "Cliente",
+      "url": "./cliente.html",
+      "description": "Acompanhar minha O.S., scanner OBD"
+    },
+    {
+      "name": "Sou Mecânico / Gestor",
+      "short_name": "Login",
+      "url": "./index.html",
+      "description": "Login para equipe e gestor da oficina"
+    }
+  ]
+}

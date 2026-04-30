@@ -1,0 +1,28 @@
+{
+  "name": "thiaguinho-erp-cliente",
+  "version": "1.0.0",
+  "description": "thIAguinho ERP — App nativo Android para clientes finais. Inclui suporte a ELM327 via Bluetooth Clássico (SPP/RFCOMM). Powered by thIAguinho Soluções Digitais",
+  "main": "index.js",
+  "scripts": {
+    "build": "echo 'Build delegado ao Capacitor sync'",
+    "sync": "npx cap sync android",
+    "open": "npx cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.2.0",
+    "@capacitor/cli": "^6.2.0",
+    "@capacitor/core": "^6.2.0",
+    "@capacitor/app": "^6.0.2",
+    "@capacitor/camera": "^6.1.2",
+    "@capacitor/filesystem": "^6.0.3",
+    "@capacitor/preferences": "^6.0.3",
+    "@capacitor/share": "^6.0.3",
+    "@capacitor/splash-screen": "^6.0.3",
+    "@capacitor/status-bar": "^6.0.2",
+    "@capacitor/toast": "^6.0.3",
+    "@capacitor-community/bluetooth-le": "^6.1.0"
+  },
+  "author": "thIAguinho Soluções Digitais",
+  "license": "UNLICENSED",
+  "private": true
+}

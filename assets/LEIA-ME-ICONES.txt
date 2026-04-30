@@ -1,0 +1,16 @@
+INSTRUÇÕES — ÍCONES DO APP (PWA)
+
+O arquivo manifest.json agora aponta para:
+  assets/icon-192.png  (192×192 px)
+  assets/icon-512.png  (512×512 px)
+
+COMO CRIAR:
+1. Crie uma imagem PNG do logotipo da sua oficina em 512×512 px
+2. Salve como: assets/icon-512.png
+3. Faça um redimensionamento 192×192: assets/icon-192.png
+4. Faça commit e push para o GitHub
+
+Enquanto os ícones não forem criados, o PWA não exibirá ícone personalizado,
+mas o sistema funciona normalmente e NÃO salva mais ícones aleatórios no celular.
+
+Powered by thIAguinho Soluções Digitais

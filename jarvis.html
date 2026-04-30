@@ -2,12 +2,27 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>J.A.R.V.I.S — Painel de Controle</title>
+<!-- ═══ PWA ═══ -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#00D4FF">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="JARVIS Gestor">
+<meta name="mobile-web-app-capable" content="yes">
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('service-worker.js').catch(function(){});
+  });
+}
+</script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="js/config.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&family=Exo+2:wght@300;400;600;700;900&display=swap" rel="stylesheet">
 <style>
@@ -178,8 +193,12 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .modal-close{background:none;border:none;color:var(--muted);font-size:1.5rem;cursor:pointer;padding:4px 8px;transition:color 0.2s;}
 .modal-close:hover{color:var(--danger);}
 .modal-body{padding:24px;}
-.modal-foot{padding:16px 24px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:flex-end;gap:10px; position:sticky; bottom:0; background:var(--surf); z-index:10; border-radius:0 0 6px 6px;}
-.modal-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);padding:0 24px; overflow-x: auto;}
+.modal-foot{padding:16px 24px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:flex-end;gap:10px; position:sticky; bottom:0; background:var(--surf); z-index:10; border-radius:0 0 6px 6px; flex-wrap:wrap;}
+.modal-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);padding:0 24px; overflow-x: auto; -webkit-overflow-scrolling:touch; scroll-behavior:smooth; scrollbar-width:thin; scrollbar-color:var(--cyan) transparent;}
+/* Estilo da scrollbar HORIZONTAL nas abas — visível no mobile (Chrome) */
+.modal-tabs::-webkit-scrollbar{height:6px;}
+.modal-tabs::-webkit-scrollbar-thumb{background:var(--cyan);border-radius:3px;}
+.modal-tabs::-webkit-scrollbar-track{background:rgba(0,212,255,0.05);}
 .mtab{padding:12px 18px;font-family:var(--fm);font-size:0.7rem;letter-spacing:1px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;margin-bottom:-1px; white-space: nowrap;}
 .mtab.active{color:var(--cyan);border-bottom-color:var(--cyan);font-weight:700;}
 .tab-pane{display:none;padding:20px 24px;}
@@ -238,25 +257,34 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .stock-critical{background:rgba(255,59,59,0.08);border-left:3px solid var(--danger);}
 
 /* ──────── BOTÃO HAMBÚRGUER MOBILE (escondido no desktop) ──────── */
-.btn-hamburger{display:none;position:fixed;top:14px;left:14px;z-index:1200;width:44px;height:44px;background:var(--surf);border:1px solid var(--border2);border-radius:6px;color:var(--cyan);font-size:1.3rem;cursor:pointer;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,0.5);touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
+.btn-hamburger{display:none;position:fixed;top:14px;left:14px;z-index:1300;width:44px;height:44px;background:var(--surf);border:1px solid var(--border2);border-radius:6px;color:var(--cyan);font-size:1.3rem;cursor:pointer;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,0.5);touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
 .btn-hamburger:hover{background:var(--surf2);}
-.sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1050;backdrop-filter:blur(2px);}
+/* Backdrop SEM blur (blur quebrava cliques na sidebar). Apenas escurecimento. */
+.sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:1100;}
 .sidebar-backdrop.open{display:block;}
 
 @media(max-width:768px){
   :root{--sidebar:0px;}
-  /* Sidebar vira DRAWER deslizante em vez de desaparecer */
+  /* Sidebar vira DRAWER deslizante. z-index 1200 (backdrop=1100, hamburger=1300 fica por cima quando fechada). */
   .sidebar{
     display:flex !important;
     position:fixed;
     top:0;left:0;bottom:0;
     width:260px;
-    z-index:1100;
+    z-index:1200;
     transform:translateX(-100%);
     transition:transform 0.25s ease;
     box-shadow:4px 0 20px rgba(0,0,0,0.7);
+    pointer-events:auto;
+    -webkit-overflow-scrolling:touch;
+    overflow-y:auto;
   }
   .sidebar.open{transform:translateX(0);}
+  .sidebar .nav-item, .sidebar .nav-link, .sidebar a, .sidebar button {
+    pointer-events:auto !important;
+    position:relative;
+    z-index:1;
+  }
   .btn-hamburger{display:flex;}
   .topbar{padding: 14px 16px 14px 66px;}  /* espaço para o hambúrguer */
   .content{padding: 16px;}
@@ -267,13 +295,15 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   .k-col{min-width:100%; width:100%; max-height: none; margin-bottom:14px;}
   .k-col-body{max-height: 400px;}
 
-  /* ─── CHAT MOBILE — LISTA "OU" CONVERSA (estilo WhatsApp Web) ─── */
+ /* ─── CHAT MOBILE — LISTA "OU" CONVERSA (estilo WhatsApp Web) ─── */
   /* Por padrão, o chat mostra a LISTA.
      Quando o JS adiciona .chat-open no container, mostra a CONVERSA. */
   .chat-layout{
     grid-template-columns:1fr !important;
-    height: calc(100vh - 120px);
+    height: calc(100dvh - 140px); /* dvh impede o teclado de engolir o chat */
     position:relative;
+    display: flex;
+    flex-direction: column;
   }
   .chat-list{max-height:none;height:100%;}
   .chat-main{display:none;}
@@ -304,6 +334,49 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   .modal{max-height: 90vh; display:flex; flex-direction:column;}
   .modal-body, .tab-pane{overflow-y:auto; padding:16px;}
   .modal-head, .modal-foot{padding:14px 16px;}
+
+  /* ═══ ABAS DO MODAL OS — vira grid 3 colunas no mobile (vê tudo) ═══ */
+  .modal-tabs{
+    display:grid !important;
+    grid-template-columns: repeat(3, 1fr);
+    gap:2px;
+    padding:6px 8px;
+    overflow-x:visible;
+  }
+  .modal-tabs .mtab{
+    padding:10px 4px;
+    font-size:0.6rem;
+    letter-spacing:0.5px;
+    white-space:normal;
+    text-align:center;
+    line-height:1.2;
+    border-bottom-width:3px;
+    margin-bottom:0;
+  }
+
+  /* ═══ RODAPÉ DO MODAL — botões em 2 colunas, largura total, fáceis de tocar ═══ */
+  .modal-foot{
+    display:grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap:8px;
+    padding:12px;
+  }
+  .modal-foot .btn-primary,
+  .modal-foot .btn-ghost,
+  .modal-foot button{
+    width:100%;
+    min-height:42px;
+    font-size:0.72rem;
+    padding:10px 6px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  /* Botão primário (Salvar) em destaque ocupa as 2 colunas se for o único principal */
+  .modal-foot .btn-primary#btnSalvarOS{
+    grid-column: span 2;
+    margin-top:2px;
+  }
 
   .grid-servicos { grid-template-columns: 1fr 80px 32px; }
   .grid-pecas { grid-template-columns: 1fr 1fr; gap:6px; background: rgba(0,0,0,0.2); padding:10px; border-radius:4px; margin-bottom:10px;}
@@ -347,6 +420,14 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   .chat-foot { flex-wrap: nowrap; }
   .chat-foot .j-input { min-width: 0; }
 }
+/* CHECKLIST TRI-STATE — botões coloridos substituem checkbox antigo */
+.chk-tri-wrapper{background:var(--surf2);border:1px solid var(--border);border-radius:6px;padding:10px 12px;}
+.chk-tri-btns{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;}
+.chk-tri-btn{background:var(--surf3,rgba(255,255,255,0.03));border:1px solid var(--border);border-radius:4px;padding:7px 4px;color:var(--muted);font-family:var(--fm);font-size:0.65rem;font-weight:700;letter-spacing:0.5px;cursor:pointer;transition:all 0.15s;text-align:center;}
+.chk-tri-btn:hover{background:var(--surf2);color:var(--text);}
+.chk-tri-btn.sel-ok{background:rgba(0,255,136,0.18);border-color:var(--success);color:var(--success);box-shadow:inset 0 0 0 1px var(--success);}
+.chk-tri-btn.sel-atencao{background:rgba(255,184,0,0.18);border-color:var(--warn);color:var(--warn);box-shadow:inset 0 0 0 1px var(--warn);}
+.chk-tri-btn.sel-critico{background:rgba(255,59,59,0.18);border-color:var(--danger);color:var(--danger);box-shadow:inset 0 0 0 1px var(--danger);}
 </style>
 </head>
 <body>
@@ -354,8 +435,6 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 
 <!-- BOTÃO HAMBÚRGUER (só aparece no mobile, fixed top-left) -->
 <button type="button" id="btnHamburger" class="btn-hamburger" onclick="window.toggleSidebarMobile()" aria-label="Abrir menu" title="Menu">☰</button>
-<!-- Backdrop (fundo escurecido) que fecha o drawer ao clicar -->
-<div id="sidebarBackdrop" class="sidebar-backdrop" onclick="window.toggleSidebarMobile(false)"></div>
 
 <div class="layout">
 
@@ -418,6 +497,10 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
       <svg viewBox="0 0 16 16"><path d="M6 12.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5ZM3 8.062C3 6.76 4.235 5.765 5.53 5.886a26.58 26.58 0 0 0 4.94 0C11.765 5.765 13 6.76 13 8.062v1.157a.933.933 0 0 1-.765.935c-.845.147-2.34.346-4.235.346-1.895 0-3.39-.2-4.235-.346A.933.933 0 0 1 3 9.219V8.062Zm4.542-.827a.25.25 0 0 0-.217.068l-.92.9a24.767 24.767 0 0 1-1.339-.092c-.855-.144-1.566-.43-1.566-1.11 0-.52.53-.94 1.209-.94h6.582c.678 0 1.208.42 1.208.94 0 .68-.71.966-1.565 1.11a24.6 24.6 0 0 1-1.34.092l-.92-.9a.25.25 0 0 0-.218-.068ZM4.5 11.5A.5.5 0 0 1 5 11h6a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5Z"/></svg>
       thIAguinho IA
     </div>
+    <div class="nav-item" onclick="ir('tabelatempa',this)" id="navTabelaTempa">
+      <svg viewBox="0 0 16 16"><path d="M5 11.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5zm0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5z"/><path d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2zm0 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3z"/></svg>
+      Tabela Tempária
+    </div>
     <div class="nav-item" onclick="ir('auditoria',this)">
       <svg viewBox="0 0 16 16"><path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg>
       Auditoria
@@ -435,6 +518,9 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     <button class="btn-sair" onclick="sair()">⏻ ENCERRAR SESSÃO</button>
   </div>
 </aside>
+
+<!-- Backdrop DEPOIS da sidebar (correção stacking context mobile) -->
+<div id="sidebarBackdrop" class="sidebar-backdrop" onclick="window.toggleSidebarMobile(false)"></div>
 
 <div class="main">
   <div class="topbar">
@@ -475,6 +561,19 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
           <div class="kpi-value" id="kVenc">0</div>
           <div class="kpi-sub">Contas em atraso</div>
           <div class="kpi-icon">📋</div>
+        </div>
+      </div>
+      <div class="j-card" style="margin-bottom:16px;">
+        <div class="j-card-header">
+          <div class="j-card-title">BUSCAR HISTORICO - PLACA + SERVICO/PECA</div>
+        </div>
+        <div class="j-card-body">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <input class="j-input" id="dashHistBuscaPlaca" placeholder="Placa (ex: ABC-1234)" style="width:160px;flex-shrink:0;font-family:var(--fm);letter-spacing:1px;text-transform:uppercase;" title="Placa para pesquisar historico de O.S.">
+            <input class="j-input" id="dashHistBuscaTermo" placeholder="Servico ou peca (ex: freio, bomba, codigo)" style="flex:1;min-width:220px;" title="Servico, peca, codigo ou termo para localizar no historico">
+            <button type="button" class="btn-primary" onclick="window.buscarHistoricoOS({placaId:'dashHistBuscaPlaca',termoId:'dashHistBuscaTermo',resultadoId:'dashHistBuscaResultado'})">BUSCAR</button>
+          </div>
+          <div id="dashHistBuscaResultado" style="margin-top:12px;"></div>
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
@@ -715,6 +814,55 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
       </div>
     </section>
 
+    <section class="section" id="s-tabelatempa">
+      <div class="j-card">
+        <div class="j-card-header">
+          <div class="j-card-title">📖 TABELA TEMPÁRIA — SINDIREPA-SP</div>
+          <div style="margin-left:auto;display:flex;gap:8px;align-items:center;">
+            <span id="tempaContador" style="font-family:var(--fm);font-size:0.7rem;color:var(--muted);">Carregando...</span>
+          </div>
+        </div>
+        <div class="j-card-body">
+          <div style="background:var(--surf);border:1px solid var(--border);padding:14px;border-radius:6px;margin-bottom:14px;font-size:0.82rem;color:var(--muted2);line-height:1.5;">
+            💡 <strong style="color:var(--cyan);">Como usar:</strong> Pesquise por nome do serviço, peça ou sistema. A tabela traz os tempos padrão SINDIREPA-SP de mão-de-obra automotiva. Use esses tempos como referência para precificar O.S. e calcular orçamentos justos.
+          </div>
+
+          <div class="form-row" style="grid-template-columns: 1fr 220px; gap:10px; margin-bottom:14px;">
+            <div class="form-group">
+              <label class="j-label">🔍 Buscar serviço, peça ou sistema</label>
+              <input class="j-input" id="tempaSearch" placeholder="Ex: pastilha, embreagem, bomba injetora..." oninput="window.tempaPesquisar()">
+            </div>
+            <div class="form-group">
+              <label class="j-label">Filtrar por categoria</label>
+              <select class="j-select" id="tempaSistema" onchange="window.tempaPesquisar()">
+                <option value="">Todos os sistemas</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="tempaStatus" style="font-family:var(--fm);font-size:0.7rem;color:var(--muted);margin-bottom:10px;"></div>
+
+          <div style="overflow-x:auto;">
+            <table class="j-table" style="font-size:0.82rem;">
+              <thead>
+                <tr>
+                  <th style="width:80px;">Código</th>
+                  <th>Sistema</th>
+                  <th style="width:140px;">Operação</th>
+                  <th>Item / Peça</th>
+                  <th style="width:90px;text-align:right;">Tempo (h)</th>
+                  <th style="width:80px;text-align:center;">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tempaTbody">
+                <tr><td colspan="6" style="text-align:center;padding:40px;color:var(--muted);">Aguardando inicialização...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section class="section" id="s-auditoria">
       <div class="j-card">
         <div class="j-card-header"><div class="j-card-title">LOG GLOBAL DE AUDITORIA</div></div>
@@ -761,7 +909,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
       </div>
       <div class="form-group">
         <label class="j-label">Status Kanban</label>
-<select class="j-select" id="osStatus" onchange="window.verificarStatusOS()">
+<select class="j-select" id="osStatus" onchange="window.verificarStatusOS();(function(){var r=document.getElementById('rowEntregueA');if(r)r.style.display=this.value==='Entregue'?'flex':'none';}).call(this)">
           <option value="Triagem">Triagem / Avaliação</option>
           <option value="Orcamento">Em Orçamento</option>
           <option value="Orcamento_Enviado">Orçamento Enviado (Aguard. Aprovação)</option>
@@ -771,6 +919,13 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
           <option value="Entregue">Veículo Entregue (Concluído)</option>
           <option value="Cancelado">Cancelado</option>
         </select>
+      </div>
+    </div>
+    <!-- Campo entregue para quem — aparece só quando status = Entregue -->
+    <div class="form-row" id="rowEntregueA" style="display:none;margin-top:8px;">
+      <div class="form-group" style="flex:1">
+        <label class="j-label">✅ Entregue para (nome + cargo/função)</label>
+        <input type="text" class="j-input" id="osEntregueA" placeholder="Ex: CB PM João Silva — Motorista designado" oninput="">
       </div>
     </div>
     <div class="form-row cols-2">
@@ -813,9 +968,12 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     </div>
 
     <div style="background:var(--surf3);border:1px solid rgba(0,212,255,0.15);border-radius:3px;padding:18px;margin-top:12px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
         <div style="font-family:var(--fd);font-size:1rem;font-weight:700;color:var(--cyan);">SERVIÇOS / MÃO DE OBRA</div>
-        <button type="button" class="btn-outline" onclick="window.adicionarServicoOS()">+ ADICIONAR SERVIÇO</button>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button type="button" class="btn-ghost" onclick="window._tempaSugerir()" style="font-size:0.7rem;padding:6px 10px;background:rgba(0,212,255,0.08);" title="Cruza os serviços com a Tabela Tempária SINDIREPA-SP e preenche valores automaticamente baseado em (tempo padrão × R$/hora-mecânica)">📖 SUGERIR TEMPOS (TABELA)</button>
+          <button type="button" class="btn-outline" onclick="window.adicionarServicoOS()">+ ADICIONAR SERVIÇO</button>
+        </div>
       </div>
       <div id="containerServicosOS" style="display:flex;flex-direction:column;gap:8px;margin-bottom:8px;"></div>
     </div>
@@ -823,7 +981,11 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     <div style="background:var(--surf3);border:1px solid rgba(0,255,136,0.15);border-radius:3px;padding:18px;margin-top:12px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
         <div style="font-family:var(--fd);font-size:1rem;font-weight:700;color:var(--success);">PEÇAS DO ESTOQUE</div>
-        <button type="button" class="btn-success" onclick="window.adicionarPecaOS()">+ ADICIONAR PEÇA</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+          <button type="button" style="background:rgba(0,212,255,0.12);border:1px solid rgba(0,212,255,0.35);color:#00D4FF;padding:6px 14px;border-radius:3px;font-family:var(--fm);font-size:0.72rem;font-weight:700;cursor:pointer;letter-spacing:.5px;" onclick="document.getElementById('ciliaFileInput').click()" title="Importar PDF ou XML exportado do sistema Cília">📂 IMPORTAR CÍLIA</button>
+          <input type="file" id="ciliaFileInput" style="display:none" accept=".pdf,.xml,.PDF,.XML" onchange="window.importarCilia(this)">
+          <button type="button" class="btn-success" onclick="window.adicionarPecaOS()">+ ADICIONAR PEÇA</button>
+        </div>
       </div>
       <div class="cabecalho-pecas" style="display:grid;grid-template-columns:1fr 80px 90px 90px 32px;gap:8px;margin-bottom:6px;font-family:var(--fm);font-size:0.65rem;color:var(--muted);text-transform:uppercase;font-weight:bold;">
         <div>Peça / Produto</div><div>Qtd</div><div>Custo(R$)</div><div>Venda(R$)</div><div>Del</div>
@@ -835,6 +997,47 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
         <span style="font-family:var(--fd);font-size:2rem;font-weight:700;color:var(--success);">R$ <span id="osTotalVal">0,00</span></span>
         <input type="hidden" id="osTotalHidden" value="0">
       </div>
+    </div>
+
+    <!-- ════ DESCONTO PERSONALIZADO POR OS (sobrescreve padrão do cadastro) ════ -->
+    <div id="blocoDescontoOS" style="display:none;background:rgba(167,139,250,0.06);border:1px solid rgba(167,139,250,0.25);border-radius:3px;padding:14px;margin-top:12px;">
+      <div style="font-family:var(--fm);font-size:0.7rem;color:#A78BFA;letter-spacing:1.5px;font-weight:700;margin-bottom:10px;">🛡 DESCONTO DESTA OS (sobrescreve padrão do cliente)</div>
+      <div class="form-row cols-2">
+        <div class="form-group">
+          <label class="j-label">Desc. Mão Obra desta OS (%)</label>
+          <input type="text" inputmode="decimal" class="j-input" id="osDescMO" placeholder="Ex: 21" oninput="window.calcOSTotal()" title="Deixe em branco para usar o desconto padrão do cadastro do cliente">
+        </div>
+        <div class="form-group">
+          <label class="j-label">Desc. Peças desta OS (%)</label>
+          <input type="text" inputmode="decimal" class="j-input" id="osDescPeca" placeholder="Ex: 20" oninput="window.calcOSTotal()" title="Deixe em branco para usar o desconto padrão do cadastro do cliente">
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ PEÇAS REALMENTE INSTALADAS (SOMENTE DONO DA OFICINA) ════ -->
+    <div id="blocoReais" style="display:none;background:rgba(255,59,59,0.04);border:1px solid rgba(255,59,59,0.25);border-radius:3px;padding:18px;margin-top:12px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+        <div>
+          <div style="font-family:var(--fm);font-size:0.7rem;color:var(--danger);letter-spacing:1.5px;font-weight:700;">🔒 PEÇAS REAIS INSTALADAS — ACESSO RESTRITO DONO</div>
+          <div style="font-family:var(--fm);font-size:0.6rem;color:var(--muted);margin-top:2px;">Visível apenas ao proprietário da oficina. Cliente vê somente as peças do orçamento acima.</div>
+        </div>
+        <button type="button" onclick="window.adicionarPecaReal()" style="background:rgba(255,59,59,0.1);border:1px solid rgba(255,59,59,0.4);color:var(--danger);padding:6px 14px;border-radius:3px;font-family:var(--fm);font-size:0.72rem;font-weight:700;cursor:pointer;">+ PEÇA REAL</button>
+      </div>
+      <div style="display:grid;grid-template-columns:110px 1fr 50px 130px 110px 130px 105px 105px 32px;gap:6px;margin-bottom:6px;font-family:var(--fm);font-size:0.6rem;color:var(--muted);text-transform:uppercase;font-weight:bold;">
+        <div>Cód. Real</div><div>Descrição Real</div><div>Qtd</div><div>Estoque</div><div>Fornecedor</div><div>Nota Fiscal</div><div>Data Compra</div><div>Vl. Compra</div><div></div>
+      </div>
+      <div id="containerPecasReais" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px;"></div>
+    </div>
+
+    <!-- ════ BUSCA HISTÓRICO POR PLACA + SERVIÇO/PEÇA ════ -->
+    <div id="blocoHistBusca" style="background:rgba(0,212,255,0.04);border:1px solid rgba(0,212,255,0.12);border-radius:3px;padding:14px;margin-top:12px;">
+      <div style="font-family:var(--fm);font-size:0.7rem;color:var(--cyan);letter-spacing:1.5px;font-weight:700;margin-bottom:10px;">🔍 BUSCAR HISTÓRICO — PLACA + SERVIÇO/PEÇA</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <input class="j-input" id="histBuscaPlaca" placeholder="Placa (ex: ABC-1234)" style="width:140px;flex-shrink:0;font-family:var(--fm);letter-spacing:1px;text-transform:uppercase;">
+        <input class="j-input" id="histBuscaTermo" placeholder="Serviço ou peça (ex: correia dentada, pastilha...)" style="flex:1;min-width:160px;">
+        <button type="button" onclick="window.buscarHistoricoOS()" style="background:var(--cyan);border:none;border-radius:3px;color:#000;font-family:var(--fm);font-size:0.72rem;font-weight:700;padding:0 16px;cursor:pointer;white-space:nowrap;">BUSCAR</button>
+      </div>
+      <div id="histBuscaResultado" style="margin-top:10px;"></div>
     </div>
 
     <div id="areaPgtoOS" style="display:none;background:rgba(0,212,255,0.04);border:1px solid rgba(0,212,255,0.2);border-radius:3px;padding:18px;margin-top:12px;">
@@ -857,6 +1060,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
         <div class="form-group"><label class="j-label">Próxima Revisão — Data</label><input type="date" class="j-input" id="osProxRev"></div>
         <div class="form-group"><label class="j-label">Próxima Revisão — KM</label><input type="number" class="j-input" id="osProxKm" placeholder="KM para retornar"></div>
       </div>
+      <button id="btnAvisarProntoOS" type="button" class="btn-primary" style="display:none;background:#25D366;color:#fff;margin-top:6px;" onclick="window.dispararAvisoEntregaAutomatico($v('osId'),'Pronto')">AVISAR CLIENTE: VEÍCULO PRONTO</button>
     </div>
   </div>
 
@@ -892,19 +1096,45 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
           <select class="j-select" id="chkComb"><option>N/A</option><option>Reserva</option><option>1/4</option><option>Meio</option><option>3/4</option><option>Cheio</option></select>
         </div>
       </div>
-      <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:14px;">
-        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.82rem;">
-          <input type="checkbox" id="chkPainel" style="accent-color:var(--cyan);"> Painel / Instrumentos OK
-        </label>
-        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.82rem;">
-          <input type="checkbox" id="chkPressao" style="accent-color:var(--cyan);"> Pressão Pneus OK
-        </label>
-        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.82rem;">
-          <input type="checkbox" id="chkCarroceria" style="accent-color:var(--cyan);"> Carroceria/Carenagem OK
-        </label>
-        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.82rem;">
-          <input type="checkbox" id="chkDocumentos" style="accent-color:var(--cyan);"> Documentos OK
-        </label>
+      <!-- Botões tri-state substituindo checkboxes antigos. Estados: neutro / OK (verde) / atenção (amarelo) / crítico (vermelho).
+           Valor guardado em dataset e campo hidden (chkPainel, chkPressao, chkCarroceria, chkDocumentos). -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:10px;margin-bottom:14px;">
+        <div class="chk-tri-wrapper" data-target="chkPainel">
+          <div style="font-family:var(--fm);font-size:0.68rem;color:var(--muted);letter-spacing:1px;margin-bottom:5px;">🎛 PAINEL / INSTRUMENTOS</div>
+          <div class="chk-tri-btns">
+            <button type="button" class="chk-tri-btn" data-value="ok"        onclick="window._chkTriSet(this)">✓ OK</button>
+            <button type="button" class="chk-tri-btn" data-value="atencao"   onclick="window._chkTriSet(this)">⚠ ATENÇÃO</button>
+            <button type="button" class="chk-tri-btn" data-value="critico"   onclick="window._chkTriSet(this)">✕ CRÍTICO</button>
+          </div>
+          <input type="hidden" id="chkPainel" value="">
+        </div>
+        <div class="chk-tri-wrapper" data-target="chkPressao">
+          <div style="font-family:var(--fm);font-size:0.68rem;color:var(--muted);letter-spacing:1px;margin-bottom:5px;">🛞 PRESSÃO DOS PNEUS</div>
+          <div class="chk-tri-btns">
+            <button type="button" class="chk-tri-btn" data-value="ok"        onclick="window._chkTriSet(this)">✓ OK</button>
+            <button type="button" class="chk-tri-btn" data-value="atencao"   onclick="window._chkTriSet(this)">⚠ ATENÇÃO</button>
+            <button type="button" class="chk-tri-btn" data-value="critico"   onclick="window._chkTriSet(this)">✕ CRÍTICO</button>
+          </div>
+          <input type="hidden" id="chkPressao" value="">
+        </div>
+        <div class="chk-tri-wrapper" data-target="chkCarroceria">
+          <div style="font-family:var(--fm);font-size:0.68rem;color:var(--muted);letter-spacing:1px;margin-bottom:5px;">🚗 CARROCERIA / CARENAGEM</div>
+          <div class="chk-tri-btns">
+            <button type="button" class="chk-tri-btn" data-value="ok"        onclick="window._chkTriSet(this)">✓ OK</button>
+            <button type="button" class="chk-tri-btn" data-value="atencao"   onclick="window._chkTriSet(this)">⚠ ATENÇÃO</button>
+            <button type="button" class="chk-tri-btn" data-value="critico"   onclick="window._chkTriSet(this)">✕ CRÍTICO</button>
+          </div>
+          <input type="hidden" id="chkCarroceria" value="">
+        </div>
+        <div class="chk-tri-wrapper" data-target="chkDocumentos">
+          <div style="font-family:var(--fm);font-size:0.68rem;color:var(--muted);letter-spacing:1px;margin-bottom:5px;">📄 DOCUMENTOS</div>
+          <div class="chk-tri-btns">
+            <button type="button" class="chk-tri-btn" data-value="ok"        onclick="window._chkTriSet(this)">✓ OK</button>
+            <button type="button" class="chk-tri-btn" data-value="atencao"   onclick="window._chkTriSet(this)">⚠ ATENÇÃO</button>
+            <button type="button" class="chk-tri-btn" data-value="critico"   onclick="window._chkTriSet(this)">✕ CRÍTICO</button>
+          </div>
+          <input type="hidden" id="chkDocumentos" value="">
+        </div>
       </div>
       <div class="form-group"><label class="j-label">Avarias Prévias / Observações de Entrega</label><textarea class="j-textarea" id="chkObs" rows="3" placeholder="Arranhões, amassados, acessórios ausentes..."></textarea></div>
     </div>
@@ -916,6 +1146,8 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 
   <div class="modal-foot">
     <button class="btn-ghost" id="btnGerarPDFOS" style="display:none;" onclick="window.gerarPDFOS()">📄 EXPORTAR LAUDO PDF</button>
+    <button class="btn-ghost" id="btnExportarPMSP" style="display:none;background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.4);color:#A78BFA;" onclick="window.exportarOrcamentoPMSP()">🛡 EXPORTAR ORÇAMENTO PMSP (XLSX)</button>
+    <button class="btn-ghost" id="btnExcluirOS" style="display:none;background:transparent;border:1px solid var(--danger);color:var(--danger);" onclick="window._excluirOSDoModal()">🗑 EXCLUIR O.S.</button>
     <button class="btn-ghost" onclick="fecharModal('modalOS')">CANCELAR</button>
     <button class="btn-primary" id="btnSalvarOS" onclick="window.salvarOS()">REGISTRAR O.S.</button>
   </div>
@@ -925,18 +1157,56 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 </div>
 
 <div class="overlay" id="modalCliente">
-<div class="modal" style="max-width:500px;">
-  <div class="modal-head"><div class="modal-title">CLIENTE B2C</div><button class="modal-close" onclick="fecharModal('modalCliente')">✕</button></div>
+<div class="modal" style="max-width:540px;">
+  <div class="modal-head"><div class="modal-title">CADASTRO DE CLIENTE</div><button class="modal-close" onclick="fecharModal('modalCliente')">✕</button></div>
   <div class="modal-body">
     <input type="hidden" id="cliId">
+
+    <!-- ═══ TIPO DE CLIENTE ═══ -->
+    <div style="background:rgba(0,212,255,0.04);border:1px solid var(--border);border-radius:4px;padding:12px;margin-bottom:14px;">
+      <label class="j-label" style="margin-bottom:6px;">Tipo de Cliente</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px;border:1px solid var(--border);border-radius:3px;background:rgba(0,212,255,0.04);">
+          <input type="radio" name="cliTipo" value="b2c" id="cliTipoB2C" checked onchange="window._toggleClienteGovBlock(false)">
+          <span style="font-size:0.82rem;">👤 B2C / Pessoa Física</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px;border:1px solid rgba(167,139,250,0.3);border-radius:3px;background:rgba(167,139,250,0.06);">
+          <input type="radio" name="cliTipo" value="governo" id="cliTipoGov" onchange="window._toggleClienteGovBlock(true)">
+          <span style="font-size:0.82rem;color:var(--purple,#A78BFA);font-weight:700;">🛡 Órgão Público / Governo</span>
+        </label>
+      </div>
+    </div>
+
     <div class="form-row cols-2">
-      <div class="form-group"><label class="j-label">Nome Completo</label><input class="j-input" id="cliNome" placeholder="João da Silva" required></div>
+      <div class="form-group"><label class="j-label" id="lblCliNome">Nome Completo</label><input class="j-input" id="cliNome" placeholder="João da Silva" required></div>
       <div class="form-group"><label class="j-label">WhatsApp (somente números)</label><input type="tel" class="j-input" id="cliWpp" placeholder="17999999999"></div>
     </div>
     <div class="form-row cols-2">
-      <div class="form-group"><label class="j-label">CPF / Documento</label><input class="j-input" id="cliDoc" inputmode="numeric" placeholder="000.000.000-00"></div>
+      <div class="form-group"><label class="j-label" id="lblCliDoc">CPF / Documento</label><input class="j-input" id="cliDoc" inputmode="numeric" placeholder="000.000.000-00"></div>
       <div class="form-group"><label class="j-label">E-mail</label><input type="email" class="j-input" id="cliEmail" placeholder="email@exemplo.com"></div>
     </div>
+
+    <!-- ═══ BLOCO GOVERNAMENTAL (oculto por padrão) ═══ -->
+    <div id="cliGovBlock" style="display:none;border-top:2px solid var(--purple,#A78BFA);padding-top:14px;margin-top:14px;background:rgba(167,139,250,0.04);padding:14px;border-radius:4px;">
+      <div style="font-family:var(--fm);font-size:0.7rem;color:var(--purple,#A78BFA);letter-spacing:1.5px;margin-bottom:10px;font-weight:700;">🛡 DADOS DA LICITAÇÃO / ATA DE REGISTRO</div>
+
+      <div class="form-row cols-2">
+        <div class="form-group"><label class="j-label">Unidade / OPM</label><input class="j-input" id="cliGovUnidade" placeholder="30º BPM/I"></div>
+        <div class="form-group"><label class="j-label">Fiscal do Contrato</label><input class="j-input" id="cliGovFiscal" placeholder="Nome completo do fiscal"></div>
+      </div>
+
+      <div class="form-row cols-3">
+        <div class="form-group"><label class="j-label">Valor Hora REGISTRADO (R$)</label><input type="text" inputmode="decimal" class="j-input" id="cliGovValorHora" placeholder="222,03"></div>
+        <div class="form-group"><label class="j-label">Desc. Mão Obra (%)</label><input type="text" inputmode="decimal" class="j-input" id="cliGovDescMO" placeholder="21" title="Ex: 21 = 21% de desconto na mão de obra"></div>
+        <div class="form-group"><label class="j-label">Desc. Peças (%)</label><input type="text" inputmode="decimal" class="j-input" id="cliGovDescPeca" placeholder="20" title="Ex: 20 = 20% de desconto nas peças"></div>
+      </div>
+
+      <div class="form-row cols-2">
+        <div class="form-group"><label class="j-label">Cabeçalho Institucional (linhas separadas por ↵)</label><textarea class="j-textarea" id="cliGovCabecalho" rows="3" placeholder="SECRETARIA DA SEGURANÇA PÚBLICA&#10;POLÍCIA MILITAR DO ESTADO DE SÃO PAULO&#10;COMANDO DE POLICIAMENTO DO INTERIOR-5&#10;UNIDADE GESTORA EXECUTORA 180160"></textarea></div>
+        <div class="form-group"><label class="j-label">Modelo OES (com #)</label><input class="j-input" id="cliGovOesModelo" placeholder="30º BPMI – ###/##/####"></div>
+      </div>
+    </div>
+
     <div style="font-family:var(--fm);font-size:0.65rem;color:var(--cyan);letter-spacing:2px;margin:12px 0 8px;border-top:1px solid var(--border);padding-top:12px;">ENDEREÇO (LGPD / NFe)</div>
     <div class="form-row cols-2">
       <div class="form-group"><label class="j-label">CEP</label><input class="j-input" id="cliCep" placeholder="00000-000" onblur="window.buscarCEP(this.value)"></div>
@@ -984,6 +1254,20 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
       <div class="form-group"><label class="j-label">Cor</label><input class="j-input" id="veicCor" placeholder="Preto Metálico"></div>
       <div class="form-group"><label class="j-label">KM Atual</label><input type="number" class="j-input" id="veicKm" placeholder="45000"></div>
     </div>
+
+    <!-- ═══ DADOS PARA VIATURA / FROTA OFICIAL (opcional) ═══ -->
+    <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:8px;background:rgba(167,139,250,0.04);padding:12px;border-radius:4px;">
+      <div style="font-family:var(--fm);font-size:0.65rem;color:#A78BFA;letter-spacing:1.5px;margin-bottom:10px;font-weight:700;">🛡 DADOS DE FROTA OFICIAL (preencher só se for viatura/órgão público)</div>
+      <div class="form-row cols-2">
+        <div class="form-group"><label class="j-label">Chassis</label><input class="j-input" id="veicChassis" placeholder="9BG..." style="text-transform:uppercase;font-family:var(--fm);"></div>
+        <div class="form-group"><label class="j-label">Patrimônio</label><input class="j-input" id="veicPatrimonio" placeholder="219002748"></div>
+      </div>
+      <div class="form-row cols-2">
+        <div class="form-group"><label class="j-label">Prefixo</label><input class="j-input" id="veicPrefixo" placeholder="I-30003" style="font-family:var(--fm);"></div>
+        <div class="form-group"><label class="j-label">Marca</label><input class="j-input" id="veicMarca" placeholder="CHEVROLET" style="text-transform:uppercase;"></div>
+      </div>
+    </div>
+
     <div class="form-group"><label class="j-label">Observações</label><textarea class="j-textarea" id="veicObs" rows="2" placeholder="Modificações, histórico relevante..."></textarea></div>
   </div>
   <div class="modal-foot"><button class="btn-ghost" onclick="fecharModal('modalVeiculo')">CANCELAR</button><button class="btn-primary" onclick="window.salvarVeiculo()">SALVAR</button></div>
@@ -1246,7 +1530,10 @@ document.addEventListener('keydown', function(ev){
 // ============================================================
 // BOOTSTRAP DO SISTEMA E IA
 // ============================================================
-const J = {}; 
+// window.J — estado global. Exposto em window para js/ia.js e outros
+// scripts externos conseguirem acessar (busca contextual, grounding, etc.)
+window.J = window.J || {};
+const J = window.J;
 const $ = id => document.getElementById(id);
 const $v = id => $(id) ? $(id).value.trim() : '';
 
@@ -1284,10 +1571,33 @@ document.addEventListener('DOMContentLoaded', () => {
   window.escutarEstoque(); window.escutarFinanceiro(); window.escutarEquipe();
   window.escutarFornecedores(); window.escutarMensagens(); window.escutarAgendamentos();
   window.escutarAuditoria(); window.escutarChatEquipe();
-});
 
-const sectionMap = { dashboard:'s-dashboard', agenda:'s-agenda', kanban:'s-kanban', clientes:'s-clientes', estoque:'s-estoque', financeiro:'s-financeiro', equipe:'s-equipe', chat:'s-chat', chatequipe:'s-chatequipe', ia:'s-ia', auditoria:'s-auditoria' };
-const titleMap = { dashboard:'DASHBOARD', agenda:'AGENDA', kanban:'PÁTIO / O.S.', clientes:'CLIENTES & VEÍCULOS', estoque:'ESTOQUE / NF', financeiro:'FINANCEIRO / DRE', equipe:'EQUIPE & RH', chat:'CRM CHAT', chatequipe:'CHAT EQUIPE', ia:'thIAguinho IA', auditoria:'AUDITORIA' };
+  // ── BLINDAGEM DE MÓDULOS (SUPERADMIN SaaS) ──
+  db.collection('oficinas').doc(J.tid).onSnapshot(doc => {
+    if (doc.exists) {
+      const ofi = doc.data();
+      const mods = ofi.modulos || {};
+      
+      const toggleMenu = (key, hasAccess) => {
+        const btn = document.querySelector(`[onclick="ir('${key}',this)"]`);
+        if (btn) btn.style.display = hasAccess ? 'flex' : 'none';
+      };
+
+      toggleMenu('kanban', mods.os !== false);
+      toggleMenu('clientes', mods.crm !== false);
+      toggleMenu('estoque', mods.estoque !== false);
+      toggleMenu('financeiro', mods.financeiro !== false);
+      toggleMenu('agenda', mods.agenda !== false);
+      toggleMenu('equipe', mods.rh !== false);
+      toggleMenu('chat', mods.chat !== false);
+      toggleMenu('chatequipe', mods.chat !== false); // Trava o chat da equipe junto
+      toggleMenu('ia', mods.ia !== false);
+      toggleMenu('tabelatempa', mods.tabelaTempa !== false); // default ligado se ausente
+    }
+  });
+});
+const sectionMap = { dashboard:'s-dashboard', agenda:'s-agenda', kanban:'s-kanban', clientes:'s-clientes', estoque:'s-estoque', financeiro:'s-financeiro', equipe:'s-equipe', chat:'s-chat', chatequipe:'s-chatequipe', ia:'s-ia', tabelatempa:'s-tabelatempa', auditoria:'s-auditoria' };
+const titleMap = { dashboard:'DASHBOARD', agenda:'AGENDA', kanban:'PÁTIO / O.S.', clientes:'CLIENTES & VEÍCULOS', estoque:'ESTOQUE / NF', financeiro:'FINANCEIRO / DRE', equipe:'EQUIPE & RH', chat:'CRM CHAT', chatequipe:'CHAT EQUIPE', ia:'thIAguinho IA', tabelatempa:'TABELA TEMPÁRIA', auditoria:'AUDITORIA' };
 
 function ir(key, el) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
@@ -1300,6 +1610,96 @@ function ir(key, el) {
 function sair() { sessionStorage.clear(); window.location.href='index.html'; }
 function abrirModal(id) { $(id).classList.add('open'); }
 function fecharModal(id) { $(id).classList.remove('open'); }
+
+// ═══════════════════════════════════════════════════════════════
+// CHECKLIST TRI-STATE — ok / atenção / crítico (3 cores)
+// ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+// HELPER PARA O BOTÃO "📖 SUGERIR TEMPOS" — diagnóstico transparente
+// Detecta se o módulo carregou; se não, mostra erro claro.
+// ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+// HELPERS — CLIENTE GOVERNAMENTAL (PMSP, etc.)
+// ═══════════════════════════════════════════════════════════════
+// Exibe ou esconde o bloco de campos de licitação no modal de cliente
+window._toggleClienteGovBlock = function(mostrar) {
+  const block = document.getElementById('cliGovBlock');
+  if (block) block.style.display = mostrar ? 'block' : 'none';
+  // Atualiza labels do nome/CPF
+  const lblNome = document.getElementById('lblCliNome');
+  const lblDoc = document.getElementById('lblCliDoc');
+  if (lblNome) lblNome.textContent = mostrar ? 'Razão Social / Nome do Órgão' : 'Nome Completo';
+  if (lblDoc) lblDoc.textContent = mostrar ? 'CNPJ' : 'CPF / Documento';
+};
+
+// Detecta se o cliente da OS aberta é governamental
+window._osClienteGovernamental = function() {
+  const cliId = document.getElementById('osCliente')?.value;
+  if (!cliId) return false;
+  const cli = (window.J?.clientes || []).find(c => c.id === cliId);
+  return cli?.tipoCliente === 'governo';
+};
+
+// Retorna os dados governamentais do cliente da OS aberta (ou null)
+window._osDadosGovernamental = function() {
+  const cliId = document.getElementById('osCliente')?.value;
+  if (!cliId) return null;
+  const cli = (window.J?.clientes || []).find(c => c.id === cliId);
+  if (cli?.tipoCliente !== 'governo') return null;
+  return {
+    nome: cli.nome, cnpj: cli.doc, unidade: cli.govUnidade, fiscal: cli.govFiscal,
+    valorHora: (window.JOS?.parseNumberBR?.(cli.govValorHora) ?? parseFloat(cli.govValorHora || 0)),
+    descMO: (window.JOS?.parseNumberBR?.(cli.govDescMO) ?? parseFloat(cli.govDescMO || 0)),
+    descPeca: (window.JOS?.parseNumberBR?.(cli.govDescPeca) ?? parseFloat(cli.govDescPeca || 0)),
+    cabecalho: cli.govCabecalho || '',
+    oesModelo: cli.govOesModelo || '',
+    endereco: [cli.rua, cli.num, cli.bairro, cli.cidade].filter(Boolean).join(', ')
+  };
+};
+
+window._tempaSugerir = function() {
+  if (typeof window.tempaSugerirParaOS === 'function') {
+    window.tempaSugerirParaOS();
+    return;
+  }
+  // Diagnóstico — o módulo js/tabela-tempa.js não foi carregado
+  if (typeof window.toast === 'function') {
+    window.toast('⚠ Módulo da Tabela Tempária não carregou. Verifique se js/tabela-tempa.js e data/tabela-tempa.min.json foram enviados ao GitHub Pages.', 'err');
+  } else {
+    alert('⚠ Tabela Tempária não disponível.\n\nVerifique se os arquivos foram enviados:\n- js/tabela-tempa.js\n- data/tabela-tempa.min.json');
+  }
+};
+
+window._chkTriSet = function(btn){
+  const wrap = btn.closest('.chk-tri-wrapper');
+  if(!wrap) return;
+  const allBtns = wrap.querySelectorAll('.chk-tri-btn');
+  const hidden = document.getElementById(wrap.dataset.target);
+  const val = btn.dataset.value;
+  const jaAtivo = btn.classList.contains('sel-ok') || btn.classList.contains('sel-atencao') || btn.classList.contains('sel-critico');
+  allBtns.forEach(b => b.classList.remove('sel-ok','sel-atencao','sel-critico'));
+  if(jaAtivo){
+    // segundo clique no mesmo → limpa
+    if(hidden) hidden.value = '';
+  } else {
+    btn.classList.add('sel-' + val);
+    if(hidden) hidden.value = val;
+  }
+};
+
+// Aplica estado tri-state a partir de valor salvo (usado ao editar OS)
+window._chkTriApply = function(inputId, valor){
+  const hidden = document.getElementById(inputId);
+  if(!hidden) return;
+  hidden.value = valor || '';
+  const wrap = hidden.closest('.chk-tri-wrapper');
+  if(!wrap) return;
+  wrap.querySelectorAll('.chk-tri-btn').forEach(b=>b.classList.remove('sel-ok','sel-atencao','sel-critico'));
+  if(valor){
+    const btn = wrap.querySelector(`.chk-tri-btn[data-value="${valor}"]`);
+    if(btn) btn.classList.add('sel-'+valor);
+  }
+};
 
 function switchTab(el, active, ...others) {
   el.parentElement.querySelectorAll('.mtab').forEach(t => t.classList.remove('active'));
@@ -1316,14 +1716,16 @@ window.toast = function(msg, type='ok') {
   setTimeout(() => { el.style.opacity='0'; setTimeout(()=>el.remove(),400); }, 3500);
 }
 
-async function audit(modulo, acao) {
+async function audit(modulo, acao, extra = {}) {
   try {
     await db.collection('lixeira_auditoria').add({
       tenantId:J.tid, modulo, acao,
-      usuario:J.nome, ts:new Date().toISOString()
+      usuario:J.nome, ts:new Date().toISOString(),
+      ...extra
     });
   } catch(e){}
 }
+window.audit = audit;
 
 const moeda = v => 'R$ ' + parseFloat(v||0).toFixed(2).replace('.',',');
 const dtBr = iso => iso ? new Date(iso).toLocaleDateString('pt-BR') : '-';
@@ -1490,6 +1892,17 @@ window.popularSelects = function() {
 }
 
 window.filtrarVeiculosOS = function() {
+  // Mostra/oculta blocos governo ao trocar cliente
+  const cliId = (document.getElementById('osCliente')?.value||'');
+  const cli = (window.J?.clientes||[]).find(x=>x.id===cliId);
+  const ehGov = cli?.tipoCliente === 'governo';
+  const blocoDesc = document.getElementById('blocoDescontoOS');
+  const blocoReais = document.getElementById('blocoReais');
+  if (blocoDesc) blocoDesc.style.display = ehGov ? 'block' : 'none';
+  if (blocoReais) {
+    const isDono = ['admin','superadmin'].includes((window.J?.role||'').toLowerCase());
+    blocoReais.style.display = isDono ? 'block' : 'none';
+  }
   const cid = $v('osCliente'); const tipo = $v('osTipoVeiculo');
   let veics = J.veiculos.filter(v=>v.clienteId===cid);
   if(tipo) veics = veics.filter(v=>v.tipo===tipo);
@@ -1530,8 +1943,13 @@ window.renderDashboard = function() {
 
 // CLIENTES E VEICULOS
 window.prepCliente = function(mode, id=null) {
-  ['cliId','cliNome','cliWpp','cliDoc','cliEmail','cliCep','cliRua','cliNum','cliBairro','cliCidade','cliLogin','cliPin'].forEach(f=>{if($(f)) $(f).value='';});
+  ['cliId','cliNome','cliWpp','cliDoc','cliEmail','cliCep','cliRua','cliNum','cliBairro','cliCidade','cliLogin','cliPin','cliGovUnidade','cliGovFiscal','cliGovValorHora','cliGovDescMO','cliGovDescPeca','cliGovCabecalho','cliGovOesModelo'].forEach(f=>{if($(f)) $(f).value='';});
   $('cliPin').value=Math.random().toString(36).slice(-6);
+  // Reset tipo cliente
+  if($('cliTipoB2C')) $('cliTipoB2C').checked = true;
+  if($('cliTipoGov')) $('cliTipoGov').checked = false;
+  window._toggleClienteGovBlock(false);
+
   if(mode==='edit'&&id){
     const c=J.clientes.find(x=>x.id===id); if(!c) return;
     $('cliId').value=c.id; $('cliNome').value=c.nome||''; $('cliWpp').value=c.wpp||'';
@@ -1540,6 +1958,19 @@ window.prepCliente = function(mode, id=null) {
     $('cliNum').value=c.num||''; $('cliBairro').value=c.bairro||''; 
     $('cliCidade').value=c.cidade||'';
     $('cliLogin').value=c.login||''; $('cliPin').value=c.pin||'';
+    // Tipo + campos governo
+    if (c.tipoCliente === 'governo') {
+      if($('cliTipoGov')) $('cliTipoGov').checked = true;
+      window._toggleClienteGovBlock(true);
+      if($('cliGovUnidade')) $('cliGovUnidade').value = c.govUnidade || '';
+      if($('cliGovFiscal')) $('cliGovFiscal').value = c.govFiscal || '';
+      if($('cliGovValorHora')) $('cliGovValorHora').value = c.govValorHora || '';
+      // Exibe em % inteiro (salvo como decimal 0-1)
+      if($('cliGovDescMO')) $('cliGovDescMO').value = c.govDescMO != null ? (parseFloat(c.govDescMO)*100).toFixed(1) : '';
+      if($('cliGovDescPeca')) $('cliGovDescPeca').value = c.govDescPeca != null ? (parseFloat(c.govDescPeca)*100).toFixed(1) : '';
+      if($('cliGovCabecalho')) $('cliGovCabecalho').value = c.govCabecalho || '';
+      if($('cliGovOesModelo')) $('cliGovOesModelo').value = c.govOesModelo || '';
+    }
   }
 }
 window.salvarCliente = async function() {
@@ -1577,8 +2008,21 @@ window.salvarCliente = async function() {
     num:      $v('cliNum'),
     bairro:   $v('cliBairro'),
     cidade:   $v('cliCidade'),
+    tipoCliente: (document.getElementById('cliTipoGov')?.checked ? 'governo' : 'b2c'),
     updatedAt: new Date().toISOString()
   };
+
+  // Campos exclusivos governo
+  if (p.tipoCliente === 'governo') {
+    p.govUnidade = $v('cliGovUnidade');
+    p.govFiscal = $v('cliGovFiscal');
+    p.govValorHora = (window.JOS?.parseNumberBR?.($v('cliGovValorHora')) ?? parseFloat(($v('cliGovValorHora') || '0').replace(',', '.'))) || 0;
+    // Campo agora em % inteiro (ex: 21 = 21%) → salva decimal (0.21)
+    p.govDescMO = ((window.JOS?.parseNumberBR?.($v('cliGovDescMO')) ?? parseFloat(($v('cliGovDescMO') || '0').replace(',', '.'))) || 0) / 100;
+    p.govDescPeca = ((window.JOS?.parseNumberBR?.($v('cliGovDescPeca')) ?? parseFloat(($v('cliGovDescPeca') || '0').replace(',', '.'))) || 0) / 100;
+    p.govCabecalho = $v('cliGovCabecalho');
+    p.govOesModelo = $v('cliGovOesModelo');
+  }
 
   const id = $v('cliId');
   try {
@@ -1602,8 +2046,11 @@ window.renderClientes = function() {
     const btnWpp = c.wpp
       ? `<button class="btn-success" style="margin-right:4px" onclick="window._wppAcessoCliente('${c.id}')" title="Enviar acesso via WhatsApp">💬</button>`
       : '';
+    const pillTipo = c.tipoCliente === 'governo'
+      ? `<span class="pill" style="background:rgba(167,139,250,0.15);color:#A78BFA;border:1px solid rgba(167,139,250,0.4);font-size:0.6rem;margin-left:6px;">🛡 GOVERNO</span>`
+      : '';
     return `<tr>
-      <td><strong>${c.nome}</strong><div style="font-family:var(--fm);font-size:0.65rem;color:var(--muted)">${c.login||'sem login'} / PIN: ${c.pin||'—'}</div></td>
+      <td><strong>${c.nome}</strong>${pillTipo}<div style="font-family:var(--fm);font-size:0.65rem;color:var(--muted)">${c.login||'sem login'} / PIN: ${c.pin||'—'}</div></td>
       <td style="font-family:var(--fm);font-size:0.75rem">${c.wpp||'-'}</td>
       <td><span class="pill pill-cyan">${nVeics}</span></td>
       <td style="white-space:nowrap">
@@ -1620,16 +2067,141 @@ window._wppAcessoCliente = function(cid) {
   const c = J.clientes.find(x => x.id === cid);
   if (!c?.wpp) return;
   const fone = c.wpp.replace(/\D/g, '');
-  const link = 'https://tsvalencio-ia.github.io/of/cliente.html';
+  // Link correto: governo → clienteOficial, demais → cliente
+  const isGov = c.tipoCliente === 'governo';
+  const link = isGov
+    ? 'https://tsvalencio-ia.github.io/ERP-CODEX2/clienteOficial.html'
+    : 'https://tsvalencio-ia.github.io/ERP-CODEX2/cliente.html';
   const msg =
     `Olá ${c.nome.split(' ')[0]}! 👋\n\n` +
-    `Aqui é a *${J.tnome}*. Seu acesso ao portal do cliente está pronto!\n\n` +
+    `Aqui é a *${J.tnome}*. Seu acesso ao portal do cliente S.O.S Valêncio está pronto!\n\n` +
     `🔗 Link: ${link}\n` +
     `👤 Usuário: *${c.login || c.nome.split(' ')[0].toLowerCase()}*\n` +
     `🔑 PIN: *${c.pin || '—'}*\n\n` +
     `Pelo portal você acompanha suas O.S. e conversa com a equipe.`;
   window.open(`https://wa.me/55${fone}?text=${encodeURIComponent(msg)}`, '_blank');
 };
+// ═══════════════════════════════════════════════════════════════════════
+// EXCLUSÃO DEFINITIVA — dupla confirmação + auditoria obrigatória
+// Usado em clientes, veículos, O.S., financeiro, peças, NF, fornecedores, equipe
+// ═══════════════════════════════════════════════════════════════════════
+window._excluirDef = async function(opts) {
+  const { collection, id, label, modulo, extra, depois } = opts;
+  if (!collection || !id) return false;
+
+  // Bloqueia se usuário não é admin
+  const role = (sessionStorage.getItem('j_role') || '').toLowerCase();
+  if (role !== 'admin' && role !== 'gestor' && role !== 'superadmin') {
+    window.toast('⚠ Apenas gestor/admin pode excluir registros definitivamente.', 'warn');
+    return false;
+  }
+
+  // 1ª confirmação (texto)
+  const nomeLabel = label || `registro ${id.slice(-6)}`;
+  if (!confirm(`⚠ EXCLUSÃO DEFINITIVA\n\nVocê está prestes a APAGAR PARA SEMPRE: ${nomeLabel}\n\n${extra || ''}\n\nEsta ação NÃO PODE ser desfeita. Continuar?`)) return false;
+
+  // 2ª confirmação (digitação de "EXCLUIR")
+  const txt = prompt(`⚠ Para confirmar a exclusão definitiva de "${nomeLabel}", digite EXCLUIR (maiúsculas) e clique OK:`);
+  if (txt !== 'EXCLUIR') {
+    window.toast('Exclusão cancelada (texto de confirmação incorreto).', 'warn');
+    return false;
+  }
+
+  try {
+    // 3) Auditoria SEMPRE antes de apagar (para manter registro)
+    await db.collection('lixeira_auditoria').add({
+      tenantId: J.tid,
+      modulo: modulo || collection.toUpperCase(),
+      acao: `EXCLUSÃO DEFINITIVA — ${nomeLabel}${extra ? ' | ' + extra : ''}`,
+      usuario: J.nome || 'Admin',
+      role: role,
+      ts: new Date().toISOString(),
+      colRef: collection,
+      docIdRef: id
+    });
+
+    // 4) Apaga do Firestore
+    await db.collection(collection).doc(id).delete();
+
+    window.toast(`✓ ${nomeLabel} removido(a) permanentemente.`, 'ok');
+    if (typeof depois === 'function') depois();
+    return true;
+  } catch (e) {
+    console.error('[excluirDef]', e);
+    window.toast('⚠ Erro na exclusão: ' + e.message, 'err');
+    return false;
+  }
+};
+
+// Wrappers específicos — um para cada tabela do sistema
+window.excluirClienteDef = function(id) {
+  const c = J.clientes.find(x => x.id === id);
+  return window._excluirDef({
+    collection: 'clientes', id,
+    label: `cliente "${c?.nome || id}"`,
+    modulo: 'CLIENTES',
+    extra: c?.doc ? `Doc: ${c.doc}` : ''
+  });
+};
+window.excluirVeiculoDef = function(id) {
+  const v = J.veiculos.find(x => x.id === id);
+  return window._excluirDef({
+    collection: 'veiculos', id,
+    label: `veículo ${v?.placa || id} ${v?.modelo || ''}`.trim(),
+    modulo: 'VEICULOS'
+  });
+};
+window.excluirOSDef = function(id) {
+  const o = J.os.find(x => x.id === id);
+  return window._excluirDef({
+    collection: 'ordens_servico', id,
+    label: `O.S. #${id.slice(-6).toUpperCase()}`,
+    modulo: 'ORDEM_SERVICO',
+    extra: `Status: ${o?.status || '—'} | Total: ${moeda(o?.total || 0)}`
+  });
+};
+window.excluirPecaDef = function(id) {
+  const p = J.estoque.find(x => x.id === id);
+  return window._excluirDef({
+    collection: 'estoqueItems', id,
+    label: `peça "${p?.desc || id}" (cód ${p?.codigo || '—'})`,
+    modulo: 'ESTOQUE'
+  });
+};
+window.excluirFinanceiroDef = function(id) {
+  const f = J.financeiro?.find(x => x.id === id);
+  return window._excluirDef({
+    collection: 'financeiro', id,
+    label: `lançamento "${f?.desc || id}"`,
+    modulo: 'FINANCEIRO',
+    extra: `Valor: ${moeda(f?.valor || 0)} | Tipo: ${f?.tipo || '—'}`
+  });
+};
+window.excluirFornecedorDef = function(id) {
+  const f = J.fornecedores?.find(x => x.id === id);
+  return window._excluirDef({
+    collection: 'fornecedores', id,
+    label: `fornecedor "${f?.nome || id}"`,
+    modulo: 'FORNECEDORES'
+  });
+};
+window.excluirFuncionarioDef = function(id) {
+  const f = J.equipe?.find(x => x.id === id);
+  return window._excluirDef({
+    collection: 'funcionarios', id,
+    label: `funcionário "${f?.nome || id}"`,
+    modulo: 'EQUIPE',
+    extra: `Cargo: ${f?.cargo || '—'}`
+  });
+};
+window.excluirNFDef = function(id) {
+  return window._excluirDef({
+    collection: 'notas_entrada', id,
+    label: `NF #${id.slice(-6).toUpperCase()}`,
+    modulo: 'NF_ENTRADA'
+  });
+};
+
 window.deletarCliente = async function(id) { if(confirm('Deletar este cliente?')){ await db.collection('clientes').doc(id).delete(); window.toast('✓ REMOVIDO'); audit('CLIENTES','Deletou cliente'); } }
 
 window.buscarCEP = async function(cep) {
@@ -1644,7 +2216,7 @@ window.buscarCEP = async function(cep) {
 }
 
 window.prepVeiculo = function(mode, id=null) {
-  ['veicId','veicPlaca','veicModelo','veicAno','veicCor','veicKm','veicObs'].forEach(f=>{if($(f)) $(f).value='';});
+  ['veicId','veicPlaca','veicModelo','veicAno','veicCor','veicKm','veicObs','veicChassis','veicPatrimonio','veicPrefixo','veicMarca'].forEach(f=>{if($(f)) $(f).value='';});
   $('veicTipo').value='carro'; if($('veicDono')) window.popularSelects();
   if(mode==='edit'&&id){
     const v=J.veiculos.find(x=>x.id===id); if(!v) return;
@@ -1652,11 +2224,24 @@ window.prepVeiculo = function(mode, id=null) {
     $('veicDono').value=v.clienteId||''; $('veicPlaca').value=v.placa||'';
     $('veicModelo').value=v.modelo||''; $('veicAno').value=v.ano||'';
     $('veicCor').value=v.cor||''; $('veicKm').value=v.km||''; $('veicObs').value=v.obs||'';
+    if($('veicChassis')) $('veicChassis').value = v.chassis || '';
+    if($('veicPatrimonio')) $('veicPatrimonio').value = v.patrimonio || '';
+    if($('veicPrefixo')) $('veicPrefixo').value = v.prefixo || '';
+    if($('veicMarca')) $('veicMarca').value = v.marca || '';
   }
 }
 window.salvarVeiculo = async function() {
   if(!$v('veicPlaca')||!$v('veicModelo')) { window.toast('⚠ Placa e modelo obrigatórios','warn'); return; }
-  const p={tenantId:J.tid,tipo:$v('veicTipo'),clienteId:$v('veicDono'),placa:$v('veicPlaca').toUpperCase(),modelo:$v('veicModelo'),ano:$v('veicAno'),cor:$v('veicCor'),km:$v('veicKm'),obs:$v('veicObs'),updatedAt:new Date().toISOString()};
+  const p = {
+    tenantId: J.tid, tipo: $v('veicTipo'), clienteId: $v('veicDono'),
+    placa: $v('veicPlaca').toUpperCase(), modelo: $v('veicModelo'),
+    ano: $v('veicAno'), cor: $v('veicCor'), km: $v('veicKm'), obs: $v('veicObs'),
+    chassis: ($v('veicChassis') || '').toUpperCase(),
+    patrimonio: $v('veicPatrimonio') || '',
+    prefixo: $v('veicPrefixo') || '',
+    marca: ($v('veicMarca') || '').toUpperCase(),
+    updatedAt: new Date().toISOString()
+  };
   const id=$v('veicId');
   if(id) await db.collection('veiculos').doc(id).update(p); else { p.createdAt=new Date().toISOString(); await db.collection('veiculos').add(p); }
   window.toast('✓ VEÍCULO SALVO'); fecharModal('modalVeiculo'); audit('VEÍCULOS','Salvou veículo '+p.placa);
@@ -2126,16 +2711,30 @@ window.renderAgenda = function() {
   }).join('');
 }
 window.converterAgendaOS = async function(agdId) {
-  const a=J.agendamentos.find(x=>x.id===agdId); if(!a) return;
-  await db.collection('agendamentos').doc(agdId).update({status:'Convertido',updatedAt:new Date().toISOString()});
+  const a = J.agendamentos.find(x => x.id === agdId); if(!a) return;
+
+  const c = J.clientes.find(x => x.id === a.clienteId);
+  const v = J.veiculos.find(x => x.id === a.veiculoId);
+
+  // 1) Deleta DEFINITIVAMENTE o agendamento (item 12 da lista)
+  await db.collection('agendamentos').doc(agdId).delete();
+  audit('AGENDA', `Agendamento ${agdId.slice(-5)} convertido em O.S. e removido (cliente: ${c?.nome||'—'}, veículo: ${v?.placa||'—'})`);
+
+  // 2) Pré-popula o modal da nova O.S. com os dados do agendamento
   window.prepOS('add');
-  setTimeout(()=>{
-    $('osCliente').value=a.clienteId; window.filtrarVeiculosOS();
-    setTimeout(()=>{ $('osVeiculo').value=a.veiculoId; },100);
-    $('osDescricao').value=a.servico||''; $('osData').value=a.data||new Date().toISOString().split('T')[0];
+  setTimeout(() => {
+    if ($('osCliente')) { $('osCliente').value = a.clienteId; }
+    if (typeof window.filtrarVeiculosOS === 'function') window.filtrarVeiculosOS();
+    setTimeout(() => { if ($('osVeiculo')) $('osVeiculo').value = a.veiculoId; }, 120);
+    if ($('osDescricao')) $('osDescricao').value = a.servico || '';
+    if ($('osData')) $('osData').value = a.data || new Date().toISOString().split('T')[0];
+    if ($('osMec') && a.mecId) $('osMec').value = a.mecId;
+    // Grava referência ao agendamento original para auditoria
+    if ($('osId')) $('osId').dataset.fromAgd = agdId;
     abrirModal('modalOS');
-  },100);
-}
+    toast('✓ Agendamento convertido em O.S. O registro antigo foi apagado.', 'ok');
+  }, 120);
+};
 
 // AUDITORIA
 window.renderAuditoria = function() {
@@ -2144,35 +2743,162 @@ window.renderAuditoria = function() {
 }
 
 // GEMINI IA
-let iaHistorico = [];
-window.iaPerguntar = async function() {
-  const inp=$('iaInput'); const msg=$v('iaInput'); if(!msg) return; inp.value='';
-  window.adicionarMsgIA('user',msg); window.adicionarMsgIA('bot','<span style="color:var(--muted)">⏳ Processando...</span>');
-  const key=J.gemini; if(!key){window.adicionarMsgIA('bot','⚠ Configure a API Key Gemini no Superadmin.');return;}
-  const ctx = `Oficina: ${J.tnome}. Mecânicos: ${J.equipe.map(f=>f.nome).join(', ')}. Veículos: ${J.veiculos.length}. O.S. Pátio: ${J.os.filter(o=>!['Cancelado','Pronto','Entregue'].includes(o.status)).length}. Peças críticas: ${J.estoque.filter(p=>(p.qtd||0)<=(p.min||0)).map(p=>p.desc).join(', ')}.`;
-  const histOS = J.os.slice(-10).map(o=>{const v=J.veiculos.find(x=>x.id===o.veiculoId);return `OS: ${v?.placa}, Sts: ${o.status}, Tot: ${moeda(o.total)}`;}).join('\n');
-  const systemPrompt = `Você é o thIAguinho, IA para gestão de oficinas.\n\nCONTEXTO:\n${ctx}\n\nÚLTIMAS O.S.:\n${histOS}\n\nResponda em português de forma técnica e direta. Não alucine dados.`;
-  iaHistorico.push({role:'user',text:msg});
+// ═══════════════════════════════════════════════════════════════
+// IA — A implementação real está em js/ia.js (Gemini 2.0 Flash +
+// 24 meses de histórico + Google Search grounding + upload de PDF/imagem).
+// Este bloco foi removido pois sobrescrevia a função avançada.
+// ═══════════════════════════════════════════════════════════════
+let _jiaHist = [];
+
+function _buildContextoIA() {
+  const hoje = new Date();
+  const mesAtual = hoje.toISOString().slice(0,7); // YYYY-MM
+
+  // ── OS ──
+  let osCtx = '';
+  (J.os || []).forEach(o => {
+    const cli = (J.clientes||[]).find(c=>c.id===o.clienteId)||{};
+    const veic = (J.veiculos||[]).find(v=>v.id===o.veiculoId)||{};
+    const servs = (o.servicos||[]).map(s=>`${s.desc}(${s.tempo||0}h R$${s.valor||0})`).join(', ');
+    const pecas = (o.pecas||[]).map(p=>`${p.desc||p.codigo} x${p.qtd||1} R$${p.venda||0}`).join(', ');
+    const reais = (o.pecasReais||[]).map(p=>`[REAL]${p.desc||p.codigo} x${p.qtd||1} NF:${p.nf||'-'} Fornec:${p.fornecedor||'-'} R$${p.valorCompra||0}`).join(', ');
+    osCtx += `OS#${(o.id||'').slice(-6)} | ${o.status||'?'} | Cli:${cli.nome||o.cliente||'?'} | Veic:${veic.placa||o.placa||'?'} ${veic.modelo||o.veiculo||''} | KM:${o.km||'?'} | Data:${o.data||''} | Total:R$${o.total||0} | Serv:[${servs}] | Peças:[${pecas}]${reais?` | ReaisInstaladas:[${reais}]`:''} | EntregueA:${o.entreguePara||'-'}
+`;
+  });
+
+  // ── FINANCEIRO ──
+  const finHoje = (J.financeiro||[]).filter(f=>{
+    try { return new Date(f.data||f.vencimento).toDateString()===hoje.toDateString(); } catch(e){return false;}
+  });
+  const finMes = (J.financeiro||[]).filter(f=>{
+    try { return (f.data||f.vencimento||'').startsWith(mesAtual); } catch(e){return false;}
+  });
+  const contasPagar = finHoje.filter(f=>f.tipo==='despesa'||f.tipo==='saida');
+  const receitasMes = finMes.filter(f=>f.tipo==='receita'||f.tipo==='entrada').reduce((s,f)=>s+parseFloat(f.valor||0),0);
+  const despMes = finMes.filter(f=>f.tipo==='despesa'||f.tipo==='saida').reduce((s,f)=>s+parseFloat(f.valor||0),0);
+  const saldo = receitasMes - despMes;
+
+  let finCtx = `FINANCEIRO ${mesAtual}: Receitas=R$${receitasMes.toFixed(2)} Despesas=R$${despMes.toFixed(2)} Saldo=R$${saldo.toFixed(2)}
+`;
+  finCtx += `CONTAS PAGAR HOJE(${hoje.toLocaleDateString('pt-BR')}): ${contasPagar.length ? contasPagar.map(f=>`${f.desc||f.descricao||'?'} R$${f.valor||0}`).join('; ') : 'Nenhuma'}
+`;
+
+  // ── ESTOQUE ──
+  const estCrit = (J.estoque||[]).filter(p=>parseFloat(p.qtd||0)<=parseFloat(p.min||0));
+  const estCtx = `ESTOQUE: ${(J.estoque||[]).length} itens. Críticos(abaixo min): ${estCrit.length>0 ? estCrit.map(p=>`${p.desc}(${p.qtd}un)`).join(', ') : 'Nenhum'}
+`;
+
+  // ── EQUIPE / COMISSÕES ──
+  let equCtx = '';
+  (J.equipe||[]).forEach(e => {
+    const osMec = (J.os||[]).filter(o=>o.mecId===e.id&&(o.data||'').startsWith(mesAtual));
+    const totalMec = osMec.reduce((s,o)=>s+parseFloat(o.maoObra||o.total||0),0);
+    const comissao = +(totalMec * parseFloat(e.comissao||0)).toFixed(2);
+    equCtx += `Func:${e.nome||'?'} Cargo:${e.cargo||'?'} Salário:R$${e.salario||0} Comissão%:${(parseFloat(e.comissao||0)*100).toFixed(0)}% OS no mês:${osMec.length} MO gerada:R$${totalMec.toFixed(2)} Comissão a pagar:R$${comissao}
+`;
+  });
+
+  // ── CLIENTES / VEÍCULOS ──
+  const cliCtx = `CLIENTES: ${(J.clientes||[]).length} cadastrados. VEÍCULOS: ${(J.veiculos||[]).length} cadastrados.
+`;
+
+  return [
+    `=== CONTEXTO REAL DO SISTEMA thIAguinho (${new Date().toLocaleString('pt-BR')}) ===`,
+    `OFICINA: ${J.tnome||'?'} | USUÁRIO: ${J.nome||'?'}`,
+    cliCtx,
+    `=== ORDENS DE SERVIÇO (${(J.os||[]).length} total) ===`,
+    osCtx || 'Nenhuma OS cadastrada.',
+    `=== FINANCEIRO ===`,
+    finCtx,
+    estCtx,
+    `=== EQUIPE (${(J.equipe||[]).length} funcionários) ===`,
+    equCtx || 'Sem funcionários cadastrados.',
+    `=== FIM DO CONTEXTO ===`
+  ].join('\n');
+}
+
+async function _jiaChamar(pergunta) {
+  const key = J.gemini || J.oficina?.apiKeys?.gemini || J.oficina?.geminiKey || null;
+  const ctx = _buildContextoIA();
+
+  _jiaAddMsg('user', pergunta);
+  const lidDiv = _jiaAddMsg('bot', '<span class="j-spinner"></span> Processando...');
+
+  if (!key) {
+    lidDiv.innerHTML = `<strong>thIAguinho:</strong> ⚠ Chave Gemini não configurada. Vá em Configurações → API Keys → Gemini e adicione sua chave para ativar a IA.`;
+    return;
+  }
+
   try {
-    const contents=iaHistorico.map(h=>({role:h.role==='user'?'user':'model',parts:[{text:h.text}]}));
-    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents,systemInstruction:{parts:[{text:systemPrompt}]}})});
-    const data=await res.json(); if(!res.ok) throw new Error(data.error?.message||'Erro API');
-    const resp=data.candidates?.[0]?.content?.parts?.[0]?.text||'Sem resposta';
-    iaHistorico.push({role:'model',text:resp});
-    $('iaMsgs').lastChild?.remove(); window.adicionarMsgIA('bot',resp.replace(/\n/g,'<br>'));
-  } catch(e){ $('iaMsgs').lastChild?.remove(); window.adicionarMsgIA('bot','⚠ Erro: '+e.message); }
+    const msgs = _jiaHist.map(h=>({role:h.r==='user'?'user':'model',parts:[{text:h.t}]}));
+    const sysPrompt = `Você é o thIAguinho, assistente administrativo da oficina ${J.tnome||''}. 
+REGRAS ABSOLUTAS:
+1. Responda APENAS com base nos dados reais do sistema fornecidos abaixo. NUNCA invente valores, nomes, datas ou informações.
+2. Se a informação não estiver nos dados, diga "Não encontrei essa informação no sistema." Não suponha.
+3. Seja direto, objetivo e use formatação clara (listas quando necessário).
+4. Para perguntas financeiras, use APENAS os dados do campo FINANCEIRO.
+5. Para histórico de veículos, use APENAS os dados do campo ORDENS DE SERVIÇO.
+6. Para salários e comissões, use APENAS os dados do campo EQUIPE.
+
+${ctx}`;
+
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(key)}`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        contents: msgs,
+        systemInstruction: { parts: [{ text: sysPrompt }] }
+      })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.error?.message || `HTTP ${res.status}`);
+    const resp = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!resp) throw new Error('Resposta vazia da IA.');
+    _jiaHist.push({r:'bot', t:resp});
+    lidDiv.innerHTML = `<strong>thIAguinho:</strong> ${resp.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}`;
+  } catch(e) {
+    lidDiv.innerHTML = `<strong>thIAguinho:</strong> ❌ Erro: ${e.message}`;
+  }
 }
-window.iaAnalisarDRE = async function() { $('iaInput').value='Analise o financeiro atual e sugira melhorias.'; ir('ia',document.querySelector('.nav-item:last-child')); await window.iaPerguntar(); }
-window.iaAnalisarEstoque = async function() { $('iaInput').value='Quais peças estão em nível crítico para reposição?'; ir('ia',document.querySelector('.nav-item:last-child')); await window.iaPerguntar(); }
-window.adicionarMsgIA = function(role, html) {
-  if(!$('iaMsgs')) return;
-  const div=document.createElement('div'); div.className='ia-msg '+role;
-  if(role==='bot') div.innerHTML='<strong>thIAguinho:</strong> '+html; else div.innerHTML=html;
-  $('iaMsgs').appendChild(div); $('iaMsgs').scrollTop=$('iaMsgs').scrollHeight;
+
+function _jiaAddMsg(tipo, html) {
+  const c = document.getElementById('iaMsgs'); if(!c) return {innerHTML:''};
+  const d = document.createElement('div');
+  d.className = `ia-msg ${tipo==='user'?'user':'bot'}`;
+  d.innerHTML = tipo==='user' ? `<strong>Você:</strong> ${html}` : html;
+  c.appendChild(d);
+  c.scrollTop = c.scrollHeight;
+  _jiaHist.push({r:tipo, t:html.replace(/<[^>]*>/g,'')});
+  return d;
 }
-document.getElementById('iaInput')?.addEventListener('keydown',e=>{if(e.key==='Enter')window.iaPerguntar();});
+
+window.iaPerguntar = function() {
+  const inp = document.getElementById('iaInput');
+  const msg = inp?.value?.trim();
+  if (!msg) return;
+  inp.value = '';
+  _jiaChamar(msg);
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('iaInput')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') window.iaPerguntar();
+  });
+});
+
+window.iaAnalisarDRE = function() {
+  _jiaChamar('Analise o DRE do mês atual: receitas, despesas, saldo, e me diga se está saudável ou se há alertas.');
+};
+
+window.iaAnalisarEstoque = function() {
+  _jiaChamar('Analise o estoque atual: quais itens estão abaixo do mínimo, quais precisam ser comprados urgente, e o total em estoque.');
+};
 </script>
+<script src="js/fiscal.js"></script>
 <script src="js/financeiro.js"></script>
+<script src="js/os-utils.js"></script>
 <script src="js/os.js"></script>
+<script src="js/ia.js"></script>
+<script src="js/tabela-tempa.js"></script>
+<script src="js/exportar-pmsp.js"></script>
 </body>
 </html>

@@ -2,8 +2,22 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>J.A.R.V.I.S — SUPERADMIN SaaS</title>
+<!-- ═══ PWA ═══ -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#00D4FF">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="JARVIS Admin">
+<meta name="mobile-web-app-capable" content="yes">
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('service-worker.js').catch(function(){});
+  });
+}
+</script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -321,6 +335,8 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
         <label class="mod-check"><input type="checkbox" id="mChat" value="chat"> 💬 Chat CRM</label>
         <label class="mod-check"><input type="checkbox" id="mAgd" value="agenda"> 📅 Agenda</label>
         <label class="mod-check"><input type="checkbox" id="mRH" value="rh"> 👷 Equipe / RH</label>
+        <label class="mod-check"><input type="checkbox" id="mComissoes" value="comissoes"> 💸 Ver Comissões</label>
+        <label class="mod-check"><input type="checkbox" id="mTabelaTempa" value="tabelaTempa" checked> 📖 Tabela Tempária SINDIREPA</label>
       </div>
     </div>
   </div>
@@ -524,7 +540,7 @@ function renderDashboard(){
 
 function renderTenants(filter=''){
   const list=filter?allTenants.filter(t=>(t.nomeFantasia||'').toLowerCase().includes(filter.toLowerCase())):allTenants;
-  const mods_map={os:'O.S.',crm:'CRM',estoque:'Est.',financeiro:'Fin.',ia:'IA',chat:'Chat',agenda:'Agd.',rh:'RH'};
+  const mods_map={os:'O.S.',crm:'CRM',estoque:'Est.',financeiro:'Fin.',ia:'IA',chat:'Chat',agenda:'Agd.',rh:'RH',comissoes:'Comiss.',tabelaTempa:'Tempa'};
   $('tbTenants').innerHTML=list.map(t=>{
     const stCls=t.status==='Online'?'pill-green':t.status==='Trial'?'pill-warn':'pill-danger';
     const mods=Object.entries(t.modulos||{}).filter(([,v])=>v).map(([k])=>`<span class="pill pill-purple" style="font-size:0.5rem;padding:1px 6px">${mods_map[k]||k}</span>`).join(' ');
@@ -549,7 +565,7 @@ function filtrarTenants(v){renderTenants(v);}
 // TENANT CRUD
 function prepTenant(mode,id=null){
   ['tId','tNome','tUser','tSenha','tWpp','tGemini','tCloudName','tCloudPreset'].forEach(f=>{if($(f))$(f).value='';});
-  ['mOS','mCrm','mEst','mFin','mIA','mChat','mAgd','mRH'].forEach(f=>{if($(f))$(f).checked=false;});
+  ['mOS','mCrm','mEst','mFin','mIA','mChat','mAgd','mRH','mComissoes'].forEach(f=>{if($(f))$(f).checked=false;});
   $('tStatus').value='Online'; $('tNicho').value='carros'; $('tPlano').value='trial';
   $('tCloudName').value='dmuvm1o6m'; $('tCloudPreset').value='evolution';
   $('modalTenantTitle').innerText='NOVA OFICINA (TENANT)';
@@ -566,6 +582,8 @@ function prepTenant(mode,id=null){
     $('mOS').checked=!!m.os; $('mCrm').checked=!!m.crm; $('mEst').checked=!!m.estoque;
     $('mFin').checked=!!m.financeiro; $('mIA').checked=!!m.ia; $('mChat').checked=!!m.chat;
     $('mAgd').checked=!!m.agenda; $('mRH').checked=!!m.rh;
+    if($('mComissoes')) $('mComissoes').checked=!!m.comissoes;
+    if($('mTabelaTempa')) $('mTabelaTempa').checked=m.tabelaTempa !== false; // default ligado
     $('modalTenantTitle').innerText='EDITAR TENANT: '+(t.nomeFantasia||'').toUpperCase();
   }
 }
@@ -584,7 +602,9 @@ async function salvarTenant(){
     modulos:{
       os:$('mOS').checked, crm:$('mCrm').checked, estoque:$('mEst').checked,
       financeiro:$('mFin').checked, ia:$('mIA').checked, chat:$('mChat').checked,
-      agenda:$('mAgd').checked, rh:$('mRH').checked
+      agenda:$('mAgd').checked, rh:$('mRH').checked,
+      comissoes:$('mComissoes')?$('mComissoes').checked:false,
+      tabelaTempa:$('mTabelaTempa')?$('mTabelaTempa').checked:true  // default true
     },
     updatedAt:new Date().toISOString()
   };

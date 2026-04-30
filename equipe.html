@@ -2,10 +2,25 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>J.A.R.V.I.S — Painel da Equipe</title>
+<!-- ═══ PWA ═══ -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#00D4FF">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="JARVIS Mecânico">
+<meta name="mobile-web-app-capable" content="yes">
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('service-worker.js').catch(function(){});
+  });
+}
+</script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="js/os-utils.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=JetBrains+Mono:wght@400;700&family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -95,7 +110,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .section.active{display:block;}
 
 /* KPI ROW (mecânico) */
-.mec-kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px;}
+.mec-kpis{display:grid;grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));gap:12px;margin-bottom:20px;}
 .mec-kpi{background:var(--surf);border:1px solid var(--border);border-radius:3px;padding:16px;position:relative;overflow:hidden;}
 .mec-kpi::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;}
 .mec-kpi.c1::after{background:var(--cyan);}
@@ -264,7 +279,6 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 </head>
 <body>
 <div id="toastBox"></div>
-<!-- FAB Mobile: Nova O.S. -->
 <button class="fab-nova-os" onclick="prepOS('add');abrirModal('modalOS')" title="Nova O.S." aria-label="Nova Ordem de Serviço">＋</button>
 
 <div class="topbar">
@@ -299,12 +313,21 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
           <div class="mec-kpi-label">MINHAS O.S. ABERTAS</div>
           <div class="mec-kpi-val" id="kMeusOS">0</div>
         </div>
-        <div class="mec-kpi c2">
+<div class="mec-kpi c2">
           <div class="mec-kpi-label">EM EXECUÇÃO AGORA</div>
           <div class="mec-kpi-val" id="kEmExec">0</div>
         </div>
+<div class="mec-kpi c3" id="kpiComissao" style="display:none; border-bottom: 2px solid var(--success); cursor:pointer; transition: background 0.2s;" onclick="abrirModal('modalExtratoFunc')" onmouseover="this.style.background='rgba(0, 255, 136, 0.05)'" onmouseout="this.style.background=''">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div>
+              <div class="mec-kpi-label" style="color:var(--success)">COMISSÕES A RECEBER</div>
+              <div class="mec-kpi-val" id="kMinhaComissao" style="color:var(--success);">R$ 0,00</div>
+            </div>
+            <div style="font-size:1.4rem; opacity:0.6;">📄</div>
+          </div>
+          <div style="font-family:var(--fm);font-size:0.55rem;color:var(--muted);margin-top:8px;text-align:right;">CLIQUE PARA VER EXTRATO COMPLETO ➔</div>
+        </div>
       </div>
-
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:10px;flex-wrap:wrap;">
         <div style="position:relative;flex:1;max-width:240px;">
           <input class="j-input" id="searchOS" placeholder="Buscar placa..." oninput="renderKanban()" style="padding-left:10px;">
@@ -317,7 +340,8 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
         <div class="k-col" style="border-top:2px solid var(--warn)"><div class="k-col-head"><span class="k-col-label" style="color:var(--warn)">ORÇAMENTO</span><span class="k-col-count" id="cnt-Orcamento">0</span></div><div class="k-col-body" id="kb-Orcamento"></div></div>
         <div class="k-col" style="border-top:2px solid var(--cyan)"><div class="k-col-head"><span class="k-col-label" style="color:var(--cyan)">APROVADO</span><span class="k-col-count" id="cnt-Aprovado">0</span></div><div class="k-col-body" id="kb-Aprovado"></div></div>
         <div class="k-col" style="border-top:2px solid #FF8C00"><div class="k-col-head"><span class="k-col-label" style="color:#FF8C00">EM SERVIÇO</span><span class="k-col-count" id="cnt-Andamento">0</span></div><div class="k-col-body" id="kb-Andamento"></div></div>
-        <div class="k-col" style="border-top:2px solid var(--success)"><div class="k-col-head"><span class="k-col-label" style="color:var(--success)">PRONTO</span><span class="k-col-count" id="cnt-Concluido">0</span></div><div class="k-col-body" id="kb-Concluido"></div></div>
+        <div class="k-col" style="border-top:2px solid var(--success)"><div class="k-col-head"><span class="k-col-label" style="color:var(--success)">PRONTO P/ RETIRADA</span><span class="k-col-count" id="cnt-Pronto">0</span></div><div class="k-col-body" id="kb-Pronto"></div></div>
+        <div class="k-col" style="border-top:2px solid #00FF88;opacity:0.85;"><div class="k-col-head"><span class="k-col-label" style="color:#00FF88">✓ ENTREGUE</span><span class="k-col-count" id="cnt-Entregue">0</span></div><div class="k-col-body" id="kb-Entregue"></div></div>
       </div>
     </div>
 
@@ -352,11 +376,11 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
           </div>
         </div>
         <div style="padding:10px 14px;border-bottom:1px solid rgba(167,139,250,0.1);display:flex;gap:8px;flex-wrap:wrap;background:rgba(0,0,0,0.1);">
-          <span onclick="iaChip('Como resolver o código P0300?')" style="padding:6px 12px;background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.2);border-radius:20px;font-family:var(--fm);font-size:0.7rem;color:#A78BFA;cursor:pointer;">Dica de Falha (DTC)</span>
-          <span onclick="iaChip('Qual o torque do cabeçote do motor EA111?')" style="padding:6px 12px;background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.2);border-radius:20px;font-family:var(--fm);font-size:0.7rem;color:#A78BFA;cursor:pointer;">Torque EA111</span>
+          <span onclick="iaChip('Como testar bobina de ignição com multímetro?')" style="padding:6px 12px;background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.2);border-radius:20px;font-family:var(--fm);font-size:0.7rem;color:#A78BFA;cursor:pointer;">Dica de Falha (DTC)</span>
+          <span onclick="iaChip('Qual a ordem de aperto do cabeçote EA111?')" style="padding:6px 12px;background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.2);border-radius:20px;font-family:var(--fm);font-size:0.7rem;color:#A78BFA;cursor:pointer;">Torque EA111</span>
         </div>
         <div id="iaMsgs" style="flex:1;overflow-y:auto;padding:20px;background:var(--surf-0);display:flex;flex-direction:column;gap:12px;">
-          <div style="text-align:center;color:var(--text-muted);font-size:0.85rem;padding:20px;">Peça ajuda para diagnósticos, torques ou manuais.</div>
+          <div style="text-align:center;color:var(--text-muted);font-size:0.85rem;padding:20px;">Peça ajuda para diagnósticos, torques ou manuais.<br><small>(O Assistente foca apenas nos veículos atualmente no pátio)</small></div>
         </div>
         <div class="ia-foot-wrap">
           <button type="button" class="btn-ia-voice" id="btnVozIA" onclick="iniciarVozIA()" title="Falar com a IA">🎙️</button>
@@ -369,7 +393,6 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   </div>
 </div>
 
-<!-- MODAL IA — z-index 9999, sempre por cima da O.S. -->
 <div class="overlay-ia" id="modalIaOS">
 <div class="modal-ia">
   <div class="modal-ia-head">
@@ -405,7 +428,6 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     </div>
     <button class="modal-close" onclick="fecharModal('modalOS')">✕</button>
   </div>
-  <!-- BANNER HISTÓRICO DO VEÍCULO -->
   <div id="bannerHistVeiculo" style="display:none;padding:10px 20px;background:rgba(255,184,0,0.06);border-bottom:1px solid rgba(255,184,0,0.2);">
     <div style="font-family:var(--fm);font-size:0.58rem;color:var(--warn);letter-spacing:1px;margin-bottom:5px;">⚠ HISTÓRICO DESTE VEÍCULO NA OFICINA</div>
     <div id="bannerHistContent" style="font-size:0.78rem;color:var(--text);line-height:1.6;"></div>
@@ -424,11 +446,15 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
         </select>
       </div>
       <div class="form-group"><label class="j-label">Status</label>
-        <select class="j-select" id="osStatus">
-          <option value="Aguardando">Triagem</option><option value="Orcamento">Orçamento</option>
-          <option value="Aprovado">Aprovado</option><option value="Andamento">Em Serviço</option>
-          <option value="Concluido">Concluído</option>
+        <select class="j-select" id="osStatus" onchange="window._validarStatusMecanico(this)">
+          <option value="Aguardando">Triagem</option>
+          <option value="Orcamento">Orçamento</option>
+          <option value="Aprovado">Aprovado</option>
+          <option value="Andamento">Em Serviço</option>
+          <option value="Pronto">✓ Pronto p/ Retirada (mecânico finaliza aqui)</option>
+          <option value="Entregue" data-restrito="gestor">🔒 Entregue (somente gestor/caixa)</option>
         </select>
+        <div id="osStatusAviso" style="font-family:var(--fm);font-size:0.6rem;color:var(--warn);margin-top:4px;display:none;letter-spacing:0.5px;"></div>
       </div>
     </div>
     <div class="form-row c2">
@@ -515,7 +541,6 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     <div style="background:var(--surf3);border:1px solid var(--border);border-radius:3px;padding:14px;">
       <div style="font-family:var(--fd);font-weight:700;margin-bottom:12px;color:var(--warn);">⚡ CHECKLIST RÁPIDO</div>
 
-      <!-- COMBUSTÍVEL - seletor visual -->
       <div class="form-group">
         <label class="j-label">Combustível</label>
         <div class="comb-grid" id="combGrid">
@@ -528,7 +553,6 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
         <input type="hidden" id="chkComb" value="N/A">
       </div>
 
-      <!-- PNEUS - sliders -->
       <div class="form-group">
         <label class="j-label">Estado dos Pneus</label>
         <div class="pneu-bar-wrap">
@@ -545,7 +569,6 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
         </div>
       </div>
 
-      <!-- ITENS - botões toque -->
       <div class="form-group">
         <label class="j-label">Itens de Entrada</label>
         <div class="chk-grid">
@@ -572,7 +595,6 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
         <input type="hidden" id="chkDoc" value="">
       </div>
 
-      <!-- AVARIAS - com voz -->
       <div class="form-group">
         <label class="j-label">Avarias Prévias / Obs</label>
         <div class="field-voice-wrap has-textarea">
@@ -587,12 +609,40 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     <div class="timeline" id="osTimeline"></div>
   </div>
 
-  <div class="modal-foot">
+<div class="modal-foot">
     <button class="btn-ghost" onclick="fecharModal('modalOS')">CANCELAR</button>
     <button class="btn-primary" onclick="salvarOS()">SALVAR O.S.</button>
   </div>
   <input type="hidden" id="osId">
   <input type="hidden" id="tlData" value="[]">
+</div>
+</div>
+
+<div class="overlay" id="modalExtratoFunc">
+<div class="modal">
+  <div class="modal-head">
+    <div class="modal-title">📄 EXTRATO FINANCEIRO</div>
+    <button class="modal-close" onclick="fecharModal('modalExtratoFunc')">✕</button>
+  </div>
+  <div class="modal-body" style="padding: 0; max-height: 60vh; overflow-y: auto;">
+    <table class="j-table" style="margin: 0;">
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Tipo</th>
+          <th>Descrição / Origem</th>
+          <th>Status</th>
+          <th>Valor</th>
+        </tr>
+      </thead>
+      <tbody id="tbExtratoFunc">
+        <tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted);font-size:0.8rem;">Carregando histórico...</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="modal-foot">
+    <button class="btn-ghost" onclick="fecharModal('modalExtratoFunc')">FECHAR</button>
+  </div>
 </div>
 </div>
 
@@ -611,7 +661,7 @@ const J = {
   cloudName: sessionStorage.getItem('j_cloud_name')||'dmuvm1o6m',
   cloudPreset: sessionStorage.getItem('j_cloud_preset')||'evolution'
 };
-if(!J.tid || J.role==='admin') window.location.replace('index.html');
+ if(!J.tid || J.role==='admin') window.location.replace('index.html');
 
 // FIREBASE
 const FB={apiKey:"AIzaSyBqIuCsHHuy_f-mBWV4JBkbyOorXpqQvqg",authDomain:"hub-thiaguinho.firebaseapp.com",projectId:"hub-thiaguinho",storageBucket:"hub-thiaguinho.firebasestorage.app",messagingSenderId:"453508098543",appId:"1:453508098543:web:305f4d48edd9be40bd6e1a"};
@@ -625,7 +675,11 @@ let dbOS=[], dbClientes=[], dbVeiculos=[], dbEstoque=[], dbMsgs=[];
 $('tbTenantNome').innerText = J.tnome;
 $('topNome').innerText = J.nome;
 $('topAv').innerText = J.nome.charAt(0).toUpperCase();
-
+if($('topCargo')) {
+  let roleDisplay = J.role || 'MECÂNICO';
+  if (roleDisplay.toLowerCase() === 'equipe') roleDisplay = 'MECÂNICO';
+  $('topCargo').innerText = roleDisplay.toUpperCase();
+}
 // TOAST
 function toast(msg,type='ok'){
   const el=document.createElement('div');
@@ -802,34 +856,123 @@ function _resetChkBtns() {
   $('chkPD').value = 100; if($('pneuDVal')) $('pneuDVal').innerText = '100%';
   $('chkPT').value = 100; if($('pneuTVal')) $('pneuTVal').innerText = '100%';
 }
-
 // ═══════════════════════════════════════════════════════════════
-// QUICK-MOVE STATUS no Kanban
+// QUICK-MOVE STATUS no Kanban (LOTE B — fluxo coerente)
+// Mecânico: Triagem → Orçamento → Em Serviço → Pronto (FIM DA JORNADA DO MECÂNICO)
+// Só GESTOR pode marcar "Entregue" (exige ter recebido o pagamento no caixa).
 // ═══════════════════════════════════════════════════════════════
 const STATUS_NEXT = {
-  'Aguardando': {label:'→ Orçamento', next:'Orcamento'},
-  'Orcamento':  {label:'→ Em Serviço', next:'Andamento'},
-  'Aprovado':   {label:'→ Em Serviço', next:'Andamento'},
-  'Andamento':  {label:'✓ Concluir', next:'Concluido'},
-  'Concluido':  {label:'↩ Reabrir', next:'Andamento'},
+  'Aguardando': {label:'→ Orçamento',           next:'Orcamento'},
+  'Orcamento':  {label:'✓ Aprovar Itens',       next:'Aprovado'},
+  'Aprovado':   {label:'→ Em Serviço',          next:'Andamento'},
+  'Andamento':  {label:'✓ Pronto p/ Retirada',  next:'Pronto'},
+  'Pronto':     {label:'⚠ Aguardando caixa',    next:null},  // mecânico NÃO move daqui
+  'Entregue':   {label:'✓ Entregue',            next:null},
 };
 
 async function quickMoveOS(osId, novoStatus, ev) {
   ev.stopPropagation();
+  if (!novoStatus) {
+    toast('⚠ O gestor/caixa deve marcar como Entregue após confirmar o pagamento.', 'warn');
+    return;
+  }
+  // Trava: mecânico não pode mover para "Entregue" (só gestor/admin)
+  if (novoStatus === 'Entregue' && !['admin','gestor','gerente'].includes(J.role)) {
+    toast('⚠ Apenas o gestor ou o caixa pode marcar uma O.S. como ENTREGUE.', 'err');
+    return;
+  }
+
   try {
-    const tl = [];
     const os = dbOS.find(x => x.id === osId);
+    const stAntes = os?.status || '';
+    if (novoStatus === 'Aprovado' && os && !(window.JOS || window.JarvisOSUtils).hasApproval?.(os)) {
+      const result = await (window.JOS || window.JarvisOSUtils).aprovarOrcamentoComSelecao({
+        db,
+        osId,
+        novoStatus: 'Aprovado',
+        clientes: dbClientes,
+        actorName: J.nome || 'Equipe',
+        actorType: 'equipe',
+        toast
+      });
+      if (result) toast('✓ Orçamento aprovado com os itens selecionados.', 'ok');
+      return;
+    }
+    const tl = [];
     if (os && os.timeline) tl.push(...os.timeline);
-    tl.push({ dt: new Date().toISOString(), user: J.nome, acao: `Moveu para: ${novoStatus}` });
+
+    const labelAntes = (stAntes === 'Pronto') ? 'Pronto p/ Retirada' : (stAntes || '—');
+    const labelNovo  = (novoStatus === 'Pronto') ? 'Pronto p/ Retirada' : novoStatus;
+    tl.push({ dt: new Date().toISOString(), user: J.nome, acao: `Status: ${labelAntes} → ${labelNovo}` });
+
     await db.collection('ordens_servico').doc(osId).update({
       status: novoStatus,
       timeline: tl,
       updatedAt: new Date().toISOString()
     });
-    toast(`✓ Status: ${novoStatus}`, 'ok');
+    toast(`✓ Status: ${labelNovo}`, 'ok');
+
+    // Quando vira "Pronto", avisa o admin/gestor no chat da equipe.
+    if (novoStatus === 'Pronto' && stAntes !== 'Pronto') {
+      setTimeout(() => _avisarAdminPronto({...os, status: novoStatus}), 400);
+    }
   } catch(e) { toast('Erro ao mover: ' + e.message, 'err'); }
 }
 
+/**
+ * Avisa o admin/gestor no chat interno quando a equipe marca a OS como pronta.
+ * O WhatsApp do cliente fica sob confirmação do dono/gestor no Jarvis.
+ */
+async function _avisarAdminPronto(os) {
+  if (!os) return;
+  const cliente = (dbClientes || []).find(c => c.id === os.clienteId);
+  const veic = (dbVeiculos || []).find(v => v.id === os.veiculoId);
+  const placa = os.placa || veic?.placa || 'sem placa';
+  const modelo = veic?.modelo ? ` - ${veic.modelo}` : '';
+  try {
+    await db.collection('chat_equipe').add({
+      tenantId: J.tid,
+      de: J.fid || 'equipe',
+      deNome: J.nome || 'Equipe',
+      para: 'admin',
+      sender: 'equipe',
+      msg: `OS #${String(os.id || '').slice(-6).toUpperCase()} marcada como PRONTO pela equipe. Cliente: ${cliente?.nome || 'não identificado'} | Veículo: ${placa}${modelo}. Conferir e enviar aviso ao cliente pelo Jarvis.`,
+      lidaAdmin: false,
+      lidaEquipe: true,
+      origem: 'status_pronto',
+      osId: os.id,
+      ts: Date.now()
+    });
+    toast('Admin avisado no chat da equipe.', 'ok');
+  } catch (e) {
+    toast('OS pronta, mas não consegui avisar o admin no chat: ' + e.message, 'warn');
+  }
+}
+
+/**
+ * Dispara WhatsApp "Pronto para retirada" quando o mecânico conclui o serviço.
+ * Cliente é avisado pelo WhatsApp com mensagem profissional.
+ */
+function _dispararWppPronto(os) {
+  if (!os) return;
+  const cliente = (dbClientes || []).find(c => c.id === os.clienteId);
+  if (!cliente?.wpp) {
+    toast('Cliente sem WhatsApp cadastrado. Aviso automático não enviado.', 'warn');
+    return;
+  }
+  const veic = (dbVeiculos || []).find(v => v.id === os.veiculoId);
+  const placa = os.placa || veic?.placa || 'seu veículo';
+  const modelo = veic?.modelo ? ` ${veic.modelo}` : '';
+  const fone = String(cliente.wpp).replace(/\D/g, '');
+  const nomeOficina = J.tnome || 'Oficina';
+
+  const msg = `Olá ${cliente.nome}! 👋\n\nAqui é da *${nomeOficina}*.\n\n✅ Seu veículo *${placa}${modelo}* está *PRONTO PARA RETIRADA*!\n\nPassamos a O.S. #${os.id.slice(-6).toUpperCase()} para o caixa. Pode vir buscar quando for melhor pra você.\n\nAguardamos!`;
+
+  if (confirm(`Enviar aviso automático para ${cliente.nome} via WhatsApp?\n\n✓ PRONTO PARA RETIRADA\nVeículo ${placa}`)) {
+    const url = `https://wa.me/55${fone}?text=${encodeURIComponent(msg)}`;
+    window.open(url, '_blank');
+  }
+}
 
 let _iaHist = [];
 
@@ -842,6 +985,10 @@ function iaChip(txt) {
 $('iaInput')?.addEventListener('keydown', e => {
   if (e.key === 'Enter') iaEnviar();
 });
+
+// ═══════════════════════════════════════════════════════════════
+// BLINDAGEM DA IA: REMOÇÃO DO GOOGLE SEARCH E FILTRO CIRÚRGICO
+// ═══════════════════════════════════════════════════════════════
 async function iaEnviar() {
   const inp = $('iaInput');
   const msg = inp?.value?.trim();
@@ -849,66 +996,51 @@ async function iaEnviar() {
   inp.value = '';
 
   _iaMsgUser(msg);
-  const lid = _iaMsgBot('<span class="j-spinner"></span> Consultando manuais e histórico...');
+  const lid = _iaMsgBot('<span class="j-spinner"></span> Analisando...');
 
   const key = J.gemini || null;
   _iaHist.push({ role: 'user', text: msg });
 
   if (!key) {
-    _iaReplace(lid, 'A chave da IA não está configurada no painel administrativo.');
+    _iaReplace(lid, '⚠ <strong>Chave da IA não configurada.</strong> Peça ao administrador para inserir a API Key no painel.');
     return;
   }
 
-  // 1. HISTÓRICO COMPLETO DA OFICINA — todos os veículos, todos os defeitos, aprendizado real
-  let historyContext = "═══════════════════════════════════════\nBASE DE CONHECIMENTO DESTA OFICINA (HISTÓRICO REAL):\n═══════════════════════════════════════\n";
+  // HISTÓRICO CIRÚRGICO: Pega apenas OS ativas no kanban e as 10 últimas concluídas
+  // Isso evita estourar o limite de tokens e impede que a IA trave.
+  let historyContext = "═══════════════════════════════════════\nVEÍCULOS ATUAIS NO PÁTIO E HISTÓRICO RECENTE:\n═══════════════════════════════════════\n";
 
-  // Agrupa por placa para detectar reincidências
+  const osAtivas = dbOS.filter(o => o.status !== 'Concluido' && o.status !== 'Cancelado');
+  const osRecentes = dbOS.filter(o => o.status === 'Concluido').sort((a,b)=>new Date(b.updatedAt||0)-new Date(a.updatedAt||0)).slice(0, 10);
+  const osLimitadas = [...osAtivas, ...osRecentes];
+  
   const porPlaca = {};
-  dbOS.forEach(o => {
+  osLimitadas.forEach(o => {
     const placa = o.placa || dbVeiculos.find(v=>v.id===o.veiculoId)?.placa || 'S/P';
     if (!porPlaca[placa]) porPlaca[placa] = [];
     porPlaca[placa].push(o);
   });
 
   Object.entries(porPlaca).forEach(([placa, oss]) => {
-    historyContext += `\n🚗 PLACA: ${placa} (${oss.length} atendimento(s))\n`;
-    oss.sort((a,b)=>new Date(b.createdAt||b.data||0)-new Date(a.createdAt||a.data||0)).forEach(o => {
+    historyContext += `\n🚗 PLACA: ${placa} (${oss.length} OS)\n`;
+    oss.forEach(o => {
       const v = dbVeiculos.find(x=>x.id===o.veiculoId);
       const modelo = v?.modelo || o.tipoVeiculo || '';
       historyContext += `  • [${o.data||'?'}] OS#${o.id.slice(-5).toUpperCase()} ${modelo} — KM: ${o.km||'?'}\n`;
       if (o.desc)        historyContext += `    RELATO: ${o.desc}\n`;
-      if (o.diagnostico) historyContext += `    DIAGNÓSTICO: ${o.diagnostico}\n`;
-      if (o.pecas?.length)    historyContext += `    PEÇAS: ${o.pecas.map(p=>`${p.desc}${p.qtd>1?' x'+p.qtd:''}`).join(', ')}\n`;
+      if (o.diagnostico) historyContext += `    DIAG: ${o.diagnostico}\n`;
+      if (o.pecas?.length)    historyContext += `    PEÇAS: ${o.pecas.map(p=>`${p.desc} x${p.qtd}`).join(', ')}\n`;
       if (o.servicos?.length) historyContext += `    SERVIÇOS: ${o.servicos.map(s=>s.desc).join(', ')}\n`;
-      if (o.status === 'Concluido') historyContext += `    STATUS: ✅ Concluído\n`;
     });
   });
 
-  // 2. PROMPT MESTRE — Doutor-IE/Bosch + auditoria + web grounding
-  const systemPrompt = `Você é o thIAguinho, Engenheiro Clínico Automotivo desta oficina mecânica.
-Nível técnico: equivalente ao Doutor-IE + Bosch Mecânico Pro + AllData.
-Você tem DUAS fontes de conhecimento obrigatórias — use AMBAS em toda resposta:
-
-FONTE 1 — BASE INTERNA (histórico real desta oficina, fornecido abaixo)
-FONTE 2 — INTERNET (use sua ferramenta de busca Google para confirmar torques, especificações técnicas, TSBs, recalls e procedimentos com dados atualizados)
+  // PROMPT BLINDADO (Sem diretiva de busca no Google para evitar "Sem resposta")
+  const systemPrompt = `Você é o thIAguinho, assistente técnico nível Doutor-IE desta oficina mecânica.
 
 REGRAS ABSOLUTAS:
-1. AUDITORIA DE GARANTIA: Se o mecânico mencionar uma placa + peça, VARRA a base interna e verifique se essa peça foi trocada recentemente. Alerte em **NEGRITO** se ainda estiver na garantia.
-   - Amortecedores: 2 anos / 50.000 km
-   - Pastilhas/Discos: 3 meses / 5.000 km
-   - Baterias: 12 a 18 meses
-   - Motor/Injeção: 3 meses (garantia legal PROCON)
-   - Kits suspensão (batente/coifa): 3 meses / 10.000 km
-
-2. REINCIDÊNCIA: Se a mesma placa apresentou o mesmo problema mais de uma vez, identifique e liste CAUSAS RAIZ (ex: mola cansada causando amortecedor, erro de montagem, peça de qualidade inferior).
-
-3. VERDADE COMPROVADA: Para torques, especificações, diagramas elétricos e TSBs, use a busca Google para confirmar os valores exatos. Nunca invente especificações técnicas. Se não tiver certeza, diga "consultando..." e busque.
-
-4. FORMATO DA RESPOSTA:
-   - Seja clínico e direto. Sem rodeios.
-   - Códigos OBD: Significado + Causas + Sintomas + Passos de Teste com valores de multímetro
-   - Torques: cite a fonte (manual do fabricante/modelo/ano)
-   - Se encontrar histórico relevante na base: cite a OS pelo número
+1. AUDITORIA: Se o mecânico mencionar uma placa, verifique no histórico abaixo se a peça já foi trocada. Alerte em **NEGRITO** se estiver na garantia (Amortecedor: 2 anos; Pastilha: 3 meses; Motor: 3 meses).
+2. FORMATO: Seja clínico e direto. Não invente dados. Para códigos OBD, dê Significado + Causas + Sintomas.
+3. Não pesquise na web, responda apenas com seu conhecimento nativo como Mecânico Pro.
 
 Responda sempre em português do Brasil.
 
@@ -916,25 +1048,78 @@ ${historyContext}`;
 
   try {
     const contents = _iaHist.map(h => ({ role: h.role==='user'?'user':'model', parts:[{text:h.text}] }));
+    
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(key)}`, {
       method: 'POST', headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
         contents,
         systemInstruction: { parts: [{ text: systemPrompt }] },
-        tools: [{ google_search: {} }]
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 2048,
+          // Configurações de safety mais permissivas para discussão técnica de oficina
+          // (ex: "queima de embreagem" pode ser detectada como linguagem violenta sem isso)
+        },
+        safetySettings: [
+          { category: 'HARM_CATEGORY_HARASSMENT',        threshold: 'BLOCK_ONLY_HIGH' },
+          { category: 'HARM_CATEGORY_HATE_SPEECH',       threshold: 'BLOCK_ONLY_HIGH' },
+          { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' },
+          { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' }
+        ]
       })
     });
+    
     const data = await res.json();
-    const resp = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sem resposta da base técnica.';
+    
+    // ═══ DIAGNÓSTICO ROBUSTO DA RESPOSTA (LOTE IA-EQUIPE) ═══
+    // A IA do Cliente sempre funciona porque trata todos os casos.
+    // A do Equipe falhava silenciosamente quando candidate vinha vazio.
+    if (!res.ok) {
+      const errMsg = data?.error?.message || `HTTP ${res.status}`;
+      let dica = '';
+      if (/API key not valid|API_KEY_INVALID/i.test(errMsg)) {
+        dica = '<br><br><em>A chave Gemini é inválida. Peça ao gestor pra atualizar em <code>oficinas.apiKeys.gemini</code> no Firestore.</em>';
+      } else if (/quota|RESOURCE_EXHAUSTED/i.test(errMsg)) {
+        dica = '<br><br><em>Cota da API Gemini esgotada. Tente em alguns minutos ou peça ao gestor para atualizar a chave.</em>';
+      }
+      throw new Error(errMsg + dica);
+    }
 
-    // Montar fontes citadas se houver groundingMetadata
-    const fontes = data.candidates?.[0]?.groundingMetadata?.searchEntryPoint?.renderedContent || '';
-    const fontesHtml = fontes ? `<div style="margin-top:12px;padding:8px 10px;background:rgba(0,212,255,0.06);border:1px solid var(--border);border-radius:4px;font-family:var(--fm);font-size:0.58rem;color:var(--muted2);">🌐 FONTES CONSULTADAS NA WEB</div>` : '';
+    // Verifica se há candidatos
+    if (!data.candidates || data.candidates.length === 0) {
+      // Pode ser bloqueio na entrada (promptFeedback)
+      const blockReason = data?.promptFeedback?.blockReason;
+      if (blockReason) {
+        throw new Error(`A pergunta foi bloqueada pela política de segurança da IA (motivo: ${blockReason}). Reformule sem termos sensíveis.`);
+      }
+      throw new Error('A IA não retornou candidatos de resposta. Tente reformular.');
+    }
+
+    const candidate = data.candidates[0];
+    const finishReason = candidate.finishReason;
+    let resp = candidate.content?.parts?.map(p => p.text).filter(Boolean).join('\n') || '';
+
+    // Tratamento explícito por finishReason
+    if (!resp) {
+      if (finishReason === 'SAFETY' || finishReason === 'BLOCKED') {
+        const safetyRatings = candidate.safetyRatings || [];
+        const bloqueado = safetyRatings.filter(r => r.blocked).map(r => r.category).join(', ');
+        throw new Error(`A resposta foi bloqueada por filtro de segurança (${bloqueado || finishReason}). Reformule a pergunta de forma mais técnica.`);
+      } else if (finishReason === 'MAX_TOKENS') {
+        throw new Error('A resposta da IA ultrapassou o limite de tamanho. Faça uma pergunta mais específica.');
+      } else if (finishReason === 'RECITATION') {
+        throw new Error('A IA bloqueou a resposta por suspeita de citação direta. Reformule.');
+      } else {
+        throw new Error(`A IA terminou sem texto (motivo: ${finishReason || 'desconhecido'}). Tente novamente.`);
+      }
+    }
 
     _iaHist.push({ role: 'model', text: resp });
-    _iaReplace(lid, resp.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong style="color:var(--warn)">$1</strong>').replace(/\*(.*?)\*/g,'<em>$1</em>') + fontesHtml);
+    _iaReplace(lid, resp.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong style="color:var(--warn)">$1</strong>').replace(/\*(.*?)\*/g,'<em>$1</em>'));
   } catch(e) {
-    _iaReplace(lid, '⚠ Erro de conexão com a central de diagnóstico: ' + e.message);
+    // Log de erro verdadeiro para o usuário não ficar no escuro
+    _iaReplace(lid, `⚠ <strong>Ocorreu um erro técnico na IA:</strong><br>${e.message}`);
+    console.error('[IA Equipe] Erro:', e);
   }
 }
 
@@ -1203,24 +1388,101 @@ document.addEventListener('DOMContentLoaded',()=>{
     if(nLidas>0){badge.classList.remove('d-none');badge.innerText=nLidas;}
     else badge.classList.add('d-none');
   });
-});
 
+// VERIFICA PERMISSÃO DE COMISSÃO DO GESTOR E MONTA EXTRATO
+  db.collection('oficinas').doc(J.tid).onSnapshot(doc => {
+    if (doc.exists) {
+      const ofi = doc.data();
+      const podeVer = ofi.modulos && ofi.modulos.comissoes === true;
+      const cardComissao = document.getElementById('kpiComissao');
+      
+      if (cardComissao) cardComissao.style.display = podeVer ? 'block' : 'none';
+
+      if (podeVer) {
+        // Trazemos TODO o histórico financeiro amarrado a este usuário
+        db.collection('financeiro')
+          .where('tenantId', '==', J.tid)
+          .where('mecId', '==', J.fid)
+          .onSnapshot(finSnap => {
+            let totalPendente = 0;
+            let extratoHTML = '';
+            
+            // Organiza do mais recente para o mais antigo
+            const docs = finSnap.docs.map(d => ({id: d.id, ...d.data()}))
+                                     .sort((a,b) => (b.venc || b.createdAt) > (a.venc || a.createdAt) ? 1 : -1);
+
+            docs.forEach(fin => {
+              // 1. Calcula o total a receber no card principal (só pendentes)
+              if (fin.isComissao && fin.status === 'Pendente') {
+                totalPendente += (fin.valor || 0);
+              }
+              
+              // 2. Monta as linhas da tabela de Extrato
+              const dataStr = fin.venc ? new Date(fin.venc).toLocaleDateString('pt-BR') : '-';
+              const valorStr = 'R$ ' + (fin.valor || 0).toFixed(2).replace('.', ',');
+              
+              let tipoBadge = '';
+              let valorStyle = '';
+              
+              if (fin.isComissao) {
+                  tipoBadge = '<span class="pill pill-cyan">COMISSÃO</span>';
+                  valorStyle = 'color:var(--success)';
+              } else if (fin.tipo === 'Saída') {
+                  if ((fin.desc||'').includes('Vale') || (fin.desc||'').includes('Adiantamento')) {
+                      tipoBadge = '<span class="pill pill-warn">VALE/ADIANT.</span>';
+                      valorStyle = 'color:var(--danger)';
+                  } else {
+                      tipoBadge = '<span class="pill pill-gray">PAGAMENTO</span>';
+                      valorStyle = 'color:var(--text)';
+                  }
+              }
+              
+              const statusBadge = fin.status === 'Pago' ? '<span class="pill pill-green">PAGO/LIQUIDADO</span>' : '<span class="pill pill-warn">PENDENTE</span>';
+
+              extratoHTML += `
+                <tr>
+                  <td style="font-family:var(--fm);font-size:0.7rem;color:var(--muted)">${dataStr}</td>
+                  <td>${tipoBadge}</td>
+                  <td style="font-size:0.8rem">${fin.desc || '-'}</td>
+                  <td>${statusBadge}</td>
+                  <td style="font-family:var(--fm);font-weight:700;${valorStyle}">${valorStr}</td>
+                </tr>
+              `;
+            });
+            
+            // Injeta o valor no Card
+            const valEl = document.getElementById('kMinhaComissao');
+            if (valEl) valEl.innerText = 'R$ ' + totalPendente.toFixed(2).replace('.', ',');
+            
+            // Injeta as linhas no Modal
+            const tbExtrato = document.getElementById('tbExtratoFunc');
+            if (tbExtrato) {
+                tbExtrato.innerHTML = extratoHTML || '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted);font-size:0.8rem;">Nenhum histórico financeiro encontrado.</td></tr>';
+            }
+          });
+      }
+    }
+  });
+});
 // ============================================================
 // KPIs
 // ============================================================
 function renderKPIs(){
   const minhas = dbOS.filter(o => !o.mecId || o.mecId === J.fid);
-  const ativas = minhas.filter(o => !['Entregue','Cancelado','Concluido'].includes(o.status));
+  const ativas = minhas.filter(o => !['Entregue','Cancelado','entregue','cancelado'].includes(o.status));
   if($('kMeusOS')) $('kMeusOS').innerText = ativas.length;
-  if($('kEmExec')) $('kEmExec').innerText = minhas.filter(o => o.status === 'Andamento').length;
+  if($('kEmExec')) $('kEmExec').innerText = minhas.filter(o => o.status === 'Andamento' || o.status === 'EmServico').length;
 }
 
 // ============================================================
-// KANBAN
+// KANBAN — fluxo coerente por perfil (LOTE B)
+// Mecânico: Triagem → Em Execução → Pronto p/ Retirada → Entregue
+// Mecânico SÓ pode mover até "Pronto p/ Retirada".
+// Só gestor/gerente/admin pode marcar "Entregue" (exige pagamento no caixa).
 // ============================================================
 function renderKanban(){
   const busca=($v('searchOS')||'').toLowerCase();
-  const statuses=['Aguardando','Orcamento','Aprovado','Andamento','Concluido'];
+  const statuses=['Aguardando','Orcamento','Aprovado','Andamento','Pronto','Entregue'];
   const cols={},cnts={};
   statuses.forEach(s=>{cols[s]=[];cnts[s]=0;});
 
@@ -1229,17 +1491,25 @@ function renderKanban(){
     'Orcamento':'Orcamento','orcamento':'Orcamento',
     'Orcamento_Enviado':'Orcamento','aprovacao':'Orcamento',
     'Aprovado':'Aprovado',
-    'Andamento':'Andamento','box':'Andamento',
-    'Pronto':'Concluido','pronto':'Concluido','faturado':'Concluido',
-    'Entregue':'Concluido','entregue':'Concluido',
-    'Concluido':'Concluido',
+    'Andamento':'Andamento','box':'Andamento','EmServico':'Andamento','em_servico':'Andamento',
+    'Pronto':'Pronto','pronto':'Pronto','faturado':'Pronto','Pronto_Retirada':'Pronto',
+    // Concluido legado vai pra PRONTO (era erroneamente Entregue).
+    // Só vai pra Entregue quando o GESTOR explicitamente marcar no caixa.
+    'Concluido':'Pronto','concluido':'Pronto',
+    'Entregue':'Entregue','entregue':'Entregue',
     'Aguardando':'Aguardando'
   };
 
   const minhasOS = dbOS.filter(o => {
     const st = (o.status||'').toLowerCase();
     if (st === 'cancelado') return false;
+    
+    // Se for gerente, vendedor ou admin, vê TODO o pátio.
+    if (['gerente', 'vendedor', 'admin'].includes(J.role)) return true;
+    
+    // Se for mecânico, só vê as OS sem dono ou as que são dele.
     if (o.mecId && o.mecId !== J.fid) return false;
+    
     return true;
   });
 
@@ -1307,6 +1577,18 @@ function prepOS(mode,id=null){
   const bh = document.getElementById('bannerHistVeiculo'); if(bh) bh.style.display='none';
   limparPreviewOS(); _resetChkBtns();
   popularSelects();
+
+  // ═══ Esconde opção "Entregue" se quem abriu não for gestor/admin ═══
+  // Mecânico não deve nem ver essa opção. UX limpa.
+  const role = (J.role||'').toLowerCase();
+  const ehGestor = ['admin','gestor','gerente','superadmin'].includes(role);
+  const optEntregue = document.querySelector('#osStatus option[value="Entregue"]');
+  if (optEntregue) {
+    optEntregue.style.display = ehGestor ? '' : 'none';
+    optEntregue.disabled = !ehGestor;
+  }
+  const av = document.getElementById('osStatusAviso');
+  if (av) av.style.display = 'none';
   if(mode==='edit'&&id){
     const os=dbOS.find(x=>x.id===id); if(!os) return;
     $('osId').value=os.id; $('osIdBadge').innerText='OS#'+os.id.slice(-5).toUpperCase();
@@ -1328,35 +1610,67 @@ function prepOS(mode,id=null){
     renderTimeline();
     if(os.pecas) os.pecas.forEach(p=>renderPecaRow(p));
     if(os.servicos) os.servicos.forEach(s=>renderServicoRow(s));
+    aplicarMarcadoresAprovacaoEquipe(os);
   }
 }
 
-// ADICIONAR SERVIÇOS (SEM PREÇO) - com botão de voz
+function aplicarMarcadoresAprovacaoEquipe(os) {
+  const U = window.JOS || window.JarvisOSUtils || {};
+  if (!U.hasApproval?.(os)) return;
+  const keys = U.getApprovedKeys?.(os) || new Set();
+  const mk = key => `<div class="aprovacao-item-badge" style="font-family:var(--fm);font-size:.56rem;letter-spacing:.7px;color:${keys.has(key) ? 'var(--success)' : 'var(--danger)'};padding:2px 4px;border:1px solid ${keys.has(key) ? 'rgba(0,255,136,.25)' : 'rgba(255,59,59,.25)'};border-radius:2px;white-space:nowrap;">${keys.has(key) ? 'APROVADO' : 'NÃO APROVADO'}</div>`;
+  document.querySelectorAll('#containerServicos>div').forEach((row, idx) => {
+    row.querySelector('.aprovacao-item-badge')?.remove();
+    row.insertAdjacentHTML('beforeend', mk('servico-' + idx));
+  });
+  document.querySelectorAll('#containerPecas>div').forEach((row, idx) => {
+    row.querySelector('.aprovacao-item-badge')?.remove();
+    row.insertAdjacentHTML('beforeend', mk('peca-' + idx));
+  });
+}
+
+// ADICIONAR SERVIÇOS (DINÂMICO POR CARGO)
 function adicionarServico(s=null){
   const div=document.createElement('div');
+  const podeVerPreco = ['gerente', 'vendedor', 'admin'].includes(J.role);
+  
   div.style.cssText='display:flex;gap:7px;align-items:center;position:relative;';
   const uid = 'sv_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+  
+  const inputValor = podeVerPreco 
+    ? `<input type="text" inputmode="decimal" class="j-input serv-valor" placeholder="R$" value="${parseBR(s?s.valor:0).toFixed(2).replace('.', ',')}" style="width:85px; padding:9px 6px;">` 
+    : `<input type="hidden" class="serv-valor" value="${s?s.valor:0}">`;
+
   div.innerHTML=`
-    <input type="text" class="j-input serv-desc" id="${uid}" placeholder="Descreva o serviço... (ou use 🎙️)" value="${s?s.desc:''}" style="flex:1;padding-right:40px;">
-    <button type="button" class="btn-voice" style="position:absolute;right:38px;top:50%;transform:translateY(-50%);" onclick="iniciarVoz('${uid}',this)" title="Falar serviço">🎙️</button>
-    <input type="hidden" class="serv-valor" value="${s?s.valor:0}">
+    <input type="text" class="j-input serv-desc" id="${uid}" placeholder="Descreva o serviço..." value="${s?s.desc:''}" style="flex:1;padding-right:40px;">
+    <button type="button" class="btn-voice" style="position:absolute;right:${podeVerPreco ? '100px' : '38px'};top:50%;transform:translateY(-50%);" onclick="iniciarVoz('${uid}',this)" title="Falar serviço">🎙️</button>
+    ${inputValor}
     <button type="button" onclick="this.parentElement.remove()" style="background:rgba(255,59,59,0.1);border:1px solid rgba(255,59,59,0.3);border-radius:2px;color:var(--danger);cursor:pointer;width:28px;height:34px;font-size:10px;flex-shrink:0;">✕</button>
   `;
   $('containerServicos').appendChild(div);
 }
 function renderServicoRow(s){ adicionarServico(s); }
 
-// ADICIONAR PEÇAS (SEM MOSTRAR O PREÇO NO DROPDOWN)
+// ADICIONAR PEÇAS (DINÂMICO POR CARGO)
 function adicionarPeca(){
   const div=document.createElement('div');
-  div.style.cssText='display:grid;grid-template-columns:1fr 60px 28px;gap:7px;align-items:center;';
+  const podeVerPreco = ['gerente', 'vendedor', 'admin'].includes(J.role);
+  
+  div.style.cssText = podeVerPreco 
+    ? 'display:grid;grid-template-columns:1fr 65px 85px 28px;gap:7px;align-items:center;'
+    : 'display:grid;grid-template-columns:1fr 60px 28px;gap:7px;align-items:center;';
+
+  const inputValor = podeVerPreco 
+    ? `<input type="text" inputmode="decimal" class="j-input peca-venda" placeholder="R$" value="0,00">` 
+    : `<input type="hidden" class="peca-venda" value="0">`;
+
   div.innerHTML=`
     <select class="j-select peca-sel" onchange="selPeca(this)">
-      <option value="">Selecionar peça do estoque...</option>
-      ${dbEstoque.filter(p=>(p.qtd||0)>0).map(p=>`<option value="${p.id}" data-v="${p.venda||0}" data-d="${p.desc||''}">${p.desc}</option>`).join('')}
+      <option value="">Selecionar peça...</option>
+      ${dbEstoque.filter(p=>(p.qtd||0)>0).map(p=>`<option value="${p.id}" data-v="${p.venda||0}" data-d="${p.desc||''}">${p.desc} ${podeVerPreco ? '(R$ '+p.venda+')' : ''}</option>`).join('')}
     </select>
     <input type="number" class="j-input peca-qtd" value="1" min="1" placeholder="Qtd">
-    <input type="hidden" class="peca-venda" value="0">
+    ${inputValor}
     <button type="button" onclick="this.parentElement.remove()" style="background:rgba(255,59,59,0.1);border:1px solid rgba(255,59,59,0.3);border-radius:2px;color:var(--danger);cursor:pointer;width:28px;height:34px;font-size:10px;">✕</button>
   `;
   $('containerPecas').appendChild(div);
@@ -1364,24 +1678,39 @@ function adicionarPeca(){
 
 function renderPecaRow(p){
   const div=document.createElement('div');
-  div.style.cssText='display:grid;grid-template-columns:1fr 60px 28px;gap:7px;align-items:center;';
+  const podeVerPreco = ['gerente', 'vendedor', 'admin'].includes(J.role);
+  
+  div.style.cssText = podeVerPreco 
+    ? 'display:grid;grid-template-columns:1fr 65px 85px 28px;gap:7px;align-items:center;'
+    : 'display:grid;grid-template-columns:1fr 60px 28px;gap:7px;align-items:center;';
+
+  const inputValor = podeVerPreco 
+    ? `<input type="text" inputmode="decimal" class="j-input peca-venda" placeholder="R$" value="${parseBR(p.venda||0).toFixed(2).replace('.', ',')}">` 
+    : `<input type="hidden" class="peca-venda" value="${p.venda||0}">`;
+
   div.innerHTML=`
     <select class="j-select peca-sel" onchange="selPeca(this)">
       <option value="${p.estoqueId||''}">${p.desc||''}</option>
-      ${dbEstoque.filter(x=>(x.qtd||0)>0||x.id===p.estoqueId).map(x=>`<option value="${x.id}" data-v="${x.venda||0}" data-d="${x.desc||''}" ${x.id===p.estoqueId?'selected':''}>${x.desc}</option>`).join('')}
+      ${dbEstoque.filter(x=>(x.qtd||0)>0||x.id===p.estoqueId).map(x=>`<option value="${x.id}" data-v="${x.venda||0}" data-d="${x.desc||''}" ${x.id===p.estoqueId?'selected':''}>${x.desc} ${podeVerPreco ? '(R$ '+x.venda+')' : ''}</option>`).join('')}
     </select>
     <input type="number" class="j-input peca-qtd" value="${p.qtd||1}" min="1">
-    <input type="hidden" class="peca-venda" value="${p.venda||0}">
+    ${inputValor}
     <button type="button" onclick="this.parentElement.remove()" style="background:rgba(255,59,59,0.1);border:1px solid rgba(255,59,59,0.3);border-radius:2px;color:var(--danger);cursor:pointer;width:28px;height:34px;font-size:10px;">✕</button>
   `;
   $('containerPecas').appendChild(div);
 }
-
 function selPeca(sel){
   const opt=sel.options[sel.selectedIndex];
-  sel.parentElement.querySelector('.peca-venda').value=opt.dataset.v||0;
+  sel.parentElement.querySelector('.peca-venda').value=parseBR(opt.dataset.v||0).toFixed(2).replace('.', ',');
 }
 
+function parseBR(v) {
+  const U = window.JOS || window.JarvisOSUtils || {};
+  if (U.parseNumberBR) return U.parseNumberBR(v);
+  return parseFloat(String(v || '0').replace(/\./g, '').replace(',', '.')) || 0;
+}
+
+// INTEGRAÇÃO DE DEEP DIFF E SALVAMENTO NA O.S.
 async function salvarOS(){
   if(!$v('osCliente')||!$v('osVeiculo')){toast('⚠ Cliente e veículo obrigatórios','warn');return;}
   
@@ -1392,31 +1721,115 @@ async function salvarOS(){
     pecas.push({
       estoqueId:sel?.value,
       desc:opt?.dataset.d||opt?.text||'',
-      qtd:parseFloat(r.querySelector('.peca-qtd')?.value||1),
-      venda:parseFloat(r.querySelector('.peca-venda')?.value||0)
+      qtd:parseBR(r.querySelector('.peca-qtd')?.value||1),
+      venda:parseBR(r.querySelector('.peca-venda')?.value||0)
     });
   });
 
   const servicos=[];
   document.querySelectorAll('#containerServicos>div').forEach(r=>{
     const desc=r.querySelector('.serv-desc')?.value||'';
-    const valor=parseFloat(r.querySelector('.serv-valor')?.value||0);
+    const valor=parseBR(r.querySelector('.serv-valor')?.value||0);
     if(desc) servicos.push({desc, valor});
   });
 
   // O Total é recalculado secretamente para não perder a integridade dos dados no Firebase
-  let t = parseFloat($v('osMO'))||0;
+  let t = parseBR($v('osMO'))||0;
   pecas.forEach(p => t += (p.qtd * p.venda));
   servicos.forEach(s => t += s.valor);
 
-  const tl=JSON.parse($v('tlData')||'[]');
-  tl.push({dt:new Date().toISOString(),user:J.nome,acao:($v('osId')?'Editou':'Criou')+' O.S. — Status: '+$v('osStatus')});
+  const id = $v('osId');
+  const funcUser = J.nome || 'Mecânico';
+  let tl = [];
+
+  // --- INÍCIO: DEEP DIFF (AUDITORIA GRANULAR) ---
+  if (id) {
+      const oldOS = dbOS.find(x => x.id === id) || {};
+      tl = oldOS.timeline ? [...oldOS.timeline] : JSON.parse($v('tlData') || '[]');
+      let registouAlgo = false;
+
+      if (oldOS.status !== $v('osStatus')) {
+          tl.push({ dt: new Date().toISOString(), user: funcUser, acao: `Status alterado para: ${$v('osStatus')}` });
+          registouAlgo = true;
+      }
+
+      const oldDiag = (oldOS.diagnostico || '').trim();
+      const novoDiag = ($v('osDiag') || '').trim();
+      if (novoDiag && novoDiag !== oldDiag) {
+          tl.push({ dt: new Date().toISOString(), user: funcUser, acao: `Diagnóstico Técnico atualizado.` });
+          registouAlgo = true;
+      }
+
+      const mapCheck = { chkPainel: 'Painel', chkPressao: 'Pressão dos Pneus', chkCar: 'Carroceria', chkDoc: 'Documentos' };
+      ['chkPainel', 'chkPressao', 'chkCar', 'chkDoc'].forEach(chk => {
+          const oldVal = oldOS[chk];
+          const newVal = $(chk)?.value;
+          if (oldVal !== newVal && newVal) {
+              const estado = newVal === 'ok' ? 'Marcou OK' : 'Marcou FALHA';
+              tl.push({ dt: new Date().toISOString(), user: funcUser, acao: `${estado} na inspeção: ${mapCheck[chk]}` });
+              registouAlgo = true;
+          }
+      });
+
+      const oldPecas = oldOS.pecas || [];
+      const newPecas = pecas || [];
+      newPecas.forEach(newP => {
+          const descNovo = (newP.desc || '').toLowerCase().trim();
+          const oldP = oldPecas.find(p => (p.desc || '').toLowerCase().trim() === descNovo);
+          if (!oldP) {
+              tl.push({ dt: new Date().toISOString(), user: funcUser, acao: `Adicionou peça: ${newP.desc} (Qtd: ${newP.qtd})` });
+              registouAlgo = true;
+          } else if (parseFloat(oldP.qtd || 0) !== parseFloat(newP.qtd || 0)) {
+              tl.push({ dt: new Date().toISOString(), user: funcUser, acao: `Alterou quantidade da peça ${newP.desc} para ${newP.qtd}` });
+              registouAlgo = true;
+          }
+      });
+      oldPecas.forEach(oldP => {
+          const descOld = (oldP.desc || '').toLowerCase().trim();
+          if (!newPecas.find(p => (p.desc || '').toLowerCase().trim() === descOld)) {
+              tl.push({ dt: new Date().toISOString(), user: funcUser, acao: `Removeu peça: ${oldP.desc}` });
+              registouAlgo = true;
+          }
+      });
+
+      const oldServicos = oldOS.servicos || [];
+      const newServicos = servicos || [];
+      newServicos.forEach(newS => {
+          const descNovo = (newS.desc || '').toLowerCase().trim();
+          if (!oldServicos.find(s => (s.desc || '').toLowerCase().trim() === descNovo)) {
+              tl.push({ dt: new Date().toISOString(), user: funcUser, acao: `Adicionou serviço: ${newS.desc}` });
+              registouAlgo = true;
+          }
+      });
+      oldServicos.forEach(oldS => {
+          const descOld = (oldS.desc || '').toLowerCase().trim();
+          if (!newServicos.find(s => (s.desc || '').toLowerCase().trim() === descOld)) {
+              tl.push({ dt: new Date().toISOString(), user: funcUser, acao: `Removeu serviço: ${oldS.desc}` });
+              registouAlgo = true;
+          }
+      });
+
+      const oldMedia = (oldOS.media || []).length;
+      const newMedia = (JSON.parse($('mediaArray').value || '[]')).length;
+      if (newMedia > oldMedia) {
+          tl.push({ dt: new Date().toISOString(), user: funcUser, acao: `Anexou ${newMedia - oldMedia} foto(s) de evidência.` });
+          registouAlgo = true;
+      }
+
+      if (!registouAlgo) {
+          tl.push({ dt: new Date().toISOString(), user: funcUser, acao: `Atualizou os detalhes da O.S.` });
+      }
+  } else {
+      tl = JSON.parse($v('tlData') || '[]');
+      tl.push({ dt: new Date().toISOString(), user: funcUser, acao: `Abriu a O.S. (Status inicial: ${$v('osStatus')})` });
+  }
+  // --- FIM: DEEP DIFF ---
   
   const p={
     tenantId:J.tid,tipoVeiculo:$v('osTipo'),clienteId:$v('osCliente'),veiculoId:$v('osVeiculo'),
     mecId:J.fid,mecNome:J.nome,data:$v('osData'),km:$v('osKm'),
     desc:$v('osDesc'),diagnostico:$v('osDiag'),status:$v('osStatus'),
-    maoObra:parseFloat($v('osMO')||0),
+    maoObra:parseBR($v('osMO')||0),
     total: t,
     pecas,
     servicos,
@@ -1426,11 +1839,78 @@ async function salvarOS(){
     chkCar:$('chkCar')?.value||'',chkDoc:$('chkDoc')?.value||'',
     timeline:tl,updatedAt:new Date().toISOString()
   };
-  const id=$v('osId');
+
+  const osAntigaAprovacao = id ? (dbOS.find(x => x.id === id) || {}) : {};
+  const UOS = window.JOS || window.JarvisOSUtils || {};
+  if (p.status === 'Aprovado' && !(UOS.hasApproval?.(osAntigaAprovacao))) {
+    const aprovacao = await UOS.openApprovalModal?.({ id: id || 'nova-os', ...osAntigaAprovacao, ...p }, {
+      clientes: dbClientes,
+      toast
+    });
+    if (!aprovacao) {
+      toast('Aprovação cancelada. A O.S. continua com o orçamento preservado.', 'warn');
+      return;
+    }
+    p.aprovacao = {
+      status: aprovacao.status,
+      aprovadoEm: new Date().toISOString(),
+      aprovadoPor: J.nome || 'Equipe',
+      aprovadoPorTipo: 'equipe',
+      totalOrcamento: aprovacao.totalOrcamento,
+      totalAprovado: aprovacao.totalAprovado,
+      itens: aprovacao.itens
+    };
+    p.itensAprovados = aprovacao.keys;
+    p.totalAprovado = aprovacao.totalAprovado;
+    tl.push({ dt: new Date().toISOString(), user: J.nome || 'Equipe', acao: `Orçamento APROVADO (${aprovacao.status}) - ${aprovacao.itens.length}/${aprovacao.totalItens} item(ns) - total ${UOS.moeda ? UOS.moeda(aprovacao.totalAprovado) : aprovacao.totalAprovado}` });
+    p.timeline = tl;
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // TRANCA DE SEGURANÇA: mecânico/equipe NÃO pode salvar status=Entregue.
+  // Mesmo se alguém abrir o DevTools e mudar o select.value, esta tranca
+  // bloqueia. Só admin/gestor/gerente pode marcar Entregue (exige caixa).
+  // ═══════════════════════════════════════════════════════════════
+  if (p.status === 'Entregue' && !['admin','gestor','gerente','superadmin'].includes((J.role||'').toLowerCase())) {
+    toast('⚠ Apenas o gestor/caixa pode marcar uma O.S. como ENTREGUE. Mude para "Pronto p/ Retirada" e avise o caixa.', 'err');
+    if ($('osStatus')) $('osStatus').value = 'Pronto';
+    return;
+  }
+
   if(id) await db.collection('ordens_servico').doc(id).update(p);
   else{p.createdAt=new Date().toISOString();await db.collection('ordens_servico').add(p);}
+
+  // Avisa o admin/gestor no chat interno quando a O.S. acabou de virar PRONTO
+  if (p.status === 'Pronto' && id) {
+    const osAntes = dbOS.find(x => x.id === id);
+    if (osAntes && osAntes.status !== 'Pronto') {
+      setTimeout(() => _avisarAdminPronto({...osAntes, ...p, id}), 400);
+    }
+  }
+
   toast('✓ O.S. SALVA'); fecharModal('modalOS');
 }
+
+// Validador do select de status — alerta o mecânico se ele tentar Entregue
+window._validarStatusMecanico = function(sel) {
+  const aviso = document.getElementById('osStatusAviso');
+  if (!aviso) return;
+  const role = (J.role||'').toLowerCase();
+  const ehGestor = ['admin','gestor','gerente','superadmin'].includes(role);
+
+  if (sel.value === 'Entregue' && !ehGestor) {
+    aviso.style.display = 'block';
+    aviso.style.color = 'var(--danger)';
+    aviso.textContent = '🔒 Você não tem permissão para marcar como Entregue. Use "Pronto p/ Retirada" e avise o caixa.';
+    sel.value = 'Pronto';
+  } else if (sel.value === 'Pronto') {
+    aviso.style.display = 'block';
+    aviso.style.color = 'var(--success)';
+    aviso.textContent = '✓ Ao salvar, o admin será avisado no chat da equipe para conferir e enviar o WhatsApp ao cliente.';
+  } else {
+    aviso.style.display = 'none';
+  }
+};
 
 function renderMediaGrid(){
   const media=JSON.parse($('mediaArray')?.value||'[]');
@@ -1555,7 +2035,7 @@ function fecharModalIA() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// IA ASSISTENTE DA O.S.
+// IA ASSISTENTE DA O.S. (MODO CIRÚRGICO SEM GOOGLE SEARCH)
 // ═══════════════════════════════════════════════════════════════
 let _iaOSMode = '', _iaOSSugestao = null;
 
@@ -1567,22 +2047,24 @@ async function _iaConsultarOS(prompt, modo) {
   document.getElementById('modalIaOSBody').innerHTML =
     `<div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:40px 0;">
       <span class="j-spinner" style="border-color:#A78BFA;border-right-color:transparent;width:28px;height:28px;border-width:3px;"></span>
-      <span style="font-family:var(--fm);font-size:0.75rem;color:#A78BFA;letter-spacing:2px;">CONSULTANDO HISTÓRICO + WEB...</span>
+      <span style="font-family:var(--fm);font-size:0.75rem;color:#A78BFA;letter-spacing:2px;">ANALISANDO HISTÓRICO...</span>
     </div>`;
   abrirModalIA(modo==='diag'?'SUGESTÃO DE DIAGNÓSTICO':modo==='servicos'?'SUGESTÃO DE SERVIÇOS':'ANÁLISE DA O.S.');
+  
   try {
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(key)}`,{
       method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
         contents:[{role:'user',parts:[{text:prompt}]}],
-        systemInstruction:{parts:[{text:'Você é o thIAguinho, assistente técnico de oficina mecânica. Responda em português do Brasil. Use a busca Google para confirmar torques, especificações e procedimentos com fontes reais. Seja objetivo, técnico e clínico. Use ** para negrito e - para listas.'}]},
-        tools:[{google_search:{}}]
+        systemInstruction:{parts:[{text:'Você é o thIAguinho, assistente técnico de oficina mecânica. Responda em português do Brasil. Seja objetivo, técnico e clínico. Use ** para negrito e - para listas.'}]}
+        // REMOVIDO PARA EVITAR ERRO: tools:[{google_search:{}}]
       })
     });
     const data = await res.json();
+    if (!res.ok) throw new Error(data?.error?.message || `Erro HTTP ${res.status} retornado pela API.`);
     return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
   } catch(e) {
-    document.getElementById('modalIaOSBody').innerHTML=`<div style="color:var(--danger);font-family:var(--fm);padding:20px;">⚠ Erro: ${e.message}</div>`;
+    document.getElementById('modalIaOSBody').innerHTML=`<div style="color:var(--danger);font-family:var(--fm);padding:20px;">⚠ <strong>Erro na conexão com a IA:</strong><br>${e.message}<br><br>Verifique a sua chave de API ou conexão com a internet.</div>`;
     return null;
   }
 }
@@ -1657,15 +2139,15 @@ function aplicarSugestaoIA() {
     const el = document.getElementById('osDiag');
     const atual = el ? el.value.trim() : '';
     if (el) el.value = atual ? atual + '\n' + _iaOSSugestao : _iaOSSugestao;
-    toast('✓ Diagnóstico inserido','ok');
+    toast('✓ Diagnóstico inserido. Salvando O.S...', 'ok');
   } else if (_iaOSMode==='servicos' && Array.isArray(_iaOSSugestao) && _iaOSSugestao.length) {
     _iaOSSugestao.forEach(s => adicionarServico({desc:s, valor:0}));
-    toast(`✓ ${_iaOSSugestao.length} serviço(s) adicionado(s)`,'ok');
+    toast(`✓ ${_iaOSSugestao.length} serviço(s) adicionado(s). Salvando O.S...`, 'ok');
   }
+  
   fecharModalIA();
+  salvarOS(); 
 }
-
-/* Powered by thIAguinho Soluções Digitais */
 </script>
 </body>
 </html>

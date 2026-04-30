@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">thIAguinho</string>
+    <string name="title_activity_main">thIAguinho</string>
+    <string name="package_name">br.com.thiaguinho.cliente</string>
+    <string name="custom_url_scheme">br.com.thiaguinho.cliente</string>
+</resources>

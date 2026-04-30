@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>thIAguinho — Selecionar Perfil</title>
+
+<!-- ═══ PWA ═══ -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#00D4FF">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="thIAguinho">
+<meta name="mobile-web-app-capable" content="yes">
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('service-worker.js').catch(function(){});
+  });
+}
+</script>
+
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&family=Exo+2:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+:root {
+  --bg-primary:    #060A14;
+  --bg-secondary:  #0A0F1F;
+  --surf-1:        #11182E;
+  --surf-2:        #1A2240;
+  --border:        rgba(0, 212, 255, 0.15);
+  --border-strong: rgba(0, 212, 255, 0.4);
+  --brand:         #00D4FF;
+  --brand-dim:     rgba(0, 212, 255, 0.12);
+  --brand-glow:    rgba(0, 212, 255, 0.35);
+  --text:          #E8F4FF;
+  --text-muted:    #7A9AB8;
+  --text-disabled: #4A6580;
+  --success:       #00FF88;
+  --warn:          #FFB800;
+  --danger:        #FF3B3B;
+  --accent-purple: #A78BFA;
+  --accent-orange: #FF8C00;
+
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 16px;
+  --r-xl: 24px;
+
+  --ff-display: 'Exo 2', sans-serif;
+  --ff-mono:    'JetBrains Mono', monospace;
+  --ff-body:    'Rajdhani', sans-serif;
+}
+
+body {
+  background: var(--bg-primary);
+  color: var(--text);
+  font-family: var(--ff-body);
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Grid futurista de fundo */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0, 212, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 212, 255, 0.025) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+  z-index: 0;
+  animation: gridDrift 30s linear infinite;
+}
+@keyframes gridDrift { to { background-position: 48px 48px; } }
+
+/* Glow radial central */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at center, var(--brand-dim) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.5;
+}
+
+.container {
+  position: relative;
+  z-index: 1;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 32px 20px 24px;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ═══ HEADER ═══ */
+.brand-header {
+  text-align: center;
+  margin-bottom: 32px;
+  animation: fadeDown 0.6s 0.1s both;
+}
+@keyframes fadeDown {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.brand-logo {
+  width: 88px;
+  height: 88px;
+  margin: 0 auto 18px;
+  background: linear-gradient(135deg, var(--brand), var(--accent-purple));
+  border-radius: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--ff-display);
+  font-size: 2.6rem;
+  font-weight: 900;
+  color: var(--bg-primary);
+  letter-spacing: -2px;
+  position: relative;
+  box-shadow: 0 0 40px var(--brand-glow), inset 0 0 20px rgba(255, 255, 255, 0.15);
+}
+.brand-logo::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 26px;
+  background: linear-gradient(135deg, var(--brand), var(--accent-purple));
+  opacity: 0.2;
+  filter: blur(12px);
+  z-index: -1;
+}
+
+.brand-title {
+  font-family: var(--ff-display);
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: 4px;
+  color: var(--brand);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.brand-subtitle {
+  font-family: var(--ff-mono);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+/* ═══ TELA DE INSTRUÇÃO ═══ */
+.section-label {
+  font-family: var(--ff-mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-align: center;
+  margin: 8px 0 18px;
+  position: relative;
+}
+.section-label::before,
+.section-label::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 60px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-strong));
+}
+.section-label::before { left: 0; }
+.section-label::after  { right: 0; transform: scaleX(-1); }
+
+/* ═══ CARDS DE PERFIL ═══ */
+.profile-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.profile-card {
+  background: linear-gradient(135deg, var(--surf-1), var(--surf-2));
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  position: relative;
+  overflow: hidden;
+  text-align: left;
+  animation: slideUp 0.5s both;
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.profile-card:nth-child(1) { animation-delay: 0.15s; }
+.profile-card:nth-child(2) { animation-delay: 0.25s; }
+.profile-card:nth-child(3) { animation-delay: 0.35s; }
+.profile-card:nth-child(4) { animation-delay: 0.45s; }
+
+.profile-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--profile-color, var(--brand));
+  transition: width 0.25s ease;
+}
+
+.profile-card:active {
+  transform: scale(0.97);
+  border-color: var(--profile-color, var(--brand));
+}
+.profile-card:hover {
+  border-color: var(--profile-color, var(--brand));
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4),
+              0 0 0 1px var(--profile-color, var(--brand)),
+              inset 0 0 30px rgba(0, 212, 255, 0.04);
+}
+.profile-card:hover::before { width: 8px; }
+
+.profile-icon {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  border-radius: 14px;
+  background: var(--profile-color-dim, var(--brand-dim));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  border: 1px solid var(--profile-color, var(--brand));
+}
+
+.profile-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-name {
+  font-family: var(--ff-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+  letter-spacing: 0.5px;
+}
+
+.profile-desc {
+  font-family: var(--ff-body);
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.profile-arrow {
+  font-size: 1.3rem;
+  color: var(--profile-color, var(--brand));
+  margin-left: 6px;
+  flex-shrink: 0;
+}
+
+/* Cores específicas por perfil */
+.profile-card.cliente {
+  --profile-color:     var(--brand);
+  --profile-color-dim: var(--brand-dim);
+}
+.profile-card.oficial {
+  --profile-color:     var(--accent-purple);
+  --profile-color-dim: rgba(167, 139, 250, 0.15);
+}
+.profile-card.mecanico {
+  --profile-color:     var(--accent-orange);
+  --profile-color-dim: rgba(255, 140, 0, 0.12);
+}
+.profile-card.gestor {
+  --profile-color:     var(--success);
+  --profile-color-dim: rgba(0, 255, 136, 0.10);
+}
+.profile-card.admin {
+  --profile-color:     var(--accent-purple);
+  --profile-color-dim: rgba(167, 139, 250, 0.12);
+}
+
+/* ═══ FOOTER ═══ */
+.footer {
+  margin-top: auto;
+  text-align: center;
+  padding-top: 24px;
+  animation: fadeDown 0.6s 0.6s both;
+}
+
+.status-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  box-shadow: 0 0 12px var(--success);
+  animation: pulseDot 2s ease infinite;
+}
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.6; transform: scale(1.4); }
+}
+
+.status-text {
+  font-family: var(--ff-mono);
+  font-size: 0.65rem;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.copyright {
+  font-family: var(--ff-mono);
+  font-size: 0.6rem;
+  color: var(--text-disabled);
+  letter-spacing: 1px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+/* ═══ Responsivo ═══ */
+@media (min-height: 700px) {
+  .container { padding-top: 56px; }
+  .brand-header { margin-bottom: 44px; }
+}
+
+@media (max-width: 360px) {
+  .brand-title { font-size: 1.6rem; letter-spacing: 3px; }
+  .brand-logo { width: 72px; height: 72px; font-size: 2.2rem; }
+  .profile-card { padding: 16px; gap: 14px; }
+  .profile-icon { width: 48px; height: 48px; font-size: 1.5rem; }
+  .profile-name { font-size: 1rem; }
+  .profile-desc { font-size: 0.75rem; }
+}
+</style>
+</head>
+
+<body>
+  <div class="container">
+
+    <div class="brand-header">
+      <div class="brand-logo">T</div>
+      <div class="brand-title">thIAguinho</div>
+      <div class="brand-subtitle">Gestão Automotiva Inteligente</div>
+    </div>
+
+    <div class="section-label">SELECIONE SEU PERFIL</div>
+
+    <div class="profile-grid">
+
+      <button class="profile-card cliente" onclick="entrar('cliente.html')">
+        <div class="profile-icon">👤</div>
+        <div class="profile-info">
+          <div class="profile-name">Sou Cliente</div>
+          <div class="profile-desc">Acompanhar minha O.S., scanner OBD, conversar com a oficina</div>
+        </div>
+        <div class="profile-arrow">›</div>
+      </button>
+
+      <button class="profile-card oficial" onclick="entrar('clienteOficial.html')">
+        <div class="profile-icon">🛡</div>
+        <div class="profile-info">
+          <div class="profile-name">Sou Cliente Oficial</div>
+          <div class="profile-desc">Polícia, prefeitura, órgão público — orçamentos por ata de licitação</div>
+        </div>
+        <div class="profile-arrow">›</div>
+      </button>
+
+      <button class="profile-card mecanico" onclick="entrar('index.html')">
+        <div class="profile-icon">🔧</div>
+        <div class="profile-info">
+          <div class="profile-name">Sou Mecânico</div>
+          <div class="profile-desc">Painel da equipe técnica, kanban, registrar serviços</div>
+        </div>
+        <div class="profile-arrow">›</div>
+      </button>
+
+      <button class="profile-card gestor" onclick="entrar('index.html')">
+        <div class="profile-icon">🏢</div>
+        <div class="profile-info">
+          <div class="profile-name">Sou Gestor da Oficina</div>
+          <div class="profile-desc">Painel JARVIS, financeiro, equipe, IA, relatórios</div>
+        </div>
+        <div class="profile-arrow">›</div>
+      </button>
+
+      <button class="profile-card admin" onclick="entrar('index.html')">
+        <div class="profile-icon">👑</div>
+        <div class="profile-info">
+          <div class="profile-name">Sou Administrador SaaS</div>
+          <div class="profile-desc">Painel master, gerenciar oficinas, assinaturas</div>
+        </div>
+        <div class="profile-arrow">›</div>
+      </button>
+
+    </div>
+
+    <div class="footer">
+      <div class="status-row">
+        <div class="status-dot"></div>
+        <span class="status-text">SISTEMA OPERACIONAL</span>
+      </div>
+      <div class="copyright">Powered by thIAguinho Soluções Digitais · 2026</div>
+    </div>
+
+  </div>
+
+  <script>
+    function entrar(destino) {
+      // Feedback tátil em celulares Android (vibração curta de 10ms)
+      if (navigator.vibrate) navigator.vibrate(10);
+      // Pequeno delay para sensação de "pressed"
+      setTimeout(function() {
+        window.location.href = destino;
+      }, 80);
+    }
+  </script>
+</body>
+</html>

@@ -2,8 +2,22 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>JARVIS ERP — Acesso ao Sistema</title>
+<!-- ═══ PWA ═══ -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#00D4FF">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="JARVIS">
+<meta name="mobile-web-app-capable" content="yes">
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('service-worker.js').catch(function(){});
+  });
+}
+</script>
 <link rel="stylesheet" href="css/design.css">
 <style>
 body::after {
@@ -288,7 +302,7 @@ async function autenticar() {
       const sessao = {
         j_tid:          dF.tenantId,
         j_tnome:        maeData.nomeFantasia || 'Oficina',
-        j_role:         dF.cargo === 'gerente' ? 'gerente' : 'equipe',
+        j_role:         dF.cargo || 'mecanico',
         j_nome:         dF.nome,
         j_fid:          docF.id,
         j_comissao:     String(dF.comissao || 0),

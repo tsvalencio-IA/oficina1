@@ -1,0 +1,116 @@
+# ═══════════════════════════════════════════════════════════════════════
+# thIAguinho ERP — Build automático do APK Android via GitHub Actions
+#
+# COMO USAR:
+#   1. Faça commit deste arquivo no seu repositório (já estará pronto no zip)
+#   2. Vá em Settings → Actions → General → marque "Allow all actions"
+#   3. A cada push na branch "main" o GitHub vai:
+#        a) Instalar Node.js e Java JDK 17 + Android SDK
+#        b) Rodar npm install no projeto Capacitor
+#        c) Sincronizar os HTML/CSS/JS para dentro do projeto Android
+#        d) Compilar o APK assinado (debug)
+#        e) Disponibilizar o APK na aba "Actions" do GitHub e em "Releases"
+#   4. Você baixa o APK direto do GitHub e manda pro cliente via WhatsApp
+#
+# CUSTO: zero. GitHub Actions é gratuito até 2.000 minutos/mês.
+# Cada build do APK leva ~10 min, então dá pra fazer ~200 builds/mês de graça.
+#
+# Powered by thIAguinho Soluções Digitais
+# ═══════════════════════════════════════════════════════════════════════
+name: Build APK Android
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:  # permite rodar manualmente pela aba Actions
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      # ── 1. Baixa o código do repositório ──
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      # ── 2. Instala Node.js 20 ──
+      - name: Configura Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # ── 3. Instala Java JDK 21 (necessário para Android SDK 34) ──
+      - name: Configura JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      # ── 4. Configura Android SDK ──
+      - name: Configura Android SDK
+        uses: android-actions/setup-android@v3
+
+      # ── 5. Entra na pasta capacitor-android e instala dependências ──
+      - name: Instala dependências Node (Capacitor + Plugins)
+        working-directory: ./capacitor-android
+        run: npm install
+
+      # ── 6. Sincroniza www/ com o WebView Android ──
+      - name: Sincroniza arquivos web → Android
+        working-directory: ./capacitor-android
+        run: |
+          # Copia todos os HTMLs/JS/CSS da raiz pro www/ do Capacitor
+          mkdir -p www
+          cp -r ../*.html www/ 2>/dev/null || true
+          cp -r ../js www/ 2>/dev/null || true
+          cp -r ../css www/ 2>/dev/null || true
+          cp ../elm327-service.js www/ 2>/dev/null || true
+          cp ../manifest.json www/ 2>/dev/null || true
+          cp ../service-worker.js www/ 2>/dev/null || true
+          # Capacitor sync
+          npx cap sync android
+
+      # ── 7. Compila o APK (versão debug, instalável direto) ──
+      - name: Build APK Debug
+        working-directory: ./capacitor-android/android
+        run: |
+          chmod +x ./gradlew
+          ./gradlew assembleDebug --no-daemon --stacktrace
+
+      # ── 8. Renomeia o APK para algo descritivo ──
+      - name: Renomeia APK
+        run: |
+          cd capacitor-android/android/app/build/outputs/apk/debug
+          mv app-debug.apk thIAguinho-Cliente-${{ github.run_number }}.apk
+
+      # ── 9. Disponibiliza o APK como "artifact" (download direto) ──
+      - name: Upload APK como Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: thIAguinho-APK
+          path: capacitor-android/android/app/build/outputs/apk/debug/*.apk
+          retention-days: 30
+
+      # ── 10. Cria uma Release pública (opcional) com o APK ──
+      - name: Cria Release com o APK
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: thIAguinho APK Build #${{ github.run_number }}
+          body: |
+            APK Android gerado automaticamente pelo GitHub Actions.
+
+            **Como instalar no celular do cliente:**
+            1. Baixe o arquivo `.apk` abaixo
+            2. Envie via WhatsApp para o cliente
+            3. Cliente abre o arquivo no Android
+            4. Se aparecer aviso "fontes desconhecidas", clique em PERMITIR
+            5. Toque em INSTALAR
+            6. Pronto. Ícone do app aparece na tela do celular.
+
+            Powered by thIAguinho Soluções Digitais
+          files: capacitor-android/android/app/build/outputs/apk/debug/*.apk
+          token: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true  # não falha o build se Release não funcionar
